@@ -1,0 +1,40 @@
+//
+//  GameManager.hpppp
+//  Nautical
+//
+//  Created by Ethan Coeytaux on 9/23/15.
+//  Copyright © 2015 EthanCo. All rights reserved.
+//
+
+#ifndef GameManager_hpp
+#define GameManager_hpp
+
+#include "Collection.hpp"
+#include "Event.hpp"
+
+namespace nautical {
+    class GameManager {
+    public:
+        static bool startup();
+        static bool shutdown();
+        
+        static void run();
+        static void switchPause();
+        static void setPause(bool pause);
+        
+        static int getScreenWidth();
+        static int getScreenHeight();
+        
+    private:
+        static bool init, //prevents game from re-initialized unnecessarily
+        running; //whether or not game is running
+        static int screenWidth,
+        screenHeight;
+        
+        static void pollEvents(Collection<Event*> & events);
+        
+        static void runTests(); //this function for debugging only, put test code in here so it can be easily removed later
+    };
+}
+
+#endif /* GameManager_hpp */
