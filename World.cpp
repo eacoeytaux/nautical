@@ -300,7 +300,7 @@ void World::generatePath(WorldObject * p_object) {
             percentage *= (1.f - percentageUsed);
             if (percentage == prevPercentage) {
                 Logger::writeLog(ERROR, "World::generatePath(): percentage did not progress");
-                percentage = 0;
+                percentage = 0; //TODO this is still a problem
             }
         } else {
             percentage = 0;
