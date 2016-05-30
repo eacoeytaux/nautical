@@ -52,3 +52,18 @@ Color & Color::setA(unsigned char A) {
     this->A = A;
     return *this;
 }
+
+Color & Color::inverse() {
+    R = 255 - R;
+    G = 255 - G;
+    B = 255 - B;
+    return *this;
+}
+
+bool Color::operator==(const Color & color) const {
+    return ((R == color.R) && (G == color.G) && (B == color.B) && (A == color.A));
+}
+
+bool Color::operator!=(const Color & color) const {
+    return !((R == color.R) && (G == color.G) && (B == color.B) && (A == color.A));
+}

@@ -30,6 +30,11 @@ namespace nautical {
         double convertToRadians(double distance) const;
         double convertToDistance(double radians) const;
         
+        double getLowerBoundX() const;
+        double getLowerBoundY() const;
+        double getUpperBoundX() const;
+        double getUpperBoundY() const;
+        
         bool contains(Coordinate coor) const;
         bool intersectsLine(Line line, Queue<Coordinate> * intersections) const;
         bool intersectsShape(const Shape * p_shape, Queue<Coordinate> * intersections) const;
@@ -41,6 +46,7 @@ namespace nautical {
         
         void draw() const;
         
+        Circle * copyPtr() const;
         bool operator==(const Shape & shape) const;
         
     private:

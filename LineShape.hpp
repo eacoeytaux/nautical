@@ -22,15 +22,22 @@ namespace nautical {
         Line getLine() const;
         LineShape & setLine(Line line);
         
-        LineShape & move(Vector vector);
-        LineShape & rotateAboutCoordinate(Angle angle, Coordinate coor = Coordinate(0, 0));
+        double getLowerBoundX() const;
+        double getLowerBoundY() const;
+        double getUpperBoundX() const;
+        double getUpperBoundY() const;
         
         bool contains(Coordinate coor) const;
         bool intersectsLine(Line line, Queue<Coordinate> * p_intersections = nullptr) const;
         bool intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections = nullptr) const;
         
-        void draw() const;
+        LineShape & move(Vector vector);
+        LineShape & rotateAboutCoordinate(Angle angle, Coordinate coor = Coordinate(0, 0));
         
+        void draw() const;
+        void drawFilled() const;
+        
+        LineShape * copyPtr() const;
         bool operator==(const Shape & shape) const;
         
     private:

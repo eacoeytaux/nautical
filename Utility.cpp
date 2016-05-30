@@ -10,4 +10,4 @@
 
 using namespace nautical;
 
-bool nautical::DEBUG_MODE = true;
+bool nautical::DEBUG_MODE = false;

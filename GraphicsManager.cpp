@@ -17,6 +17,9 @@
 
 using namespace nautical;
 
+int GraphicsManager::screenWidth = 960;
+int GraphicsManager::screenHeight = 640;
+
 SDL_Renderer * GraphicsManager::p_renderer = nullptr;
 
 Coordinate GraphicsManager::mouseCoor = Coordinate(0, 0);
@@ -36,16 +39,49 @@ void setRenderColor(SDL_Renderer * p_renderer, Color color) {
     SDL_SetRenderDrawColor(p_renderer, color.getR(), color.getG(), color.getB(), color.getA());
 }
 
+int GraphicsManager::getScreenWidth() {
+    return screenWidth;
+}
+
+int GraphicsManager::getScreenHeight() {
+    return screenHeight;
+}
+
+void GraphicsManager::setOffsets() {
+    xOffset = (center.getX() * -zoom) + (screenWidth / 2);
+    yOffset = (center.getY() * zoom) + (screenHeight / 2);
+}
+
+Coordinate GraphicsManager::worldToScreen(Coordinate coor) {
+    return Coordinate(worldToScreenX(coor.getX()), worldToScreenY(coor.getY()));
+}
+
+double GraphicsManager::worldToScreenX(double x) {
+    return ceil(x * zoom) + xOffset;
+}
+
+double GraphicsManager::worldToScreenY(double y) {
+    return -ceil(y * zoom) + yOffset;
+}
+
+Coordinate GraphicsManager::screenToWorld(Coordinate coor) {
+    return Coordinate(screenToWorldX(coor.getX()), screenToWorldY(coor.getY()));
+}
+
+double GraphicsManager::screenToWorldX(double x) {
+    return (x - xOffset) / zoom;
+}
+
+double GraphicsManager::screenToWorldY(double y) {
+    return (y - yOffset) / -zoom;
+}
+
 Coordinate GraphicsManager::getMouseCoor() {
     return mouseCoor;
 }
 
 void GraphicsManager::setMouseCoor(Coordinate coor) {
     mouseCoor = coor;
-}
-
-void GraphicsManager::setMouseCoorScreenCoordinates(Coordinate coor) {
-    mouseCoor.setX((coor.getX() - xOffset) / zoom).setY((coor.getY() - yOffset) / zoom);
 }
 
 bool GraphicsManager::isMouseTrapped() {
@@ -74,8 +110,10 @@ Coordinate GraphicsManager::getCenterSet() {
 }
 
 void GraphicsManager::setCenter(Coordinate center, bool hardSet) {
-    if (hardSet)
+    if (hardSet) {
         GraphicsManager::center = center;
+        setOffsets();
+    }
     centerSet = center;
 }
 
@@ -104,8 +142,10 @@ float GraphicsManager::getZoomSet() {
 }
 
 void GraphicsManager::setZoom(float zoom, bool hardSet) {
-    if (hardSet)
+    if (hardSet) {
         GraphicsManager::zoom = zoom;
+        setOffsets();
+    }
     zoomSet = zoom;
 }
 
@@ -116,18 +156,16 @@ void GraphicsManager::setZoomSpeedRatio(float zoomSpeedRatio) {
         GraphicsManager::zoomSpeedRatio = zoomSpeedRatio;
 }
 
-void GraphicsManager::setOffsets() {
-    xOffset = (GraphicsManager::center.getX() * -zoom) + (GameManager::getScreenWidth() / 2);
-    yOffset = (GraphicsManager::center.getY() * -zoom) + (GameManager::getScreenHeight() / 2);
-}
-
-void GraphicsManager::drawCoordinate(Coordinate coor, Color color) {
+void GraphicsManager::drawCoordinate(Coordinate coor, Color color, bool adjust) {
     if (!p_renderer)
         return;
     
+    if (adjust)
+        coor = worldToScreen(coor);
+    
     static SDL_Rect rect;
-    rect.x = (coor.getX() * zoom) + xOffset - 1;
-    rect.y = (coor.getY() * zoom) + yOffset - 1;
+    rect.x = coor.getX() - 1;
+    rect.y = coor.getY() - 1;
     rect.w = 3;
     rect.h = 3;
     
@@ -135,12 +173,20 @@ void GraphicsManager::drawCoordinate(Coordinate coor, Color color) {
     SDL_RenderFillRect(p_renderer, &rect);
 }
 
-void GraphicsManager::drawLine(Line line, Color color) {
+void GraphicsManager::drawLine(Line line, Color color, bool adjust) {
     if (!p_renderer)
         return;
     
+    Coordinate coor1 = line.getCoor1();
+    Coordinate coor2 = line.getCoor2();
+    
+    if (adjust) {
+        coor1 = worldToScreen(coor1);
+        coor2 = worldToScreen(coor2);
+    }
+    
     setRenderColor(p_renderer, color);
-    SDL_RenderDrawLine(p_renderer, (line.getCoor1().getX() * zoom) + xOffset, (line.getCoor1().getY() * zoom) + yOffset, (line.getCoor2().getX() * zoom) + xOffset, (line.getCoor2().getY() * zoom) + yOffset);
+    SDL_RenderDrawLine(p_renderer, coor1.getX(), coor1.getY(), coor2.getX(), coor2.getY());
 }
 
 Image * GraphicsManager::createImage(std::string filePath, int scale) {

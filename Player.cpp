@@ -10,6 +10,10 @@
 
 #include "KeyboardEvent.hpp"
 
+#include "DarknessOverlay.hpp" //TODO delete
+#include "Random.hpp" //TODO delete
+#include "Countdown.hpp" //TODO delete
+
 using namespace nautical;
 using namespace climber;
 
@@ -45,7 +49,7 @@ Player & Player::move(Vector vec) {
         GraphicsManager::setCenter(GraphicsManager::getCenterSet() + vecVertical);
         trap.move(vecVertical);
     }
-    /* end trap */
+    /* end trap code */
     
     WorldObject::move(vec);
     return *this;
@@ -87,7 +91,7 @@ void Player::handleEvent(Event * p_event) {
 
 void Player::update() {
     if (!getMapElement() || (getMapElement() && !(getMapElement()->isSticky())))
-        setForce(Vector(0, 0.3));
+        setForce(Vector(0, -0.3));
     else
         setForce(Vector(0, 0));
     
@@ -105,6 +109,23 @@ void Player::update() {
     }
     
     getParent()->generatePath(this);
+    
+    //lighting
+    Circle * p_circle = new Circle(getCenter(), 150);
+    static Countdown count(1);
+    static Vector moveVec[DARKNESS_LAYERS];
+    if (count.check()) {
+        for (int i = 0; i < DARKNESS_LAYERS; i++) {
+            moveVec[i] = Vector(Angle(Random::getRandFloat(M_PI * 2)), Random::getRandFloat(2));
+        }
+        count.reset();
+    }
+    for (int i = 0; i < DARKNESS_LAYERS; i++) {
+        Circle * p_circleToAdd = new Circle(*p_circle);
+        p_circleToAdd->move(moveVec[i]);
+        getParent()->addShapeToDarknessOverlay(p_circleToAdd, i);
+        p_circle->setRadius(p_circle->getRadius() + 10);
+    }
 }
 
 void Player::draw() const {

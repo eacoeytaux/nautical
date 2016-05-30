@@ -98,6 +98,6 @@ void Rope::draw() const {
     Angle angle(M_PI - hookAngle.getValue());// * ((angle < 0) ? -1 : 1));
     Angle angleMinus = angle - M_PI_4;
     Angle anglePlus = angle + M_PI_4;
-    GraphicsManager::drawLine(Line(p_head->getX(), p_head->getY(), p_head->getX() - angleMinus.getSin(arrowLength), p_head->getY() - angleMinus.getCos(arrowLength)), color);
-    GraphicsManager::drawLine(Line(p_head->getX(), p_head->getY(), p_head->getX() + anglePlus.getSin(arrowLength), p_head->getY() + anglePlus.getCos(arrowLength)), color);
+    GraphicsManager::drawLine(Line(p_head->getX(), p_head->getY(), p_head->getX() - angleMinus.getSin(arrowLength), p_head->getY() - angleMinus.getCos(arrowLength)), getColor());
+    GraphicsManager::drawLine(Line(p_head->getX(), p_head->getY(), p_head->getX() + anglePlus.getSin(arrowLength), p_head->getY() + anglePlus.getCos(arrowLength)), getColor());
 }

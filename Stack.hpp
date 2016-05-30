@@ -34,12 +34,12 @@ namespace nautical {
     
     template<typename T>
     bool Stack<T>::insert(T element) {
-        insertHead(element);
+        return LinkedList<T>::insertHead(element);
     }
     
     template<typename T>
     bool Stack<T>::pop(T * p_element) {
-        if (LinkedList<T>::getLastElement(P_element)) {
+        if (LinkedList<T>::getFirstElement(p_element)) {
             LinkedList<T>::remove(*p_element);
             return true;
         } else {

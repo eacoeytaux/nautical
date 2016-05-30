@@ -26,7 +26,7 @@ namespace nautical {
     }
     
     inline double solveQuadraticMinus(double a, double b, double c) { //solves quadratic equation
-        return (-b + sqrt(pow(b, 2) - (4 * a * c))) / (2 * a);
+        return (-b - sqrt(pow(b, 2) - (4 * a * c))) / (2 * a);
     }
     
     inline bool inRange(double value, double min, double max, bool inclusive = true) { //checks whether or not value is inbetween min and max

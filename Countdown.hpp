@@ -14,7 +14,7 @@ namespace nautical {
     public:
         Countdown(int set = 0, int loops = -1);
         
-        bool check();
+        bool check(int checks = 1);
         Countdown & reset();
         Countdown & reset(int set);
         int getLoopCount() const;

@@ -11,6 +11,7 @@
 
 #include "Shape.hpp" //base class
 
+#include "MaxMinValue.hpp"
 #include "Collection.hpp"
 #include "Queue.hpp"
 #include "Coordinate.hpp"
@@ -27,6 +28,11 @@ namespace nautical {
         bool isConvex() const;
         Iterator<Polygon> * getSubtractedTrianglesIterator() const;
         
+        double getLowerBoundX() const;
+        double getLowerBoundY() const;
+        double getUpperBoundX() const;
+        double getUpperBoundY() const;
+        
         bool contains(Coordinate coor) const;
         bool intersectsLine(Line line, Queue<Coordinate> * p_intersections = nullptr) const;
         bool intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections = nullptr) const;
@@ -36,6 +42,7 @@ namespace nautical {
         
         void draw() const;
         
+        Polygon * copyPtr() const;
         bool operator==(const Shape & shape) const;
         
     private:
@@ -57,6 +64,9 @@ namespace nautical {
         Queue<Triangle> subtractedTrianglesStruct;
         mutable bool subtractedTrianglesSet = false;
         mutable Queue<Polygon> subtractedTriangles; //triangles subtracted from polygon to create a convex polygon
+        
+        MinValue lowerBoundX, lowerBoundY;
+        MaxValue upperBoundX, upperBoundY;
         
         void init(Queue<Coordinate> * coors, bool checkForConcave = true);
     };

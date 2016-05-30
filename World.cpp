@@ -14,6 +14,7 @@
 #include "Path.hpp"
 #include "WorldObject.hpp"
 
+#include "KeyboardEvent.hpp" //TODO delete
 #include "Player.hpp" //TODO delete
 
 using namespace nautical;
@@ -23,15 +24,15 @@ World::World() {
     this->id = id++;
     
     Map * p_map = &map;
-    MapVertex * v0 = p_map->createVertex(Coordinate(100, 0));
-    MapVertex * v1 = p_map->createVertex(Coordinate(10, 300));
-    MapVertex * v2 = p_map->createVertex(Coordinate(175, 420));
-    //MapVertex * v3 = p_map->createVertex(Coordinate(250, 420));
-    MapVertex * v4 = p_map->createVertex(Coordinate(400, 350));
-    MapVertex * v5 = p_map->createVertex(Coordinate(450, 375));
-    MapVertex * v6 = p_map->createVertex(Coordinate(500, 350));
-    MapVertex * v7 = p_map->createVertex(Coordinate(800, 400));
-    MapVertex * v8 = p_map->createVertex(Coordinate(750, 0));
+    MapVertex * v0 = p_map->createVertex(Coordinate(100, 640));
+    MapVertex * v1 = p_map->createVertex(Coordinate(10, 340));
+    MapVertex * v2 = p_map->createVertex(Coordinate(175, 220));
+    //MapVertex * v3 = p_map->createVertex(Coordinate(250, 220));
+    MapVertex * v4 = p_map->createVertex(Coordinate(400, 290));
+    MapVertex * v5 = p_map->createVertex(Coordinate(450, 265));
+    MapVertex * v6 = p_map->createVertex(Coordinate(500, 290));
+    MapVertex * v7 = p_map->createVertex(Coordinate(800, 240));
+    MapVertex * v8 = p_map->createVertex(Coordinate(750, 640));
     
     p_map->createEdge(v0, v1, false);
     p_map->createEdge(v1, v2, true);
@@ -69,6 +70,30 @@ Map * World::getMap() {
     return &map;
 }
 
+bool World::isDarknessInEffect() const {
+    return darknessInEffect;
+}
+
+World & World::setDarknessInEffect(bool darkness) {
+    darknessInEffect = darkness;
+    return *this;
+}
+
+float World::getDarknessOverlayPercentage() const {
+    return darknessOverlay.getPercentage();
+}
+
+World & World::setDarknessOverlayPercentage(float percentage) {
+    darknessOverlay.setPercentage(percentage);
+    return *this;
+}
+
+World & World::addShapeToDarknessOverlay(Shape * p_shape, int layer) {
+    if (!DEBUG_MODE)
+        darknessOverlay.addShape(p_shape, layer);
+    return *this;
+}
+
 World & World::addObject(WorldObject * p_object, bool shouldUpdate, bool shouldDraw) {
     if (p_object) {
         p_object->setParent(this);
@@ -83,7 +108,7 @@ World & World::addObject(WorldObject * p_object, bool shouldUpdate, bool shouldD
             subscribeObject(iterator->current(), p_object);
         }
         
-        Logger::writeLog(PLAIN, "World::addObject(): added object[%d] to level[%d]", p_object->getID(), id);
+        Logger::writeLog(PLAIN, "World::addObject(): added object[%d] to world[%d]", p_object->getID(), id);
     } else {
         Logger::writeLog(WARNING, "World::addObject(): attempted to add nullptr");
     }
@@ -159,7 +184,7 @@ World & World::unsubscribeObjects(std::string eventTag, LinkedList<WorldObject*>
     return *this;
 }
 
-World & World::sendEvent(Event * p_event) {
+World & World::handleEvent(Event * p_event) {
     for (Iterator<EventPairing> * iterator = subscribedObjects.createIterator(); !iterator->complete(); iterator->next()) {
         EventPairing pair = iterator->current();
         if (p_event->hasTag(pair.eventTag)) {
@@ -323,10 +348,15 @@ void World::generatePath(WorldObject * p_object) {
 }
 
 void World::update(Collection<Event*> & events) {
-    Logger::writeLog(PLAIN, "starting level[%d] update %d", updateTimestamp);
+    Logger::writeLog(PLAIN, "starting world[%d] update %d", id, updateTimestamp);
     
     for (Iterator<Event*> * iterator = events.createIterator(); !iterator->complete(); iterator->next()) {
-        sendEvent(iterator->current());
+        if (iterator->current()->hasTag(KEYBOARD_EVENT_TAG)) { //TODO for debugging
+            if ((static_cast<KeyboardEvent*>(iterator->current())->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(iterator->current())->getKey() == KeyboardEvent::Key::O))
+                setDarknessInEffect(!isDarknessInEffect());
+        }
+        
+        handleEvent(iterator->current());
     }
     
     for (Iterator<WorldObject*> * iterator = objectsToDelete.createIterator(); !iterator->complete(); iterator->next()) {
@@ -355,7 +385,7 @@ void World::updateObject(WorldObject * p_object) {
 }
 
 void World::draw() {
-    Logger::writeLog(PLAIN, "starting level[%d] draw %d", drawTimestamp);
+    Logger::writeLog(PLAIN, "starting world[%d] draw %d", id, drawTimestamp);
     
     for (int i = 0; i <= MAX_BELOW_ALTITUDE + MAX_ABOVE_ALTITUDE; i++) {
         if (i == MAX_BELOW_ALTITUDE) {
@@ -373,6 +403,12 @@ void World::draw() {
             
             p_object->Drawable::draw(drawTimestamp);
         }
+    }
+    
+    if (!DEBUG_MODE) {
+        if (darknessInEffect)
+            darknessOverlay.draw();
+        darknessOverlay.clearShapes();
     }
     
     drawTimestamp++;

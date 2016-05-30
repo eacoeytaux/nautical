@@ -106,5 +106,5 @@ LinkedList<MapCatch> MapVertex::findCatches(Rectangle rectangle, const Map * p_m
 }
 
 void MapVertex::draw() const {
-    GraphicsManager::drawCoordinate(coor, color);
+    GraphicsManager::drawCoordinate(coor, getColor());
 }

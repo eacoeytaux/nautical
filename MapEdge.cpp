@@ -25,7 +25,7 @@ p_vertexFront(p_vertexFront) {
     
     setColor(isSticky() ? GREEN : RED);
     line = Line(p_vertexBack->getCoor(), p_vertexFront->getCoor());
-    normal = Angle(line.getAngle() - M_PI_2);
+    normal = Angle(line.getAngle() + M_PI_2);
     
     p_vertexBack->setEdgeFront(this);
     p_vertexFront->setEdgeBack(this);
@@ -202,7 +202,7 @@ LinkedList<MapCatch> MapEdge::findCatches(Rectangle rectangle, const Map * p_map
 }
 
 void MapEdge::draw() const {
-    GraphicsManager::drawLine(line, color);
+    GraphicsManager::drawLine(line, getColor());
     
     if (DRAW_NORMALS && DEBUG_MODE) {
         Coordinate origin = p_vertexBack->getCoor() + (Vector(p_vertexBack->getCoor(), p_vertexFront->getCoor()) / 2);

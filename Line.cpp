@@ -158,29 +158,44 @@ bool Line::isOnOrBelow(Coordinate coor) const {
 }
 
 bool Line::intersects(Line line, Coordinate * p_intersection) const {
+    if (vertical && line.vertical) {
+        if (x1 == line.x1) {
+            if (p_intersection)
+                p_intersection->setX(x1).setY(y1);
+            return true;
+        } else {
+            return false;
+        }
+    } else if (horizontal && line.horizontal) {
+        if (y1 == line.y1) {
+            if (p_intersection)
+                p_intersection->setX(x1).setY(y1);
+            return true;
+        } else {
+            return false;
+        }
+    } else if ((m == line.m) && (b == line.b)) {
+        if (p_intersection)
+            p_intersection->setX(x1).setY(y1);
+        return true;
+    }
+    
     double xIntersect;
     double yIntersect;
     
     if (vertical) {
         xIntersect = xLow;
-        yIntersect = (line.m * xLow) + line.b;
+        yIntersect = (line.horizontal ? line.yLow : (line.m * xLow) + line.b);
     } else if (line.vertical) {
         xIntersect = line.xLow;
-        yIntersect = (m * line.xLow) + b;
+        yIntersect = (horizontal ? yLow : (m * line.xLow) + b);
     } else if (horizontal) {
-        xIntersect = (line.vertical ? line.xLow : (yLow - line.b) / line.m);
+        xIntersect = (yLow - line.b) / line.m;
         yIntersect = yLow;
     } else if (line.horizontal) {
-        xIntersect = (vertical ? xLow : (line.yLow - b) / m);
+        xIntersect = (line.yLow - b) / m;
         yIntersect = line.yLow;
     } else {
-        if (m == line.m) {
-            if (b == line.b) {
-                if (p_intersection)
-                    p_intersection->setX(x1).setY(y1);
-                return true; //technically is true...
-            }
-        }
         xIntersect = (line.b - b) / (m - line.m);
         yIntersect = (m * xIntersect) + b;
     }
@@ -195,17 +210,17 @@ bool Line::intersects(Line line, Coordinate * p_intersection) const {
 }
 
 /*bool Line::isLeftOfLine(Coordinate coor) const {
-    if (isHorizontal()) {
-        return ((x1 > x2) ? (coor.getY() >= y1) : (coor.getY() <= y1));
-    } else if (isVertical()) {
-        return ((y1 > y2) ? (coor.getX() <= x1) : (coor.getX() >= x1));
-    } else {
-        Angle angleToCoor = findAngle(getCoor1(), coor);
-        return ((angle.getValue() > 0) ?
-                      ((angleToCoor.getValue() <= angle.getValue()) && (angleToCoor.getValue() >= (angle + M_PI).getValue())) :
-                      ((angleToCoor.getValue() <= angle.getValue()) || (angleToCoor.getValue() >= (angle + M_PI).getValue())));
-    }
-}*/
+ if (isHorizontal()) {
+ return ((x1 > x2) ? (coor.getY() >= y1) : (coor.getY() <= y1));
+ } else if (isVertical()) {
+ return ((y1 > y2) ? (coor.getX() <= x1) : (coor.getX() >= x1));
+ } else {
+ Angle angleToCoor = findAngle(getCoor1(), coor);
+ return ((angle.getValue() > 0) ?
+ ((angleToCoor.getValue() <= angle.getValue()) && (angleToCoor.getValue() >= (angle + M_PI).getValue())) :
+ ((angleToCoor.getValue() <= angle.getValue()) || (angleToCoor.getValue() >= (angle + M_PI).getValue())));
+ }
+ }*/
 
 Coordinate Line::closestCoordinate(Coordinate coor) const {
     if (vertical) {

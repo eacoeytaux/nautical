@@ -40,6 +40,11 @@ namespace nautical {
         
         double getDiagonalLength() const;
         
+        double getLowerBoundX() const;
+        double getLowerBoundY() const;
+        double getUpperBoundX() const;
+        double getUpperBoundY() const;
+        
         bool contains(Coordinate coor) const;
         bool intersectsLine(Line line, Queue<Coordinate> * p_intersections = nullptr) const;
         bool intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections = nullptr) const;
@@ -49,6 +54,7 @@ namespace nautical {
         
         void draw() const;
         
+        Rectangle * copyPtr() const;
         bool operator==(const Shape & shape) const;
         
     private:

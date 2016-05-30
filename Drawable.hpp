@@ -38,9 +38,9 @@ namespace nautical {
         
         virtual void draw() const = 0;
         
-    protected:
+    private:
         mutable Color color = DEFAULT_COLOR;
-        mutable int timestamp;
+        mutable int timestamp = -1;
     };
 }
 

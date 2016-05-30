@@ -96,6 +96,22 @@ double Rectangle::getDiagonalLength() const {
     return findDistance(getTopLeftCoor(), getBottomRightCoor());
 }
 
+double Rectangle::getLowerBoundX() const {
+    return center.getX() - (angle.getCos(halfWidth) + angle.getSin(halfHeight));
+}
+
+double Rectangle::getLowerBoundY() const {
+    return center.getY() - (angle.getCos(halfHeight) + angle.getSin(halfWidth));
+}
+
+double Rectangle::getUpperBoundX() const {
+    return center.getX() + (angle.getCos(halfWidth) + angle.getSin(halfHeight));
+}
+
+double Rectangle::getUpperBoundY() const {
+    return center.getY() + (angle.getCos(halfHeight) + angle.getSin(halfWidth));
+}
+
 bool Rectangle::contains(Coordinate coor) const {
     return (getTopLine().isOnOrBelow(coor) && getRightLine().isOnOrBelow(coor) && getBottomLine().isOnOrBelow(coor) && getLeftLine().isOnOrBelow(coor));
 }
@@ -104,18 +120,15 @@ bool Rectangle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) c
     Coordinate coor1, coor2;
     bool intersects = false, intersectsTwice = false;
     
-    (intersects ? intersectsTwice : intersects) = line.intersects(getTopLine(), intersects ? &coor2 : &coor1);
-    (intersects ? intersectsTwice : intersects) = line.intersects(getRightLine(), intersects ? &coor2 : &coor1);
-    (intersects ? intersectsTwice : intersects) = line.intersects(getBottomLine(), intersects ? &coor2 : &coor1);
-    (intersects ? intersectsTwice : intersects) = line.intersects(getLeftLine(), intersects ? &coor2 : &coor1);
+    (intersects ? intersectsTwice : intersects) |= line.intersects(getTopLine(), intersects ? &coor2 : &coor1);
+    (intersects ? intersectsTwice : intersects) |= line.intersects(getRightLine(), intersects ? &coor2 : &coor1);
+    (intersects ? intersectsTwice : intersects) |= line.intersects(getBottomLine(), intersects ? &coor2 : &coor1);
+    (intersects ? intersectsTwice : intersects) |= line.intersects(getLeftLine(), intersects ? &coor2 : &coor1);
     
     if (intersects) {
         if (p_intersections) {
             if (intersectsTwice) {
-                double xDistance1 = fabs(line.getCoor1().getX() - coor1.getX());
-                double xDistance2 = fabs(line.getCoor1().getX() - coor2.getX());
-                
-                if (xDistance1 <= xDistance2) {
+                if (findDistance(line.getCoor1(), coor1) < findDistance(line.getCoor2(), coor2)) {
                     p_intersections->insert(coor1);
                     p_intersections->insert(coor2);
                 } else {
@@ -155,10 +168,14 @@ Rectangle & Rectangle::rotateAboutCoordinate(Angle angle, Coordinate coor) {
 }
 
 void Rectangle::draw() const {
-    GraphicsManager::drawLine(getTopLine(), color);
-    GraphicsManager::drawLine(getRightLine(), color);
-    GraphicsManager::drawLine(getBottomLine(), color);
-    GraphicsManager::drawLine(getLeftLine(), color);
+    GraphicsManager::drawLine(getTopLine(), getColor());
+    GraphicsManager::drawLine(getRightLine(), getColor());
+    GraphicsManager::drawLine(getBottomLine(), getColor());
+    GraphicsManager::drawLine(getLeftLine(), getColor());
+}
+
+Rectangle * Rectangle::copyPtr() const {
+    return new Rectangle(*this);
 }
 
 bool Rectangle::operator==(const Shape & shape) const {

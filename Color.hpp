@@ -25,6 +25,11 @@ namespace nautical {
         unsigned char getA() const;
         Color & setA(unsigned char A);
         
+        Color & inverse();
+        
+        bool operator==(const Color & color) const;
+        bool operator!=(const Color & color) const;
+        
     private:
         unsigned char R; //red value
         unsigned char G; //green value

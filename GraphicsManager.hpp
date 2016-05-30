@@ -21,9 +21,18 @@ namespace nautical {
         friend class GameManager;
         
     public:
+        static int getScreenWidth();
+        static int getScreenHeight();
+        
+        static Coordinate worldToScreen(Coordinate coor);
+        static double worldToScreenX(double x);
+        static double worldToScreenY(double y);
+        static Coordinate screenToWorld(Coordinate coor);
+        static double screenToWorldX(double x);
+        static double screenToWorldY(double y);
+        
         static Coordinate getMouseCoor();
         static void setMouseCoor(Coordinate coor);
-        static void setMouseCoorScreenCoordinates(Coordinate coor);
         static bool isMouseTrapped();
         static void setMouseTrapped(bool mouseTrapped);
         
@@ -39,15 +48,18 @@ namespace nautical {
         static void setZoom(float zoom, bool hardSet = false);
         static void setZoomSpeedRatio(float zoomSpeedRatio);
         
-        static void drawCoordinate(Coordinate coor, Color color = DEFAULT_COLOR);
-        static void drawLine(Line line, Color color = DEFAULT_COLOR);
+        static void drawCoordinate(Coordinate coor, Color color = DEFAULT_COLOR, bool adjust = true);
+        static void drawLine(Line line, Color color = DEFAULT_COLOR, bool adjust = true);
         
         Image * createImage(std::string filePath, int scale = 1);
         
     private:
         static SDL_Renderer * p_renderer;
         
-        static Coordinate mouseCoor;
+        static int screenWidth,
+        screenHeight;
+        
+        static Coordinate mouseCoor; //stored in screen coordinates
         static bool mouseTrapped;
         
         static double xOffset, yOffset;

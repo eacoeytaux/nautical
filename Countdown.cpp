@@ -16,19 +16,19 @@ set(set),
 loopCount(0),
 maxLoops(loops) { }
 
-bool Countdown::check() {
-    if (maxLoops - loopCount >= 0) {
-        if (!(--count > 0)) {
-            if (maxLoops >= 0)
-                loopCount++;
-            reset();
-            return true;
-        } else {
-            return false;
+bool Countdown::check(int checks) {
+    bool ret = false;
+    for (int i = 0; i < checks; i++) {
+        if ((maxLoops < 0) || (maxLoops - loopCount >= 0)) {
+            if (!(--count > 0)) {
+                if (maxLoops >= 0)
+                    loopCount++;
+                reset();
+                ret |= true;
+            }
         }
-    } else {
-        return false;
     }
+    return ret;
 }
 
 Countdown & Countdown::reset() {

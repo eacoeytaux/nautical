@@ -61,14 +61,30 @@ double Circle::convertToDistance(double radians) const {
     return radians * radius;
 }
 
+double Circle::getLowerBoundX() const {
+    return center.getX() - radius;
+}
+
+double Circle::getLowerBoundY() const {
+    return center.getY() - radius;
+}
+
+double Circle::getUpperBoundX() const {
+    return center.getX() + radius;
+}
+
+double Circle::getUpperBoundY() const {
+    return center.getY() + radius;
+}
+
 bool Circle::contains(Coordinate coor) const {
     return findDistance(center, coor) <= radius;
 }
 
 bool Circle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const {
-    double a = (1 + line.getM());
+    double a = (pow(line.getM(), 2) + 1);
     double b = ((-2 * center.getX()) + (2 * line.getB() * line.getM()) + (-2 * line.getM() * center.getY()));
-    double c = (pow(center.getX(), 2) + pow(line.getB(), 2) + (-2 * line.getB() * center.getY()) + pow(center.getY(), 2));
+    double c = (pow(center.getX(), 2) + pow(line.getB(), 2) + (-2 * line.getB() * center.getY()) + pow(center.getY(), 2) - pow(radius, 2));
     
     double xPlus = solveQuadraticPlus(a, b, c);
     double xMinus = solveQuadraticMinus(a, b, c);
@@ -149,9 +165,13 @@ void Circle::draw() const {
     Coordinate prevCoor = center + (*(iterator->current()) * radius);
     for (iterator->next(); !iterator->complete(); iterator->next()) {
         Coordinate coor = center + (*(iterator->current()) * radius);
-        GraphicsManager::drawLine(Line(prevCoor, coor), color);
+        GraphicsManager::drawLine(Line(prevCoor, coor), getColor());
         prevCoor = coor;
     }
+}
+
+Circle * Circle::copyPtr() const {
+    return new Circle(*this);
 }
 
 bool Circle::operator==(const Shape & shape) const {

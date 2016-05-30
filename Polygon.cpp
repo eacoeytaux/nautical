@@ -31,10 +31,18 @@ void Polygon::init(Queue<Coordinate> * p_coors, bool checkForConcave) {
     //create polygon
     Iterator<Coordinate> * iterator = p_coors->createIterator();
     Coordinate firstCoor = iterator->current();
+    lowerBoundX.update(firstCoor.getX());
+    lowerBoundY.update(firstCoor.getY());
+    upperBoundX.update(firstCoor.getX());
+    upperBoundY.update(firstCoor.getY());
     Coordinate prevCoor = firstCoor;
     vertices.insert(firstCoor);
     for (iterator->next(); !iterator->complete(); iterator->next()) {
         Coordinate coor = iterator->current();
+        lowerBoundX.update(coor.getX());
+        lowerBoundY.update(coor.getY());
+        upperBoundX.update(coor.getX());
+        upperBoundY.update(coor.getY());
         vertices.insert(coor);
         edges.insert(Line(prevCoor, coor));
         prevCoor = coor;
@@ -145,6 +153,22 @@ Iterator<Polygon> * Polygon::getSubtractedTrianglesIterator() const {
     return subtractedTriangles.createIterator();
 }
 
+double Polygon::getLowerBoundX() const {
+    return lowerBoundX.getValue();
+}
+
+double Polygon::getLowerBoundY() const {
+    return lowerBoundY.getValue();
+}
+
+double Polygon::getUpperBoundX() const {
+    return upperBoundX.getValue();
+}
+
+double Polygon::getUpperBoundY() const {
+    return upperBoundY.getValue();
+}
+
 bool Polygon::contains(Coordinate coor) const {
     for (Iterator<Line> * iterator = convexEdges.createIterator(); !iterator->complete(); iterator->next()) {
         if (!iterator->current().isOnOrBelow(coor))
@@ -163,11 +187,28 @@ bool Polygon::contains(Coordinate coor) const {
 }
 
 bool Polygon::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const {
+    LinkedList<Coordinate> intersections(false);
     for (Iterator<Line> * iterator = edges.createIterator(); !iterator->complete(); iterator->next()) {
-        if (iterator->current().intersects(line), p_intersections)
-            return true;
+        Coordinate intersection;
+        if (iterator->current().intersects(line, &intersection))
+            intersections.insert(intersection);
     }
-    return false;
+    if (intersections.size() == 0)
+        return false;
+    
+    Coordinate origin = line.getCoor1();
+    while (intersections.size() > 0) { //TODO there HAS to be a more efficient way to do this
+        Iterator<Coordinate> * iterator = intersections.createIterator();
+        Coordinate closestCoor = iterator->current();
+        for (iterator->next(); !iterator->complete(); iterator->next()) {
+            Coordinate coor = iterator->current();
+            if (findDistance(origin, coor))
+                closestCoor = coor;
+        }
+        p_intersections->insert(closestCoor);
+        intersections.remove(closestCoor);
+    }
+    return true;
 }
 
 bool Polygon::intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections) const {
@@ -177,7 +218,6 @@ bool Polygon::intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_inter
     }
     return intersects;
 }
-
 
 Polygon & Polygon::move(Vector vector) {
     Queue<Coordinate> newVertices;
@@ -263,6 +303,10 @@ bool Polygon::operator==(const Shape & shape) const {
         }
     }
     return true;
+}
+
+Polygon * Polygon::copyPtr() const {
+    return new Polygon(*this);
 }
 
 bool Polygon::Triangle::operator==(const Triangle & triangle) {

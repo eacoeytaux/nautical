@@ -12,6 +12,7 @@
 #include "LinkedList.hpp"
 #include "Event.hpp"
 #include "Map.hpp"
+#include "DarknessOverlay.hpp"
 
 #define MAX_PRIORITY 4
 #define MAX_BELOW_ALTITUDE 3
@@ -32,6 +33,12 @@ namespace nautical {
         const Map * getMap() const;
         Map * getMap();
         
+        bool isDarknessInEffect() const;
+        World & setDarknessInEffect(bool darkness);
+        float getDarknessOverlayPercentage() const;
+        World & setDarknessOverlayPercentage(float percentage);
+        World & addShapeToDarknessOverlay(Shape * p_shape, int layer);
+        
         World & addObject(WorldObject * p_object, bool shouldUpdate = true, bool shouldDraw = true);
         World & markObjectForRemoval(WorldObject * p_object); //TODO when should object be deleted?
         
@@ -40,7 +47,7 @@ namespace nautical {
         World & unsubscribeObject(std::string eventTag, WorldObject * p_object);
         World & unsubscribeObjects(std::string eventTag, LinkedList<WorldObject*> objects);
         
-        World & sendEvent(Event * p_event);
+        World & handleEvent(Event * p_event);
         
         void generatePath(WorldObject * p_object);
         
@@ -58,6 +65,8 @@ namespace nautical {
         drawTimestamp = 0;
         
         Map map;
+        bool darknessInEffect = false;
+        DarknessOverlay darknessOverlay;
         
         LinkedList<WorldObject*> allObjects,
         objectsToDelete,

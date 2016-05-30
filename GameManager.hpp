@@ -22,14 +22,9 @@ namespace nautical {
         static void switchPause();
         static void setPause(bool pause);
         
-        static int getScreenWidth();
-        static int getScreenHeight();
-        
     private:
         static bool init, //prevents game from re-initialized unnecessarily
         running; //whether or not game is running
-        static int screenWidth,
-        screenHeight;
         
         static void pollEvents(Collection<Event*> & events);
         

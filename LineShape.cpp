@@ -26,14 +26,20 @@ LineShape & LineShape::setLine(Line line) {
     return *this;
 }
 
-LineShape & LineShape::move(Vector vector) {
-    line = Line(line.getCoor1() + vector, line.getCoor2() + vector);
-    return *this;
+double LineShape::getLowerBoundX() const {
+    return line.getCoorLow().getX();
 }
 
-LineShape & LineShape::rotateAboutCoordinate(Angle angle, Coordinate coor) {
-    line.rotateAboutCoordinate(angle, coor);
-    return *this;
+double LineShape::getLowerBoundY() const {
+    return line.getCoorLow().getY();
+}
+
+double LineShape::getUpperBoundX() const {
+    return line.getCoorHigh().getX();
+}
+
+double LineShape::getUpperBoundY() const {
+    return line.getCoorHigh().getY();
 }
 
 bool LineShape::contains(Coordinate coor) const {
@@ -55,8 +61,26 @@ bool LineShape::intersectsShape(const Shape * p_shape, Queue<Coordinate> * inter
     return p_shape->intersectsLine(line, intersections);
 }
 
+LineShape & LineShape::move(Vector vector) {
+    line = Line(line.getCoor1() + vector, line.getCoor2() + vector);
+    return *this;
+}
+
+LineShape & LineShape::rotateAboutCoordinate(Angle angle, Coordinate coor) {
+    line.rotateAboutCoordinate(angle, coor);
+    return *this;
+}
+
 void LineShape::draw() const {
     GraphicsManager::drawLine(line, getColor());
+}
+
+void LineShape::drawFilled() const {
+    draw();
+}
+
+LineShape * LineShape::copyPtr() const {
+    return new LineShape(*this);
 }
 
 bool LineShape::operator==(const Shape & shape) const {

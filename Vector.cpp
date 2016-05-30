@@ -204,20 +204,20 @@ void Vector::draw(int magntitude) const {
 }
 
 void Vector::draw(Coordinate origin, int magnitude) const {
-    GraphicsManager::drawCoordinate(origin, color);
+    GraphicsManager::drawCoordinate(origin, getColor());
     
     if ((fabs(dx) + fabs(dy)) < 0.0001) //account for rounding errors
         return;
     
     Coordinate destination(origin.getX() + (dx * 5), origin.getY() + (dy * 5));
-    GraphicsManager::drawLine(Line(origin.getX(), origin.getY(), destination.getX(), destination.getY()), color);
+    GraphicsManager::drawLine(Line(origin.getX(), origin.getY(), destination.getX(), destination.getY()), getColor());
     
     static int arrowLength = 5;
     Angle angle(M_PI - Angle(dx, dy).getValue());// * ((angle < 0) ? -1 : 1));
     Angle angleMinus = angle - M_PI_4;
     Angle anglePlus = angle + M_PI_4;
-    GraphicsManager::drawLine(Line(destination.getX(), destination.getY(), destination.getX() - angleMinus.getSin(arrowLength), destination.getY() - angleMinus.getCos(arrowLength)), color);
-    GraphicsManager::drawLine(Line(destination.getX(), destination.getY(), destination.getX() + anglePlus.getSin(arrowLength), destination.getY() + anglePlus.getCos(arrowLength)), color);
+    GraphicsManager::drawLine(Line(destination.getX(), destination.getY(), destination.getX() - angleMinus.getSin(arrowLength), destination.getY() - angleMinus.getCos(arrowLength)), getColor());
+    GraphicsManager::drawLine(Line(destination.getX(), destination.getY(), destination.getX() + anglePlus.getSin(arrowLength), destination.getY() + anglePlus.getCos(arrowLength)), getColor());
 }
 
 Vector Vector::operator+(const Vector & vec) const {
