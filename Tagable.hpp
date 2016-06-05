@@ -10,6 +10,8 @@
 #define Tagable_hpp
 
 #include <string>
+
+#include "Utility.hpp"
 #include "LinkedList.hpp"
 
 namespace nautical {
@@ -45,7 +47,7 @@ namespace nautical {
         
         bool hasTag(std::string tag) const {
             for(Iterator<std::string> * iterator = tags.createIterator(); !iterator->complete(); iterator->next()) {
-                if (tag.compare(iterator->current())) {
+                if (stringEqual(tag, iterator->current())) {
                     return true;
                 }
             }

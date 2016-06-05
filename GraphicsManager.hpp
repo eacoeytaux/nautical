@@ -9,12 +9,16 @@
 #ifndef GraphicsManager_hpp
 #define GraphicsManager_hpp
 
+#include <string>
+
 #include "SDL2/SDL.h"
 
+#include "SpriteSheet.hpp"
 #include "Color.hpp"
+#include "Angle.hpp"
 #include "Coordinate.hpp"
 #include "Line.hpp"
-#include "Image.hpp"
+#include "Parabola.hpp"
 
 namespace nautical {
     class GraphicsManager {
@@ -49,9 +53,13 @@ namespace nautical {
         static void setZoomSpeedRatio(float zoomSpeedRatio);
         
         static void drawCoordinate(Coordinate coor, Color color = DEFAULT_COLOR, bool adjust = true);
+        static void drawCoordinate(double x, double y, Color color = DEFAULT_COLOR, bool adjust = true);
         static void drawLine(Line line, Color color = DEFAULT_COLOR, bool adjust = true);
+        static void drawLine(double x1, double y1, double x2, double y2, Color color = DEFAULT_COLOR, bool adjust = true);
+        static void drawParabola(Parabola parabola, Color color = DEFAULT_COLOR, bool adjust = true);
         
-        Image * createImage(std::string filePath, int scale = 1);
+        static SpriteSheet * loadSpriteSheet(std::string filePath, int widthCount, int heightCount, int scale = 1);
+        static void drawImageFromSpriteSheet(const SpriteSheet * p_sheet, int frame, Coordinate coor, Angle angle, bool flipHorizontal, bool flipVertical, int alpha = 255, bool adjust = true);
         
     private:
         static SDL_Renderer * p_renderer;

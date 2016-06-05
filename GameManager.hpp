@@ -1,5 +1,5 @@
 //
-//  GameManager.hpppp
+//  GameManager.hpp
 //  Nautical
 //
 //  Created by Ethan Coeytaux on 9/23/15.

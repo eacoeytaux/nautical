@@ -9,45 +9,81 @@
 #ifndef Rope_hpp
 #define Rope_hpp
 
+#include "WorldObject.hpp"
 #include "StateMachine.hpp"
-#include "Updatable.hpp"
-#include "Drawable.hpp"
 
 #include "Coordinate.hpp"
 #include "Line.hpp"
 #include "Parabola.hpp"
 #include "Path.hpp"
+#include "Vector.hpp"
 
 namespace climber {
-    class Rope : public nautical::StateMachine, public nautical::Updatable, public nautical::Drawable {
+    class Player;
+    
+    class Rope : public nautical::WorldObject, public nautical::StateMachine { //TODO is rope is taught it should move with player
     public:
         enum State {
             EXTENDING,
-            RETRACTING,
             SET,
-            TAUGHT
+            RETRACTING
         };
         
-        Rope(nautical::Coordinate * p_origin, nautical::Coordinate * p_head, double length = 0);
+        Rope(Player * p_parent, nautical::Coordinate origin, double length, nautical::Angle extendAngle, double extendSpeed, double retractSpeed);
         virtual ~Rope();
         
         nautical::Coordinate getOrigin() const;
+        Rope & setOrigin(nautical::Coordinate origin);
         nautical::Coordinate getHead() const;
+        Rope & setHead(nautical::Coordinate head);
         double getLength() const;
         void setLength(double length);
+        bool isTaught() const;
+        
+        bool setState(int state);
         
         void update();
         void draw() const;
         
     private:
-        double length;
-        nautical::Coordinate * p_origin, //origin of Rope
-        * p_head;
-        nautical::Angle hookAngle;
+        /*struct Segment { //TODO
+            double length;
+            virtual void draw() const;
+        };
         
+        struct LineSegment : public Segment {
+            nautical::Line line;
+            void draw() const;
+        };
+        
+        struct ParabolaSegment : public Segment {
+            nautical::Parabola parabola;
+            void draw() const;
+        };
+        
+        struct WaveSegment : public Segment {
+            nautical::Path wave;
+            void draw() const;
+        };
+        
+        nautical::LinkedList<Segment*> segments;*/
+        
+        Player * p_parent = nullptr;
+        nautical::Coordinate origin, //origin of Rope
+        head;
+        double length;
+        bool taught;
+        double extendSpeed,
+        retractSpeed;
+        nautical::Angle extendAngle; //only is rope is extending
+        nautical::Angle hookAngle;
+        bool shouldRetract = false, //bool used to note is grapple should retract once done extending
+        overrideRetract = false; //bool used to signal when it is actually time to retract rope
         nautical::Line line;
         nautical::Parabola parabola;
         nautical::Path wave;
+        
+        bool openState(int state);
     };
 }
 

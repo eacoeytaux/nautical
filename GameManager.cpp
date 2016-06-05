@@ -18,6 +18,7 @@
 #include "Queue.hpp"
 #include "Coordinate.hpp"
 #include "KeyboardEvent.hpp"
+#include "MouseEvent.hpp"
 
 //TODO remove these includes
 #include "World.hpp"
@@ -134,7 +135,8 @@ void GameManager::run() {
     
     reset = false;
     running = true;
-    unsigned int start = 0, end = 0, elapsed = 0, accumulator = 0;
+    unsigned int start = 0,
+    elapsed = 0;
     
     Queue<Event*> events;
     World level;
@@ -151,10 +153,6 @@ void GameManager::run() {
     
     while (running) {
         start = SDL_GetTicks();
-        elapsed = start - end;
-        end = start;
-        
-        accumulator += elapsed;
         
         events.clear();
         pollEvents(events);
@@ -168,8 +166,6 @@ void GameManager::run() {
         if (DEBUG_MODE)
             runTests();
         
-        accumulator -= targetTime;
-        
         GraphicsManager::updateCenter();
         GraphicsManager::updateZoom();
         
@@ -180,8 +176,7 @@ void GameManager::run() {
         SDL_SetRenderDrawColor(p_renderer, 0, 0, 0, 255);
         SDL_RenderClear(p_renderer);
         
-        end = SDL_GetTicks();
-        long elapsed = end - start;
+        long elapsed = SDL_GetTicks() - start;
         long wait = (targetTime - elapsed);
         if (wait >= 0) {
             usleep((useconds_t)(wait * 1000));
@@ -211,7 +206,21 @@ void GameManager::pollEvents(Collection<Event*> & events) {
             }
             case SDL_MOUSEMOTION: {
                 GraphicsManager::setMouseCoor(Coordinate(event.motion.x, event.motion.y));
-                printf("mouse at world location: %d:%d\n", (int)GraphicsManager::getMouseCoor().getX(), (int)GraphicsManager::getMouseCoor().getY());
+                //printf("mouse at world location: %d:%d\n", (int)GraphicsManager::getMouseCoor().getX(), (int)GraphicsManager::getMouseCoor().getY());
+                break;
+            }
+            case SDL_MOUSEBUTTONDOWN: {
+                if (event.button.button == SDL_BUTTON_LEFT)
+                    events.insert(new MouseEvent(MouseEvent::LEFT_BUTTON_PRESS));
+                else if (event.button.button == SDL_BUTTON_RIGHT)
+                    events.insert(new MouseEvent(MouseEvent::RIGHT_BUTTON_PRESS));
+                break;
+            }
+            case SDL_MOUSEBUTTONUP: {
+                if (event.button.button == SDL_BUTTON_LEFT)
+                    events.insert(new MouseEvent(MouseEvent::LEFT_BUTTON_RELEASE));
+                else if (event.button.button == SDL_BUTTON_RIGHT)
+                    events.insert(new MouseEvent(MouseEvent::RIGHT_BUTTON_RELEASE));
                 break;
             }
             case SDL_KEYDOWN: {

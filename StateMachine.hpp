@@ -19,20 +19,22 @@ namespace nautical {
         
         int getState() const { return currentState; }
         
-        StateMachine & setState(int state) {
-            if (!closeState(state))
-                Logger::writeLog(WARNING, "StateMachine::setState(): could not close current state");
-            else if (!openState(state))
-                Logger::writeLog(WARNING, "StateMachine::setState(): could not open next state");
-            else
+        virtual bool setState(int state) {
+            if (!closeState(state)) {
+                Logger::writeLog(ERROR, "StateMachine::setState(): could not close current state");
+                return false;
+            } else if (!openState(state)) {
+                Logger::writeLog(ERROR, "StateMachine::setState(): could not open next state");
+                return false;
+            } else {
                 currentState = state;
-            
-            return *this;
+                return true;
+            }
         }
         
     protected:
-        virtual bool closeState(int state) { return true; }
         virtual bool openState(int state) { return true; }
+        virtual bool closeState(int state) { return true; }
         
     private:
         int currentState;

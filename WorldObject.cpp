@@ -151,7 +151,9 @@ WorldObject & WorldObject::unsubscribeEvent(std::string eventTag) {
     return *this;
 }
 
-void WorldObject::handleEvent(Event * p_event) { }
+bool WorldObject::handleEvent(Event * p_event) {
+    return true;
+}
 
 Iterator<std::string> * WorldObject::getSubscribedEventTagsIterator() const {
     return subscribedEventTags.createIterator();

@@ -13,6 +13,7 @@
 #include "Drawable.hpp"
 #include "Tagable.hpp"
 
+#include "SpriteSheet.hpp"
 #include "Utility.hpp"
 #include "LinkedList.hpp"
 #include "Coordinate.hpp"
@@ -60,7 +61,7 @@ namespace nautical {
         WorldObject & unsubscribeEvent(std::string eventTag);
         Iterator<std::string> * getSubscribedEventTagsIterator() const;
         
-        virtual void handleEvent(Event * p_event);
+        virtual bool handleEvent(Event * p_event); //returns whether or not object did something with event
         
         bool isSpectral() const;
         WorldObject & setSpectral(bool spectral);

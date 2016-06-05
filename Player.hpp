@@ -11,21 +11,28 @@
 
 #include "Mob.hpp"
 
+#include "Rope.hpp"
+
 namespace climber {
     class Player : public nautical::Mob {
     public:
         Player(nautical::Coordinate pos);
         virtual ~Player();
         
+        Rope * getRope();
+        Player & setRope(Rope * p_rope);
+        
         Player & move(nautical::Vector vec);
         
-        void handleEvent(nautical::Event * p_event);
+        bool handleEvent(nautical::Event * p_event);
         
         void update();
         void draw() const;
         
     private:
-        nautical::Rectangle trap;
+        nautical::Rectangle trap; //used to center camera on player
+        
+        Rope * p_rope = nullptr;
     };
 }
 

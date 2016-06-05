@@ -18,13 +18,14 @@ using namespace climber;
 Flame::Flame(nautical::Coordinate pos) :
 WorldObject(pos) {
     appendTag(FLAME_TAG);
+    p_sheet = GraphicsManager::loadSpriteSheet("spritesheets/fire-particles.png", 2, 1, 10);
 }
 
 Flame::~Flame() {
-    for (Iterator<Shape*> * iterator = orangeParticles.createIterator(); !iterator->complete(); iterator->next()) {
+    for (Iterator<Spark*> * iterator = orangeParticles.createIterator(); !iterator->complete(); iterator->next()) {
         delete iterator->current();
     }
-    for (Iterator<Shape*> * iterator = yellowParticles.createIterator(); !iterator->complete(); iterator->next()) {
+    for (Iterator<Spark*> * iterator = yellowParticles.createIterator(); !iterator->complete(); iterator->next()) {
         delete iterator->current();
     }
     for (Iterator<Origin*> * iterator = origins.createIterator(); !iterator->complete(); iterator->next()) {
@@ -42,84 +43,97 @@ Flame & Flame::addOrigin(double flameWidth, nautical::Vector offset) {
 
 void Flame::update() {
     for (Iterator<Origin*> * iterator = origins.createIterator(); !iterator->complete(); iterator->next()) {
-        updateOrigin(iterator->current());
-    }
-    
-    LinkedList<Rectangle*> particlesToDelete;
-    for (Iterator<Shape*> * iterator = orangeParticles.createIterator(); !iterator->complete(); iterator->next()) {
-        Rectangle * p_particle = static_cast<Rectangle*>(iterator->current());
-        p_particle->move(Vector(Angle(Random::getRandFloat(M_PI_2) + M_PI_4), Random::getRandFloat(0.5) + 0.5)).setWidth(p_particle->getWidth() * 0.97).setHeight(p_particle->getHeight() * 0.97);
-        Color particleColor = p_particle->getColor();
-        p_particle->setColor(particleColor.setA(particleColor.getA() - FADE_SPEED));
-        if ((p_particle->getWidth() < (1 / GraphicsManager::getZoom())) || (particleColor.getA() <= FADE_SPEED))
-            particlesToDelete.insert(p_particle);
-    }
-    for (Iterator<Rectangle*> * iterator = particlesToDelete.createIterator(); !iterator->complete(); iterator->next()) {
-        Rectangle * p_particle = iterator->current();
-        orangeParticles.remove(p_particle);
-        delete p_particle;
-    }
-    
-    particlesToDelete.clear();
-    for (Iterator<Shape*> * iterator = yellowParticles.createIterator(); !iterator->complete(); iterator->next()) {
-        Rectangle * p_particle = static_cast<Rectangle*>(iterator->current());
-        p_particle->move(Vector(Angle(Random::getRandFloat(M_PI_2) + M_PI_4), Random::getRandFloat(0.5) + 0.5)).setWidth(p_particle->getWidth() * 0.97).setHeight(p_particle->getHeight() * 0.97);
-        Color particleColor = p_particle->getColor();
-        p_particle->setColor(particleColor.setA(particleColor.getA() - FADE_SPEED));
-        if ((p_particle->getWidth() < (1 / GraphicsManager::getZoom())) || (particleColor.getA() <= FADE_SPEED))
-            particlesToDelete.insert(p_particle);
-    }
-    for (Iterator<Rectangle*> * iterator = particlesToDelete.createIterator(); !iterator->complete(); iterator->next()) {
-        Rectangle * p_particle = iterator->current();
-        yellowParticles.remove(p_particle);
-        delete p_particle;
-    }
-    
-    Circle * p_circle = new Circle(getCenter(), 100);
-    static Countdown count(1);
-    static Vector moveVec[DARKNESS_LAYERS];
-    if (count.check()) {
-        for (int i = 0; i < DARKNESS_LAYERS; i++) {
-            moveVec[i] = Vector(Angle(Random::getRandFloat(M_PI * 2)), Random::getRandFloat(2));
+        Origin * p_origin = iterator->current();
+        
+        //orange particles
+        if (p_origin->orangeCountdown.check()) {
+            Spark * p_spark = new Spark;
+            p_spark->center = p_origin->origin;
+            p_spark->width = p_origin->flameWidth * (Random::getRandFloat(0.3) + 0.7);
+            p_spark->alpha = 255;
+            orangeParticles.insert(p_spark);
+            p_origin->orangeCountdown.reset(5 + Random::getRandInt(5));
         }
-        count.reset();
+        
+        //yellow particles
+        if (p_origin->yellowCountdown.check()) {
+            Spark * p_spark = new Spark;
+            p_spark->center = p_origin->origin;
+            p_spark->width = p_origin->flameWidth * (Random::getRandFloat(0.2) + 0.3);
+            p_spark->alpha = 255;
+            yellowParticles.insert(p_spark);
+            p_origin->yellowCountdown.reset(7 + Random::getRandInt(5));
+        }
     }
-    for (int i = 0; i < DARKNESS_LAYERS; i++) {
-        Circle * p_circleToAdd = new Circle(*p_circle);
-        p_circleToAdd->move(moveVec[i]);
-        getParent()->addShapeToDarknessOverlay(p_circleToAdd, i);
-        p_circle->setRadius(p_circle->getRadius() + 10);
-    }
-}
-
-void Flame::updateOrigin(Origin * p_origin) {
-    static Color fireColorOrange(255, 127, 0);
-    static Color fireColorYellow(255, 255, 0);
     
     //orange particles
-    if (p_origin->orangeCountdown.check()) {
-        double flameWidth = p_origin->flameWidth * (Random::getRandFloat(0.3) + 0.7);
-        Rectangle * p_particle = new Rectangle(p_origin->origin, flameWidth, flameWidth, M_PI_4);
-        p_particle->setColor(fireColorOrange);
-        orangeParticles.insert(p_particle);
-        p_origin->orangeCountdown.reset(5 + Random::getRandInt(5));
+    LinkedList<Spark*> sparksToDelete;
+    for (Iterator<Spark*> * iterator = orangeParticles.createIterator(); !iterator->complete(); iterator->next()) {
+        Spark * p_spark = iterator->current();
+        
+        p_spark->center += (Vector(Angle(Random::getRandFloat(M_PI_2) + M_PI_4), Random::getRandFloat(0.5) + 0.5));
+        p_spark->width *= 0.97;
+        p_spark->alpha -= FADE_SPEED;
+        
+        if ((p_spark->width < (1 / GraphicsManager::getZoom())) || (p_spark->alpha <= 0))
+            sparksToDelete.insert(p_spark);
+    }
+    for (Iterator<Spark*> * iterator = sparksToDelete.createIterator(); !iterator->complete(); iterator->next()) {
+        Spark * p_spark = iterator->current();
+        orangeParticles.remove(p_spark);
+        delete p_spark;
     }
     
     //yellow particles
-    if (p_origin->yellowCountdown.check()) {
-        double flameWidth = p_origin->flameWidth * (Random::getRandFloat(0.15) + 0.3);
-        Rectangle * p_particle = new Rectangle(p_origin->origin, flameWidth, flameWidth, M_PI_4);
-        p_particle->setColor(fireColorYellow);
-        yellowParticles.insert(p_particle);
-        p_origin->yellowCountdown.reset(7 + Random::getRandInt(5));
+    sparksToDelete.clear();
+    for (Iterator<Spark*> * iterator = yellowParticles.createIterator(); !iterator->complete(); iterator->next()) {
+        Spark * p_spark = iterator->current();
+        
+        p_spark->center += (Vector(Angle(Random::getRandFloat(M_PI_2) + M_PI_4), Random::getRandFloat(0.5) + 0.5));
+        p_spark->width *= 0.97;
+        p_spark->alpha -= FADE_SPEED;
+        
+        if ((p_spark->width < (1 / GraphicsManager::getZoom())) || (p_spark->alpha <= 0))
+            sparksToDelete.insert(p_spark);
+    }
+    for (Iterator<Spark*> * iterator = sparksToDelete.createIterator(); !iterator->complete(); iterator->next()) {
+        Spark * p_spark = iterator->current();
+        yellowParticles.remove(p_spark);
+        delete p_spark;
+    }
+    
+    if (getParent()->isDarknessInEffect()) {
+        Circle * p_circle = new Circle(getCenter(), 100);
+        static Countdown count(1);
+        static Vector moveVec[DARKNESS_LAYERS];
+        if (count.check()) {
+            for (int i = 0; i < DARKNESS_LAYERS; i++) {
+                moveVec[i] = Vector(Angle(Random::getRandFloat(M_PI * 2)), Random::getRandFloat(2));
+            }
+            count.reset();
+        }
+        for (int i = 0; i < DARKNESS_LAYERS; i++) {
+            Circle * p_circleToAdd = new Circle(*p_circle);
+            p_circleToAdd->move(moveVec[i]);
+            getParent()->addShapeToDarknessOverlay(p_circleToAdd, i);
+            p_circle->setRadius(p_circle->getRadius() + 10);
+        }
     }
 }
 
 void Flame::draw() const {
-    for (Iterator<Shape*> * iterator = orangeParticles.createIterator(); !iterator->complete(); iterator->next()) {
-        iterator->current()->drawFilled();
-    }
-    for (Iterator<Shape*> * iterator = yellowParticles.createIterator(); !iterator->complete(); iterator->next()) {
-        iterator->current()->drawFilled();
+    static Angle rotationAngle(M_PI_4);
+    
+    if (p_sheet) {
+        for (Iterator<Spark*> * iterator = orangeParticles.createIterator(); !iterator->complete(); iterator->next()) {
+            Spark * p_spark = iterator->current();
+            p_sheet->setScale(p_spark->width);
+            GraphicsManager::drawImageFromSpriteSheet(p_sheet, 0, p_spark->center, rotationAngle, false, false, p_spark->alpha);
+        }
+        for (Iterator<Spark*> * iterator = yellowParticles.createIterator(); !iterator->complete(); iterator->next()) {
+            Spark * p_spark = iterator->current();
+            p_sheet->setScale(p_spark->width);
+            GraphicsManager::drawImageFromSpriteSheet(p_sheet, 1, p_spark->center, rotationAngle, false, false, p_spark->alpha);
+        }
     }
 }

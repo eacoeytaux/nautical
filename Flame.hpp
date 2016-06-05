@@ -28,8 +28,7 @@ namespace climber {
         void draw() const;
         
     private:
-        nautical::LinkedList<nautical::Shape*> orangeParticles;
-        nautical::LinkedList<nautical::Shape*> yellowParticles;
+        nautical::SpriteSheet * p_sheet = nullptr;
         
         struct Origin {
             nautical::Coordinate origin;
@@ -39,7 +38,13 @@ namespace climber {
         };
         nautical::LinkedList<Origin*> origins;
         
-        void updateOrigin(Origin * p_origin);
+        struct Spark {
+            nautical::Coordinate center;
+            double width;
+            int alpha;
+        };
+        nautical::LinkedList<Spark*> orangeParticles;
+        nautical::LinkedList<Spark*> yellowParticles;
     };
 }
 

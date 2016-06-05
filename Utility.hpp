@@ -69,10 +69,10 @@ namespace nautical {
     }
     
     template<typename T>
-    void swap(T * p_t1, T * p_t2) { //swaps generic elements
-        T temp = *p_t1;
-        *p_t1 = *p_t2;
-        *p_t2 = temp;
+    void swap(T & t1, T & t2) { //swaps generic elements
+        T temp = t1;
+        t1 = t2;
+        t2 = temp;
     }
 }
 

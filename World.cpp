@@ -359,6 +359,7 @@ void World::update(Collection<Event*> & events) {
         handleEvent(iterator->current());
     }
     
+    //TODO should this happen at end of update loop instead of beginning?
     for (Iterator<WorldObject*> * iterator = objectsToDelete.createIterator(); !iterator->complete(); iterator->next()) {
         removeObject(iterator->current());
     }

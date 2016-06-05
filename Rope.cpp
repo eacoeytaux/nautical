@@ -10,24 +10,42 @@
 
 #include "Circle.hpp"
 #include "Map.hpp"
+#include "Player.hpp"
 
 using namespace nautical;
 using namespace climber;
 
-Rope::Rope(Coordinate * p_origin, Coordinate * p_head, double length) :
+Rope::Rope(Player * p_parent, nautical::Coordinate origin, double length, nautical::Angle extendAngle, double extendSpeed, double retractSpeed) :
+WorldObject(origin),
 StateMachine(EXTENDING),
-p_origin(p_origin),
-p_head(p_head),
-length(length) { }
+p_parent(p_parent),
+origin(origin),
+head(origin),
+length(length),
+extendAngle(extendAngle),
+hookAngle(extendAngle),
+extendSpeed(extendSpeed),
+retractSpeed(retractSpeed) { }
 
 Rope::~Rope() { }
 
 Coordinate Rope::getOrigin() const {
-    return *p_origin;
+    return origin;
+}
+
+Rope & Rope::setOrigin(nautical::Coordinate origin) {
+    this->origin = origin;
+    return *this;
 }
 
 Coordinate Rope::getHead() const {
-    return *p_head;
+    return head;
+}
+
+Rope & Rope::setHead(nautical::Coordinate head) {
+    this->head = head;
+    moveTo(head);
+    return *this;
 }
 
 double Rope::getLength() const {
@@ -38,41 +56,81 @@ void Rope::setLength(double length) {
     this->length = length;
 }
 
-void Rope::update() {
-    if (findDistance(*p_origin, *p_head) > (length - 0.0001)) {
-        setState(TAUGHT);
-        Angle angle = findAngle(*p_origin, *p_head);
-        *p_head = *p_origin + Vector(angle, length);
-        
-        //TODO ensure rope is of proper length by adjusting p_head
+bool Rope::isTaught() const {
+    return taught;
+}
+
+bool Rope::setState(int state) {
+    if (getState() == EXTENDING) {
+        if ((state == RETRACTING) && !overrideRetract) {
+            shouldRetract = true;
+            return true;
+        }
     }
     
+    return StateMachine::setState(state);
+}
+
+bool Rope::openState(int state) {
+    switch (state) {
+        case SET:
+            Angle angle = findAngle(origin, head);
+            head = origin + Vector(angle, length);
+            break;
+    }
+    return true;
+}
+
+void Rope::update() {
     switch (getState()) {
         case EXTENDING: {
-            wave = Path(*p_origin);
-            hookAngle = findAngle(*p_origin, *p_head);
-            double distance = findDistance(*p_origin, *p_head);
-            Coordinate lastCoor = *p_origin;
+            head += Vector(extendAngle, extendSpeed);
+            if (findDistance(origin, head) > (length - 0.0001)) {
+                setState((overrideRetract = shouldRetract) ? RETRACTING : SET);
+            }
+            
+            wave = Path(origin);
+            Angle angle = findAngle(origin, head);
+            double distance = findDistance(origin, head);
+            Coordinate lastCoor = origin;
             for (double x = 0; x < distance; x++) {
-                //Coordinate coor = *p_origin + Vector(x, sin((8 * (length / distance)) * x) * ((64 * (distance - x)) / distance)); //save this, this is awesome
+                //Coordinate coor = origin + Vector(x, sin((8 * (length / distance)) * x) * ((64 * (distance - x)) / distance)); //TODO save this, this is awesome
                 double amplitude = 16 * (1 - (x / distance));// * cos(distance / 64);
                 double angularFrequency = ((((length - distance) / 3) + 1) / length);
-                Coordinate coor = *p_origin + Vector(x, amplitude * sin((angularFrequency * x) + (M_PI * 5))).rotate(hookAngle);
+                Coordinate coor = origin + Vector(x, amplitude * sin((angularFrequency * x) + (M_PI * 5))).rotate(angle);
                 wave.addVector(Vector(lastCoor, coor));
                 lastCoor = coor;
             }
             break;
-        } case RETRACTING: {
-            parabola = Parabola(*p_origin, *p_head, length);
-            break;
         } case SET: {
-            parabola = Parabola(*p_origin, *p_head, length);
+            double originHeadDistance = findDistance(origin, head);
+            if (originHeadDistance > (length - 0.0001))
+                taught = true;
+            else if (originHeadDistance < (length - 0.0001))
+                taught = false;
             break;
-        } case TAUGHT: {
-            line = Line(*p_origin, *p_head);
+        } case RETRACTING: {
+            if (length <= retractSpeed) {
+                getParent()->markObjectForRemoval(this);
+                p_parent->setRope(nullptr);
+            } else {
+                length -= retractSpeed;
+                if (taught) {
+                    head += Vector(findAngle(head, origin), retractSpeed);
+                    hookAngle = findAngle(origin, head);
+                } else {
+                    double parabolaLengthDifference = findDistance(origin, head) - length;
+                    if ((taught = (parabolaLengthDifference > 0))) { //purposely setting taught to result of equation
+                        head += Vector(findAngle(head, origin), retractSpeed - parabolaLengthDifference);
+                        hookAngle = findAngle(origin, head);
+                    }
+                }
+            }
             break;
         }
     }
+    line = Line(origin, head);
+    parabola = Parabola(origin, head, length);
 }
 
 void Rope::draw() const {
@@ -80,24 +138,27 @@ void Rope::draw() const {
         case EXTENDING: {
             wave.draw();
             break;
-        } case RETRACTING: {
-            //parabola.setColor(WHITE).draw(); TODO add to GraphicsManager
-            break;
         } case SET: {
-            Circle(*p_head, length).setColor(Color(WHITE).setA(64)).draw(); //for debugging
-            //parabola.setColor(WHITE).draw();
+            Circle(head, length).setColor(Color(WHITE).setA(64)).draw(); //for debugging
+            if (taught)
+                GraphicsManager::drawLine(line, Color(255, 153, 153));
+            else
+                GraphicsManager::drawParabola(parabola, WHITE);
             break;
-        } case TAUGHT: {
-            Circle(*p_head, length).setColor(Color(WHITE).setA(64)).draw(); //for debugging
-            GraphicsManager::drawLine(line, Color(255, 153, 153));
+        } case RETRACTING: {
+            if (taught)
+                GraphicsManager::drawLine(line, WHITE);
+            else
+                GraphicsManager::drawParabola(parabola, WHITE);
             break;
         }
     }
     
+    //draw hook
     static int arrowLength = 5;
     Angle angle(M_PI - hookAngle.getValue());// * ((angle < 0) ? -1 : 1));
     Angle angleMinus = angle - M_PI_4;
     Angle anglePlus = angle + M_PI_4;
-    GraphicsManager::drawLine(Line(p_head->getX(), p_head->getY(), p_head->getX() - angleMinus.getSin(arrowLength), p_head->getY() - angleMinus.getCos(arrowLength)), getColor());
-    GraphicsManager::drawLine(Line(p_head->getX(), p_head->getY(), p_head->getX() + anglePlus.getSin(arrowLength), p_head->getY() + anglePlus.getCos(arrowLength)), getColor());
+    GraphicsManager::drawLine(Line(head.getX(), head.getY(), head.getX() - angleMinus.getSin(arrowLength), head.getY() - angleMinus.getCos(arrowLength)), getColor());
+    GraphicsManager::drawLine(Line(head.getX(), head.getY(), head.getX() + anglePlus.getSin(arrowLength), head.getY() + anglePlus.getCos(arrowLength)), getColor());
 }

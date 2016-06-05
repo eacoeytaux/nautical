@@ -3,7 +3,9 @@ nautical game engine
 
 To switch between DEBUG_MODE, press enter
 
-Zoom with period and comma
+Zoom with ',' and '.'
+
+Turn on darkness with 'O'
 
 
 TODOs:

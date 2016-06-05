@@ -12,7 +12,9 @@ using namespace nautical;
 
 KeyboardEvent::KeyboardEvent(KeyboardAction action, Key key) :
 action(action),
-key(key) { }
+key(key) {
+    appendTag(KEYBOARD_EVENT_TAG);
+}
 
 KeyboardEvent::~KeyboardEvent() { }
 

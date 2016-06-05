@@ -9,8 +9,6 @@
 #ifndef __Nautical__Parabola__
 #define __Nautical__Parabola__
 
-#include "Drawable.hpp" //base class
-
 #include "Coordinate.hpp"
 #include "Line.hpp"
 
@@ -27,12 +25,9 @@ namespace nautical {
         Coordinate getRightCoor() const;
         double getLength() const;
         
+        double calculateY(double x) const;
         bool inRangeX(double x) const;
-        Coordinate getCoor(double x) const;
-        
         bool intersects(Line line, Coordinate * p_intersection = nullptr) const;
-        
-        void draw() const;
         
         static double calculateArcLength(double a, double b, double c, double x1, double y1, double x2, double y2); //calculates arc length of parabola a(x^2) + bx + c between x1 and x2
         static double calculateArcLength(double b, double h); //calculates arc length from vertex to coordinate given base (dx) and height (dy)
