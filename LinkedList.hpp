@@ -65,7 +65,10 @@ namespace nautical {
             IteratorDerived(const LinkedList<T> * list, bool selfDestruct = true);
         };
         
-        Node * headNode = nullptr;
+    private:
+        Node * headNode = nullptr,
+        * tailNode = nullptr;
+        mutable Node * lastNode = nullptr; //last node accessed (most likely to be next accessed)
     };
     
     /* function definitions - not in seperate file because of template class */
@@ -95,7 +98,7 @@ namespace nautical {
             delete nodeToDelete;
         }
         
-        headNode = nullptr;
+        headNode = tailNode = lastNode = nullptr;
         
         Collection<T>::sizeVal = 0;
         return true;
@@ -110,13 +113,14 @@ namespace nautical {
         LinkedList<T>::Node * newNode = new Node(element);
         
         if (headNode == nullptr) {
-            headNode = newNode;
+            headNode = tailNode = newNode;
         } else {
-            LinkedList<T>::Node * traversalNode;
-            for (traversalNode = headNode; traversalNode->next; traversalNode = traversalNode->next);
-            traversalNode->next = newNode;
-            newNode->prev = traversalNode;
+            tailNode->next = newNode;
+            newNode->prev = tailNode;
+            tailNode = newNode;
         }
+        
+        lastNode = newNode;
         
         Collection<T>::sizeVal++;
         return true;
@@ -131,12 +135,14 @@ namespace nautical {
         LinkedList<T>::Node * newNode = new Node(element);
         
         if (headNode == nullptr) {
-            headNode = newNode;
+            headNode = tailNode = newNode;
         } else {
             headNode->prev = newNode;
             newNode->next = headNode;
             headNode = newNode;
         }
+        
+        lastNode = newNode;
         
         Collection<T>::sizeVal++;
         return true;
@@ -149,7 +155,30 @@ namespace nautical {
             return false;
         }
         
-        if (headNode->element == element) {
+        if (lastNode->element == element) {
+            Node * toDelete = lastNode;
+            if (lastNode == headNode) {
+                if (tailNode == headNode) //ensures tailNode is properly set to nullptr
+                    tailNode = nullptr;
+                headNode = headNode->next;
+                if (headNode)
+                    headNode->prev = nullptr;
+            } else if (lastNode == tailNode) {
+                tailNode->prev->next = nullptr;
+                tailNode = tailNode->prev;
+            } else {
+                lastNode->prev->next = lastNode->next; //lastNode is not headNode or tailNode so prev and next should not be nullptrs
+                lastNode->next->prev = lastNode->prev;
+            }
+            lastNode = nullptr;
+            delete toDelete;
+            
+            Collection<T>::sizeVal--;
+            return true;
+        } else if (headNode->element == element) {
+            if (tailNode == headNode) //ensures tailNode is properly set to nullptr
+                tailNode = nullptr;
+            
             Node * toDelete = headNode;
             headNode = headNode->next;
             if (headNode)
@@ -158,18 +187,26 @@ namespace nautical {
             
             Collection<T>::sizeVal--;
             return true;
-        }
-        
-        for (Node * tempNode = headNode; tempNode->next; tempNode = tempNode->next) {
-            if (tempNode->next->element == element) {
-                Node * toDelete = tempNode->next;
-                tempNode->next = tempNode->next->next;
-                if (tempNode->next)
-                    tempNode->next->prev = tempNode;
-                delete toDelete;
-                
-                Collection<T>::sizeVal--;
-                return true;
+        } else if (tailNode->element == element) {
+            Node * toDelete = tailNode;
+            tailNode->prev->next = nullptr;
+            tailNode = tailNode->prev;
+            delete toDelete;
+            
+            Collection<T>::sizeVal--;
+            return true;
+        } else {
+            for (Node * tempNode = headNode; tempNode->next; tempNode = tempNode->next) {
+                if (tempNode->next->element == element) {
+                    Node * toDelete = tempNode->next;
+                    tempNode->next = tempNode->next->next;
+                    if (tempNode->next)
+                        tempNode->next->prev = tempNode;
+                    delete toDelete;
+                    
+                    Collection<T>::sizeVal--;
+                    return true;
+                }
             }
         }
         
@@ -179,9 +216,16 @@ namespace nautical {
     
     template<typename T>
     bool LinkedList<T>::contains(T element) const {
-        for (Node * tempNode = headNode; tempNode != nullptr; tempNode = tempNode->next) {
-            if (tempNode->element == element)
+        if (lastNode) {
+            if (lastNode->element == element)
                 return true;
+        }
+        
+        for (Node * tempNode = headNode; tempNode != nullptr; tempNode = tempNode->next) {
+            if (tempNode->element == element) {
+                lastNode = tempNode;
+                return true;
+            }
         }
         return false;
     }
@@ -193,13 +237,13 @@ namespace nautical {
             return false;
         }
         
-        Node * tempNode = headNode;
+        lastNode = headNode;
         while (index > 0) {
-            tempNode = tempNode->next;
+            lastNode = lastNode->next;
             index--;
         }
         if (p_element)
-            *p_element = tempNode->element;
+            *p_element = lastNode->element;
         return true;
     }
     
@@ -208,6 +252,7 @@ namespace nautical {
         if (headNode) {
             if (p_element)
                 *p_element = headNode->element;
+            lastNode = headNode;
             return true;
         } else {
             return false;
@@ -215,8 +260,15 @@ namespace nautical {
     }
     
     template<typename T>
-    bool LinkedList<T>::getLastElement(T * p_element) const { //TODO make this tailNode when added
-        return getElementByIndex(Collection<T>::sizeVal - 1, p_element);
+    bool LinkedList<T>::getLastElement(T * p_element) const {
+        if (tailNode) {
+            if (p_element)
+                *p_element = tailNode->element;
+            lastNode = tailNode;
+            return true;
+        } else {
+            return false;
+        }
     }
     
     template<typename T>
@@ -254,7 +306,7 @@ namespace nautical {
     
     template<typename T>
     LinkedList<T>::IteratorDerived::IteratorDerived(const LinkedList<T> * list, bool selfDestruct) :
-    Iterator<T>(selfDestruct), 
+    Iterator<T>(selfDestruct),
     list(list) {
         first();
     }

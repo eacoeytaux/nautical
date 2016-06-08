@@ -19,6 +19,7 @@
 #include "Coordinate.hpp"
 #include "Vector.hpp"
 #include "Rectangle.hpp"
+#include "MapHitbox.hpp"
 #include "World.hpp"
 
 namespace nautical {
@@ -27,22 +28,14 @@ namespace nautical {
     class WorldObject : public Updatable, public Drawable, public Tagable {
     public:
         WorldObject(Coordinate pos);
+        WorldObject(const WorldObject & other);
         virtual ~WorldObject();
         
         World * getParent() const;
         WorldObject & setParent(World * p_parent);
         Coordinate getCenter() const;
-        double getMapWidth() const;
-        WorldObject & setMapWidth(double width);
-        double getMapHeight() const;
-        WorldObject & setMapHeight(double height);
-        Angle getMapAngle() const;
-        WorldObject & setMapAngle(Angle angle);
-        Rectangle getHitbox() const;
-        MapElement * getMapElement() const;
-        WorldObject & setMapElement(MapElement * p_element);
-        MapElement::ObjectPos getObjectPos() const;
-        WorldObject & setObjectPos(MapElement::ObjectPos objPos);
+        MapHitbox * getMapHitbox() const; //should delete pointer after use
+        WorldObject & setMapHitbox(MapHitbox * p_hitbox); //should delete pointer after use
         Vector getForce() const;
         WorldObject & setForce(Vector force);
         WorldObject & addToForce(Vector force);
@@ -78,10 +71,7 @@ namespace nautical {
         int altitude = -MAX_BELOW_ALTITUDE;
         
         Coordinate center;
-        double mapWidth, mapHeight;
-        Angle mapAngle;
-        MapElement * p_element = nullptr;
-        MapElement::ObjectPos objPos = MapElement::UNDEFINED;
+        MapHitbox * p_hitbox = nullptr;
         Vector force, vel;
         
         LinkedList<WorldObject*> attachedObjects;

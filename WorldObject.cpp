@@ -13,12 +13,25 @@ using namespace nautical;
 WorldObject::WorldObject(Coordinate pos) :
 center(pos) {
     appendTag(WORLD_OBJECT_TAG);
-    
     force.setOrigin(center);
     vel.setOrigin(center);
 }
 
-WorldObject::~WorldObject() { }
+WorldObject::WorldObject(const WorldObject & other) :
+p_parent(other.p_parent),
+spectral(other.spectral),
+priority(other.priority),
+altitude(other.altitude),
+center(other.center),
+p_hitbox(other.p_hitbox->copyPtr()),
+force(other.force),
+vel(other.vel),
+attachedObjects(other.attachedObjects),
+subscribedEventTags(other.subscribedEventTags) { }
+
+WorldObject::~WorldObject() {
+    delete p_hitbox;
+}
 
 World * WorldObject::getParent() const {
     return p_parent;
@@ -33,52 +46,12 @@ Coordinate WorldObject::getCenter() const {
     return center;
 }
 
-double WorldObject::getMapWidth() const {
-    return mapWidth;
+MapHitbox * WorldObject::getMapHitbox() const {
+    return p_hitbox->copyPtr();
 }
 
-WorldObject & WorldObject::setMapWidth(double width) {
-    mapWidth = width;
-    return *this;
-}
-
-double WorldObject::getMapHeight() const {
-    return mapHeight;
-}
-
-WorldObject & WorldObject::setMapHeight(double height) {
-    mapHeight = height;
-    return *this;
-}
-
-Angle WorldObject::getMapAngle() const {
-    return mapAngle;
-}
-
-WorldObject & WorldObject::setMapAngle(Angle angle) {
-    mapAngle = angle;
-    return *this;
-}
-
-Rectangle WorldObject::getHitbox() const {
-    return Rectangle(center, mapWidth, mapHeight, mapAngle);
-}
-
-MapElement * WorldObject::getMapElement() const {
-    return p_element;
-}
-
-WorldObject & WorldObject::setMapElement(MapElement * p_element) {
-    this->p_element = p_element;
-    return *this;
-}
-
-MapElement::ObjectPos WorldObject::getObjectPos() const {
-    return objPos;
-}
-
-WorldObject & WorldObject::setObjectPos(MapElement::ObjectPos objPos) {
-    this->objPos = objPos;
+WorldObject & WorldObject::setMapHitbox(MapHitbox * p_hitbox) {
+    this->p_hitbox = p_hitbox->copyPtr();
     return *this;
 }
 
@@ -116,6 +89,7 @@ WorldObject & WorldObject::moveTo(Coordinate coor) {
 }
 
 WorldObject & WorldObject::move(Vector vec) {
+    p_hitbox->move(vec);
     center += vec;
     force.setOrigin(center);
     vel.setOrigin(center);

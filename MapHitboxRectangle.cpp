@@ -13,9 +13,17 @@
 
 using namespace nautical;
 
-MapHitboxRectangle::MapHitboxRectangle(Rectangle rec) : rec(rec) { }
+MapHitboxRectangle::MapHitboxRectangle(Rectangle rec) : rec(rec) {
+    center = rec.getCenter();
+}
 
 MapHitboxRectangle::~MapHitboxRectangle() { }
+
+MapHitboxRectangle & MapHitboxRectangle::move(Vector vec) {
+    MapHitbox::move(vec);
+    rec.move(vec);
+    return *this;
+}
 
 Shape * MapHitboxRectangle::getShape() const {
     return new Rectangle(rec);
@@ -27,6 +35,7 @@ Rectangle MapHitboxRectangle::getRectangle() const {
 
 MapHitboxRectangle & MapHitboxRectangle::setRectangle(Rectangle rec) {
     this->rec = rec;
+    center = rec.getCenter();
     return *this;
 }
 
@@ -174,4 +183,8 @@ MapCatch MapHitboxRectangle::getCatchBack(const MapEdge * p_edge) const {
     Coordinate center = p_edge->getVertexBack()->getCoor();
     Vector offset = getOffset(p_edge);
     return MapCatch(center + offset, Line(center, center + (offset * 2)), (MapElement*)p_edge, (MapElement*)p_edge->getVertexBack());
+}
+
+MapHitboxRectangle * MapHitboxRectangle::copyPtr() const {
+    return new MapHitboxRectangle(*this);
 }

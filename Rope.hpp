@@ -21,6 +21,8 @@
 namespace climber {
     class Player;
     
+    const std::string ROPE_TAG = "rope";
+    
     class Rope : public nautical::WorldObject, public nautical::StateMachine { //TODO is rope is taught it should move with player
     public:
         enum State {

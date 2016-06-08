@@ -12,9 +12,17 @@
 
 using namespace nautical;
 
-MapHitboxCircle::MapHitboxCircle(Circle circle) : circle(circle) { }
+MapHitboxCircle::MapHitboxCircle(Circle circle) : circle(circle) {
+    center = circle.getCenter();
+}
 
 MapHitboxCircle::~MapHitboxCircle() { }
+
+MapHitboxCircle & MapHitboxCircle::move(Vector vec) {
+    MapHitbox::move(vec);
+    circle.move(vec);
+    return *this;
+}
 
 Shape * MapHitboxCircle::getShape() const {
     return new Circle(circle);
@@ -26,6 +34,7 @@ Circle MapHitboxCircle::getCircle() const {
 
 MapHitboxCircle & MapHitboxCircle::setCircle(Circle circle) {
     this->circle = circle;
+    center = circle.getCenter();
     return *this;
 }
 
@@ -70,4 +79,8 @@ MapCatch MapHitboxCircle::getCatchBack(const MapEdge * p_edge) const {
     Coordinate center = p_edge->getVertexBack()->getCoor();
     Vector offset = getOffset(p_edge);
     return MapCatch(center + offset, Line(center, center + (offset * 2)), (MapElement*)p_edge, (MapElement*)p_edge->getVertexBack());
+}
+
+MapHitboxCircle * MapHitboxCircle::copyPtr() const {
+    return new MapHitboxCircle(*this);
 }

@@ -17,6 +17,8 @@ namespace nautical {
         MapHitboxRectangle(Rectangle rec);
         virtual ~MapHitboxRectangle();
         
+        MapHitboxRectangle & move(Vector vec);
+        
         Shape * getShape() const;
         Rectangle getRectangle() const;
         MapHitboxRectangle & setRectangle(Rectangle rec);
@@ -33,6 +35,8 @@ namespace nautical {
         Vector getOffset(const MapEdge * p_edge) const;
         MapCatch getCatchFront(const MapEdge * p_edge) const;
         MapCatch getCatchBack(const MapEdge * p_edge) const;
+        
+        MapHitboxRectangle * copyPtr() const;
         
     private:
         Rectangle rec;

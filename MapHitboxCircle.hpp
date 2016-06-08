@@ -17,6 +17,8 @@ namespace nautical {
         MapHitboxCircle(Circle circle);
         virtual ~MapHitboxCircle();
         
+        MapHitboxCircle & move(Vector vec);
+        
         Shape * getShape() const;
         Circle getCircle() const;
         MapHitboxCircle & setCircle(Circle circle);
@@ -33,6 +35,8 @@ namespace nautical {
         Vector getOffset(const MapEdge * p_edge) const;
         MapCatch getCatchFront(const MapEdge * p_edge) const;
         MapCatch getCatchBack(const MapEdge * p_edge) const;
+        
+        MapHitboxCircle * copyPtr() const;
         
     private:
         Circle circle;

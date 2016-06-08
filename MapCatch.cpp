@@ -8,6 +8,8 @@
 
 #include "MapCatch.hpp"
 
+#include "MapElement.hpp"
+
 using namespace nautical;
 
 MapCatch::MapCatch(Coordinate collision, Line line, MapElement * p_element1, MapElement * p_element2) :
@@ -36,11 +38,11 @@ MapCatch & MapCatch::setLine(Line line) {
     return *this;
 }
 
-bool MapCatch::containsElement(MapElement * p_element) const {
+bool MapCatch::containsElement(const MapElement * p_element) const {
     return ((p_element1 == p_element) || (p_element2 == p_element));
 }
 
-MapElement * MapCatch::getElement(MapElement * p_other) const {
+const MapElement * MapCatch::getElement(const MapElement * p_other) const {
     if (p_element1 == p_other)
         return p_element2;
     else if (p_element2 == p_other)
@@ -49,20 +51,20 @@ MapElement * MapCatch::getElement(MapElement * p_other) const {
         return nullptr;
 }
 
-MapElement * MapCatch::getElement1() const {
+const MapElement * MapCatch::getElement1() const {
     return p_element1;
 }
 
-MapCatch & MapCatch::setElement1(MapElement * p_element) {
+MapCatch & MapCatch::setElement1(const MapElement * p_element) {
     this->p_element1 = p_element;
     return *this;
 }
 
-MapElement * MapCatch::getElement2() const {
+const MapElement * MapCatch::getElement2() const {
     return p_element2;
 }
 
-MapCatch & MapCatch::setElement2(MapElement * p_element) {
+MapCatch & MapCatch::setElement2(const MapElement * p_element) {
     this->p_element2 = p_element;
     return *this;
 }

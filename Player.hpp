@@ -14,6 +14,8 @@
 #include "Rope.hpp"
 
 namespace climber {
+    const std::string PLAYER_TAG = "player";
+    
     class Player : public nautical::Mob {
     public:
         Player(nautical::Coordinate pos);

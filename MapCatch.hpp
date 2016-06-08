@@ -23,19 +23,19 @@ namespace nautical {
         MapCatch & setCollision(Coordinate collision);
         Line getLine() const;
         MapCatch & setLine(Line line);
-        bool containsElement(MapElement * p_element) const;
-        MapElement * getElement(MapElement * p_other) const;
-        MapElement * getElement1() const;
-        MapCatch & setElement1(MapElement * p_element);
-        MapElement * getElement2() const;
-        MapCatch & setElement2(MapElement * p_element);
+        bool containsElement(const MapElement * p_element) const;
+        const MapElement * getElement(const MapElement * p_other) const;
+        const MapElement * getElement1() const;
+        MapCatch & setElement1(const MapElement * p_element);
+        const MapElement * getElement2() const;
+        MapCatch & setElement2(const MapElement * p_element);
         
         bool operator==(const MapCatch & mapCatch) const;
         
     private:
         Coordinate collision;
         Line line;
-        MapElement * p_element1 = nullptr,
+        const MapElement * p_element1 = nullptr,
         * p_element2 = nullptr;
     };
 }

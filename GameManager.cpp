@@ -135,8 +135,6 @@ void GameManager::run() {
     
     reset = false;
     running = true;
-    unsigned int start = 0,
-    elapsed = 0;
     
     Queue<Event*> events;
     World level;
@@ -151,6 +149,7 @@ void GameManager::run() {
     //flame->addOrigin(20, Vector(15, 0));
     level.addObject(flame);
     
+    unsigned int start;
     while (running) {
         start = SDL_GetTicks();
         

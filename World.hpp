@@ -11,14 +11,15 @@
 
 #include "LinkedList.hpp"
 #include "Event.hpp"
-#include "Map.hpp"
 #include "DarknessOverlay.hpp"
+#include "Map.hpp"
 
 #define MAX_PRIORITY 4
 #define MAX_BELOW_ALTITUDE 3
 #define MAX_ABOVE_ALTITUDE 3
 
 namespace nautical {
+    class MapHitbox;
     class WorldObject;
     
     class World {
@@ -49,7 +50,7 @@ namespace nautical {
         
         World & handleEvent(Event * p_event);
         
-        void generatePath(WorldObject * p_object);
+        float generatePath(MapHitbox * p_hitbox, Vector * p_vel);
         
         virtual void update(Collection<Event*> & events);
         virtual void draw();

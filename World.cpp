@@ -12,6 +12,7 @@
 #include "MaxMinValue.hpp"
 #include "Queue.hpp"
 #include "Path.hpp"
+#include "MapHitbox.hpp"
 #include "WorldObject.hpp"
 
 #include "KeyboardEvent.hpp" //TODO delete
@@ -89,8 +90,7 @@ World & World::setDarknessOverlayPercentage(float percentage) {
 }
 
 World & World::addShapeToDarknessOverlay(Shape * p_shape, int layer) {
-    if (!DEBUG_MODE)
-        darknessOverlay.addShape(p_shape, layer);
+    darknessOverlay.addShape(p_shape, layer);
     return *this;
 }
 
@@ -197,154 +197,265 @@ World & World::handleEvent(Event * p_event) {
     return *this;
 }
 
-void World::generatePath(WorldObject * p_object) {
-    Path path(p_object->getCenter());
+/*void World::generatePath(WorldObject * p_object) {
+ Path path(p_object->getCenter());
+ 
+ Coordinate center = p_object->getCenter();
+ Rectangle hitbox = p_object->getHitbox();
+ Vector vel = p_object->getVel();
+ vel.setOrigin(center);
+ MapElement * p_element = p_object->getMapElement();
+ MapElement * p_prevElement = nullptr;
+ MapElement::ObjectPos objPos = p_object->getObjectPos();
+ 
+ float percentage = 1.f;
+ 
+ while (percentage > 0) {
+ LinkedList<MapElement*> elementsNotToCheck;
+ elementsNotToCheck.insert(p_prevElement);
+ elementsNotToCheck.insert(p_element);
+ 
+ hitbox.setCenter(center);
+ 
+ bool velAdjusted = false;
+ if (p_element) {
+ if (!p_element->adjustVectorRectangle(hitbox, &vel, objPos)) {
+ p_element = nullptr;
+ } else {
+ velAdjusted = true;
+ }
+ }
+ 
+ Vector adjustedVel = vel * percentage;
+ 
+ if (adjustedVel.getMagnitude() == 0) {
+ path.addVector(adjustedVel);
+ break;
+ }
+ 
+ Coordinate nextCenter = center;
+ Vector nextVel = adjustedVel;
+ MapElement * p_nextElement = p_element;
+ MapElement::ObjectPos nextObjPos = objPos;
+ 
+ int lowerBound, upperBound;
+ lowerBound = center.getX() - (p_object->getMapWidth() / 2);
+ upperBound = center.getX() + (p_object->getMapWidth() / 2);
+ (adjustedVel.isDxPositive() ? upperBound : lowerBound) += adjustedVel.getDx();
+ 
+ MinValue distance;
+ 
+ if (p_element) { //if touching element, check only element catches
+ LinkedList<MapCatch> catches = p_element->findCatches(hitbox, &map);
+ for (Iterator<MapCatch> * iterator = catches.createIterator(); !iterator->complete(); iterator->next()) {
+ MapCatch mapCatch = iterator->current();
+ 
+ Line adjustedVelLine = Line(center, center + adjustedVel);
+ 
+ if (mapCatch.getLine().intersects(adjustedVelLine)) {
+ Coordinate collision = mapCatch.getCollision();
+ Vector collisionVel(center, collision);
+ if (distance.update(collisionVel.getMagnitude())) {
+ nextCenter = collision;
+ nextVel = collisionVel;
+ p_nextElement = mapCatch.getElement(p_element);
+ }
+ }
+ }
+ } else { //free fall, check all elements
+ //check all vertices for collision
+ for (Iterator<MapVertex*> * iterator = map.getVerticesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
+ MapVertex * p_vertex = iterator->current();
+ 
+ if (elementsNotToCheck.contains(p_vertex))
+ continue;
+ 
+ Queue<Coordinate> collisions;
+ Line adjustedVelLine = Line(center, center + adjustedVel);
+ Rectangle * p_rec = p_vertex->generateBumperRectangle(hitbox);
+ if (p_rec->intersectsLine(adjustedVelLine, &collisions)) {
+ Coordinate collision;
+ if (collisions.pop(&collision)) {
+ Vector collisionVel(center, collision);
+ if (distance.update(collisionVel.getMagnitude())) {
+ nextCenter = collision;
+ nextVel = collisionVel;
+ p_nextElement = p_vertex;
+ }
+ } else {
+ Logger::writeLog(ERROR, "World::generatePath(): collisions is empty");
+ }
+ }
+ delete p_rec;
+ }
+ 
+ //check all edges for collision
+ for (Iterator<MapEdge*> * iterator = map.getEdgesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
+ MapEdge * p_edge = iterator->current();
+ 
+ if (elementsNotToCheck.contains(p_edge))
+ continue;
+ 
+ Queue<Coordinate> collisions;
+ Line adjustedVelLine(center, center + adjustedVel);
+ LineShape * p_lineShape = p_edge->generateBumperRectangle(hitbox);
+ if (p_lineShape->intersectsLine(adjustedVelLine, &collisions)) {
+ Coordinate collision;
+ if (collisions.pop(&collision)) {
+ Vector collisionVel(center, collision);
+ if (distance.update(collisionVel.getMagnitude())) {
+ nextCenter = collision;
+ nextVel = collisionVel;
+ p_nextElement = p_edge;
+ }
+ } else {
+ Logger::writeLog(ERROR, "World::generatePath(): collisions is empty");
+ }
+ }
+ delete p_lineShape;
+ }
+ }
+ 
+ //finished checking collisions
+ 
+ if (distance.getValue() < INFINITY) {
+ float percentageUsed = distance.getValue() / adjustedVel.getMagnitude();
+ 
+ float prevPercentage = percentage;
+ percentage *= (1.f - percentageUsed);
+ if (percentage == prevPercentage) {
+ Logger::writeLog(ERROR, "World::generatePath(): percentage did not progress");
+ percentage = 0; //TODO this is still a problem
+ }
+ } else {
+ percentage = 0;
+ }
+ 
+ center = nextCenter;
+ if (p_element != p_nextElement) {
+ p_prevElement = p_element;
+ p_element = p_nextElement;
+ }
+ objPos = nextObjPos;
+ 
+ path.addVector(nextVel);
+ }
+ 
+ p_object->setVel(vel);
+ p_object->moveTo(path.getEndPoint());
+ p_object->setMapElement(p_element);
+ p_object->setObjectPos(objPos);
+ }*/
+
+float World::generatePath(MapHitbox * p_hitbox, Vector * p_vel) {
+    Shape * p_shape = p_hitbox->getShape();
+    Coordinate center = p_hitbox->getCenter();
+    const MapElement * p_element = p_hitbox->getElement();
     
-    Coordinate center = p_object->getCenter();
-    Rectangle hitbox = p_object->getHitbox();
-    Vector vel = p_object->getVel();
-    vel.setOrigin(center);
-    MapElement * p_element = p_object->getMapElement();
-    MapElement * p_prevElement = nullptr;
-    MapElement::ObjectPos objPos = p_object->getObjectPos();
+    bool velAdjusted = false;
+    if (!p_hitbox->adjustVector(p_vel)) {
+        p_element = nullptr;
+    } else {
+        velAdjusted = true;
+    }
     
-    float percentage = 1.f;
+    if (p_vel->getMagnitude() == 0.f) {
+        delete p_shape;
+        return 1;
+    }
     
-    while (percentage > 0) {
-        LinkedList<MapElement*> elementsNotToCheck;
-        elementsNotToCheck.insert(p_prevElement);
-        elementsNotToCheck.insert(p_element);
-        
-        hitbox.setCenter(center);
-        
-        bool velAdjusted = false;
-        if (p_element) {
-            if (!p_element->adjustVectorRectangle(hitbox, &vel, objPos)) {
-                p_element = nullptr;
-            } else {
-                velAdjusted = true;
+    Coordinate nextCenter = center;
+    Vector nextVel = *p_vel;
+    const MapElement * p_nextElement = p_element;
+    
+    int lowerBound, upperBound;
+    lowerBound = p_shape->getLowerBoundX();
+    upperBound = p_shape->getUpperBoundX();
+    (p_vel->isDxPositive() ? upperBound : lowerBound) += p_vel->getDx();
+    
+    MinValue distance;
+    
+    if (p_element) { //if touching element, check only element catches
+        LinkedList<MapCatch> catches = p_hitbox->findCatches(&map);
+        for (Iterator<MapCatch> * iterator = catches.createIterator(); !iterator->complete(); iterator->next()) {
+            MapCatch mapCatch = iterator->current();
+            
+            Line adjustedVelLine = Line(center, center + *p_vel);
+            
+            if (mapCatch.getLine().intersects(adjustedVelLine)) {
+                Coordinate collision = mapCatch.getCollision();
+                Vector collisionVel(center, collision);
+                if (distance.update(collisionVel.getMagnitude())) {
+                    nextCenter = collision;
+                    nextVel = collisionVel;
+                    p_nextElement = mapCatch.getElement(p_element);
+                }
             }
         }
-        
-        Vector adjustedVel = vel * percentage;
-        
-        if (adjustedVel.getMagnitude() == 0) {
-            path.addVector(adjustedVel);
-            break;
-        }
-        
-        Coordinate nextCenter = center;
-        Vector nextVel = adjustedVel;
-        MapElement * p_nextElement = p_element;
-        MapElement::ObjectPos nextObjPos = objPos;
-        
-        int lowerBound, upperBound;
-        lowerBound = center.getX() - (p_object->getMapWidth() / 2);
-        upperBound = center.getX() + (p_object->getMapWidth() / 2);
-        (adjustedVel.isDxPositive() ? upperBound : lowerBound) += adjustedVel.getDx();
-        
-        MinValue distance;
-        
-        if (p_element) { //if touching element, check only element catches
-            LinkedList<MapCatch> catches = p_element->findCatches(hitbox, &map);
-            for (Iterator<MapCatch> * iterator = catches.createIterator(); !iterator->complete(); iterator->next()) {
-                MapCatch mapCatch = iterator->current();
-                
-                Line adjustedVelLine = Line(center, center + adjustedVel);
-                
-                if (mapCatch.getLine().intersects(adjustedVelLine)) {
-                    Coordinate collision = mapCatch.getCollision();
+    } else { //free fall, check all elements
+        //check all vertices for collision
+        for (Iterator<MapVertex*> * iterator = map.getVerticesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
+            MapVertex * p_vertex = iterator->current();
+            
+            if (p_vertex == p_element)
+                continue;
+            
+            Queue<Coordinate> collisions;
+            Line adjustedVelLine = Line(center, center + *p_vel);
+            Shape * p_bumper = p_hitbox->createBumper(p_vertex);
+            if (p_bumper->intersectsLine(adjustedVelLine, &collisions)) {
+                Coordinate collision;
+                if (collisions.pop(&collision)) {
                     Vector collisionVel(center, collision);
                     if (distance.update(collisionVel.getMagnitude())) {
                         nextCenter = collision;
                         nextVel = collisionVel;
-                        p_nextElement = mapCatch.getElement(p_element);
+                        p_nextElement = p_vertex;
                     }
+                } else {
+                    Logger::writeLog(ERROR, "World::generatePath(): collisions is empty");
                 }
             }
-        } else { //free fall, check all elements
-            //check all vertices for collision
-            for (Iterator<MapVertex*> * iterator = map.getVerticesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
-                MapVertex * p_vertex = iterator->current();
-                
-                if (elementsNotToCheck.contains(p_vertex))
-                    continue;
-                
-                Queue<Coordinate> collisions;
-                Line adjustedVelLine = Line(center, center + adjustedVel);
-                Rectangle * p_rec = p_vertex->generateBumperRectangle(hitbox);
-                if (p_rec->intersectsLine(adjustedVelLine, &collisions)) {
-                    Coordinate collision;
-                    if (collisions.pop(&collision)) {
-                        Vector collisionVel(center, collision);
-                        if (distance.update(collisionVel.getMagnitude())) {
-                            nextCenter = collision;
-                            nextVel = collisionVel;
-                            p_nextElement = p_vertex;
-                        }
-                    } else {
-                        Logger::writeLog(ERROR, "World::generatePath(): collisions is empty");
-                    }
-                }
-                delete p_rec;
-            }
+            delete p_bumper;
+        }
+        
+        //check all edges for collision
+        for (Iterator<MapEdge*> * iterator = map.getEdgesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
+            MapEdge * p_edge = iterator->current();
             
-            //check all edges for collision
-            for (Iterator<MapEdge*> * iterator = map.getEdgesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
-                MapEdge * p_edge = iterator->current();
-                
-                if (elementsNotToCheck.contains(p_edge))
-                    continue;
-                
-                Queue<Coordinate> collisions;
-                Line adjustedVelLine(center, center + adjustedVel);
-                LineShape * p_lineShape = p_edge->generateBumperRectangle(hitbox);
-                if (p_lineShape->intersectsLine(adjustedVelLine, &collisions)) {
-                    Coordinate collision;
-                    if (collisions.pop(&collision)) {
-                        Vector collisionVel(center, collision);
-                        if (distance.update(collisionVel.getMagnitude())) {
-                            nextCenter = collision;
-                            nextVel = collisionVel;
-                            p_nextElement = p_edge;
-                        }
-                    } else {
-                        Logger::writeLog(ERROR, "World::generatePath(): collisions is empty");
-                    }
-                }
-                delete p_lineShape;
-            }
-        }
-        
-        //finished checking collisions
-        
-        if (distance.getValue() < INFINITY) {
-            float percentageUsed = distance.getValue() / adjustedVel.getMagnitude();
+            if (p_edge == p_element)
+                continue;
             
-            float prevPercentage = percentage;
-            percentage *= (1.f - percentageUsed);
-            if (percentage == prevPercentage) {
-                Logger::writeLog(ERROR, "World::generatePath(): percentage did not progress");
-                percentage = 0; //TODO this is still a problem
+            Queue<Coordinate> collisions;
+            Line adjustedVelLine(center, center + *p_vel);
+            Shape * p_bumper = p_hitbox->createBumper(p_edge);
+            if (p_bumper->intersectsLine(adjustedVelLine, &collisions)) {
+                Coordinate collision;
+                if (collisions.pop(&collision)) {
+                    Vector collisionVel(center, collision);
+                    if (distance.update(collisionVel.getMagnitude())) {
+                        nextCenter = collision;
+                        nextVel = collisionVel;
+                        p_nextElement = p_edge;
+                    }
+                } else {
+                    Logger::writeLog(ERROR, "World::generatePath(): collisions is empty");
+                }
             }
-        } else {
-            percentage = 0;
+            delete p_bumper;
         }
-        
-        center = nextCenter;
-        if (p_element != p_nextElement) {
-            p_prevElement = p_element;
-            p_element = p_nextElement;
-        }
-        objPos = nextObjPos;
-        
-        path.addVector(nextVel);
     }
+    delete p_shape;
     
-    p_object->setVel(vel);
-    p_object->moveTo(path.getEndPoint());
-    p_object->setMapElement(p_element);
-    p_object->setObjectPos(objPos);
+    //finished checking collisions
+    
+    p_hitbox->setElement(p_nextElement);
+    *p_vel = nextVel;
+    
+    float percentage = 1.f;
+    if ((distance.getValue() < INFINITY) && (p_vel->getMagnitude() != 0))
+        percentage = distance.getValue() / p_vel->getMagnitude();
+    return percentage;
 }
 
 void World::update(Collection<Event*> & events) {
@@ -352,18 +463,12 @@ void World::update(Collection<Event*> & events) {
     
     for (Iterator<Event*> * iterator = events.createIterator(); !iterator->complete(); iterator->next()) {
         if (iterator->current()->hasTag(KEYBOARD_EVENT_TAG)) { //TODO for debugging
-            if ((static_cast<KeyboardEvent*>(iterator->current())->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(iterator->current())->getKey() == KeyboardEvent::Key::O))
+            if ((static_cast<KeyboardEvent*>(iterator->current())->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(iterator->current())->getKey() == KeyboardEvent::O))
                 setDarknessInEffect(!isDarknessInEffect());
         }
         
         handleEvent(iterator->current());
     }
-    
-    //TODO should this happen at end of update loop instead of beginning?
-    for (Iterator<WorldObject*> * iterator = objectsToDelete.createIterator(); !iterator->complete(); iterator->next()) {
-        removeObject(iterator->current());
-    }
-    objectsToDelete.clear();
     
     for (int i = MAX_PRIORITY; i >= 0; i--) {
         for (Iterator<WorldObject*> * iterator = objectsToUpdate[i].createIterator(); !iterator->complete(); iterator->next()) {
@@ -377,6 +482,11 @@ void World::update(Collection<Event*> & events) {
             updateObject(p_object);
         }
     }
+    
+    for (Iterator<WorldObject*> * iterator = objectsToDelete.createIterator(); !iterator->complete(); iterator->next()) {
+        removeObject(iterator->current());
+    }
+    objectsToDelete.clear();
     
     updateTimestamp++;
 }
@@ -406,11 +516,9 @@ void World::draw() {
         }
     }
     
-    if (!DEBUG_MODE) {
-        if (darknessInEffect)
-            darknessOverlay.draw();
-        darknessOverlay.clearShapes();
-    }
+    if (darknessInEffect)
+        darknessOverlay.draw();
+    darknessOverlay.clearShapes();
     
     drawTimestamp++;
 }
