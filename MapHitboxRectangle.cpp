@@ -97,7 +97,7 @@ LinkedList<MapCatch> MapHitboxRectangle::findCatches(const MapEdge * p_edge, con
             if (collisions.pop(&collision))
                 catches.insert(MapCatch(collision, p_lineShape2->getLine(), (MapElement*)p_edge, (MapElement*)p_edge2));
             else
-                Logger::writeLog(ERROR, "MapHitboxRectangle::findCatches(MapEdge*): collisions is empty");
+                Logger::writeLog(ERROR_MESSAGE, "MapHitboxRectangle::findCatches(MapEdge*): collisions is empty");
         }
         delete p_lineShape;
         delete p_lineShape2;

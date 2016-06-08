@@ -19,12 +19,12 @@ Polygon::~Polygon() { }
 
 void Polygon::init(Queue<Coordinate> * p_coors, bool checkForConcave) {
     if (p_coors == nullptr) {
-        Logger::writeLog(ERROR, "Polygon::Polygon(): attempted to create polygon with null list of Coordinates");
+        Logger::writeLog(ERROR_MESSAGE, "Polygon::Polygon(): attempted to create polygon with null list of Coordinates");
         return;
     }
     
     if (p_coors->size() < 3) {
-        Logger::writeLog(ERROR, "Polygon::Polygon(): attempted to create polygon with less than 3 vertices");
+        Logger::writeLog(ERROR_MESSAGE, "Polygon::Polygon(): attempted to create polygon with less than 3 vertices");
         return;
     }
     
@@ -104,12 +104,12 @@ void Polygon::init(Queue<Coordinate> * p_coors, bool checkForConcave) {
             if (!outlineConvex) {
                 convex = false;
                 if (!convexVertices.remove(coorToRemove))
-                    Logger::writeLog(ERROR, "Polygon::Polygon(): attempted to remove non-existant coordinate from convexVertices");
+                    Logger::writeLog(ERROR_MESSAGE, "Polygon::Polygon(): attempted to remove non-existant coordinate from convexVertices");
                 Triangle triangle;
                 if (subtractedCoors.pop(&triangle.coor1) && subtractedCoors.pop(&triangle.coor2) && subtractedCoors.pop(&triangle.coor3))
                     subtractedTrianglesStruct.insert(triangle);
                 else
-                    Logger::writeLog(ERROR, "Polygon::init(): subtractedCoors does not contain 3 coordinates");
+                    Logger::writeLog(ERROR_MESSAGE, "Polygon::init(): subtractedCoors does not contain 3 coordinates");
             }
         } while (!outlineConvex);
         

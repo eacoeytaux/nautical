@@ -65,10 +65,10 @@ namespace nautical {
         }
         
         virtual void drawFilled() const { //TODO move to .cpp file
-            int screenLowerBoundX = GraphicsManager::worldToScreenX(getLowerBoundX()) - 1;
-            int screenLowerBoundY = GraphicsManager::worldToScreenY(getLowerBoundY()) + 1;
-            int screenUpperBoundX = GraphicsManager::worldToScreenX(getUpperBoundX()) + 1;
-            int screenUpperBoundY = GraphicsManager::worldToScreenY(getUpperBoundY()) - 1;
+            int screenLowerBoundX = (int)GraphicsManager::worldToScreenX(getLowerBoundX()) - 1;
+            int screenLowerBoundY = (int)GraphicsManager::worldToScreenY(getLowerBoundY()) + 1;
+            int screenUpperBoundX = (int)GraphicsManager::worldToScreenX(getUpperBoundX()) + 1;
+            int screenUpperBoundY = (int)GraphicsManager::worldToScreenY(getUpperBoundY()) - 1;
             for (int y = screenUpperBoundY; y <= screenLowerBoundY; y++) { //TODO optimize (does not to check 0 to screenHeight)
                 double yWorld = GraphicsManager::screenToWorldY(y);
                 Line screenLine(GraphicsManager::screenToWorld(Coordinate(screenLowerBoundX, y)).moveX(-1), GraphicsManager::screenToWorld(Coordinate(screenUpperBoundX, y).moveX(1)));
@@ -85,7 +85,7 @@ namespace nautical {
                                 line.xOut = coor.getX();
                                 lineIntersections.insert(line); //only add line if line intersections at least twice
                             } else {
-                                Logger::writeLog(ERROR, "Shape::drawFilled(): horizontal line intersections shape odd number of times");
+                                Logger::writeLog(ERROR_MESSAGE, "Shape::drawFilled(): horizontal line intersections shape odd number of times");
                             }
                         }
                     }

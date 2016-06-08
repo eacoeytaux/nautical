@@ -151,13 +151,13 @@ namespace nautical {
         positiveSpan.update(fabs(positiveSpanVal));
         
         Collection<T>::sizeVal++;
-        return node;
+        return true;
     }
     
     template<typename T>
     bool SortedList<T>::remove(T element) {
         if (Collection<T>::sizeVal == 0) {
-            Logger::writeLog(WARNING, "SortedCollection<T>::remove(): attempted to remove element from empty list\n");
+            Logger::writeLog(WARNING_MESSAGE, "SortedCollection<T>::remove(): attempted to remove element from empty list\n");
             return false;
         }
         
@@ -187,7 +187,7 @@ namespace nautical {
                 return true;
             }
         }
-        Logger::writeLog(WARNING, "SortedCollection<T>::remove(): element to remove could not be found in list\n");
+        Logger::writeLog(WARNING_MESSAGE, "SortedCollection<T>::remove(): element to remove could not be found in list\n");
         
         return false;
     }

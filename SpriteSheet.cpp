@@ -8,12 +8,18 @@
 
 #include "SpriteSheet.hpp"
 
+#ifdef __APPLE__
 #include "SDL2_image/SDL_image.h"
+#endif
+#ifdef _WIN32
+#include "SDL_image.h"
+#endif
+
 
 using namespace nautical;
 
 SpriteSheet::SpriteSheet(bool * failureFlag, SDL_Renderer * renderer, std::string filePath, int widthCount, int heightCount, float scale) : widthCount(widthCount), heightCount(heightCount), scale(scale) {
-    SDL_Surface * loadedSurface = IMG_Load(filePath.c_str());
+	SDL_Surface * loadedSurface = IMG_Load(filePath.c_str());
     
     if (loadedSurface == nullptr) {
         printf("SpriteSheet Error: Unable to load image %s: SDL_image Error: %s\n", filePath.c_str(), IMG_GetError());

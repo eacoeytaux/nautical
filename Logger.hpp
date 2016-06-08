@@ -11,9 +11,9 @@
 
 namespace nautical { //TODO close logs
     enum MESSAGE_TYPE {
-        PLAIN,
-        WARNING,
-        ERROR
+        PLAIN_MESSAGE,
+        WARNING_MESSAGE,
+        ERROR_MESSAGE
     };
     
     class Logger {

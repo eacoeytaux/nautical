@@ -28,7 +28,7 @@ radius(radius) {
         if (circleVectors.getFirstElement(&p_vec))
             circleVectors.insert(p_vec);
         else
-            Logger::writeLog(ERROR, "Circle::Circle(): circleVectors is empty");
+            Logger::writeLog(ERROR_MESSAGE, "Circle::Circle(): circleVectors is empty");
         circleVectorsCalculated = true;
     }
 }

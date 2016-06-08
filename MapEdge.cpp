@@ -191,7 +191,7 @@ LinkedList<MapCatch> MapEdge::findCatches(Rectangle rectangle, const Map * p_map
             if (collisions.pop(&collision))
                 catches.insert(MapCatch(collision, p_lineShape2->getLine(), (MapElement*)this, (MapElement*)p_edge));
             else
-                Logger::writeLog(ERROR, "World::generatePath(): collisions is empty");
+                Logger::writeLog(ERROR_MESSAGE, "World::generatePath(): collisions is empty");
         }
         delete p_lineShape;
         delete p_lineShape2;

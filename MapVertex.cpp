@@ -82,7 +82,7 @@ bool MapVertex::adjustVectorRectangle(Rectangle rectangle, Vector * p_vector, Ob
         } case LEFT: {
             return p_vector->subtractAngle(Angle(M_PI) + rectangle.getAngle());
         } default: {
-            Logger::writeLog(ERROR, "MapVertex::adjustVectorRectangle(): pos not defined");
+            Logger::writeLog(ERROR_MESSAGE, "MapVertex::adjustVectorRectangle(): pos not defined");
             return false;
         }
     }

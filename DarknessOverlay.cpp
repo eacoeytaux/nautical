@@ -118,7 +118,7 @@ void DarknessOverlay::draw() const { //TODO optimize (only needs to check betwee
                         linesToDraw.insert(prevLineToDraw);
                     }
                 } else {
-                    Logger::writeLog(ERROR, "DarknessOverlay::draw(): linesToDraw is empty");
+                    Logger::writeLog(ERROR_MESSAGE, "DarknessOverlay::draw(): linesToDraw is empty");
                 }
             }
             

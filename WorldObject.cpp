@@ -148,10 +148,10 @@ int WorldObject::getPriority() const {
 
 WorldObject & WorldObject::setPriority(int priority) {
     if (priority < 0) {
-        Logger::writeLog(WARNING, "WorldObject::setPriority(): attempted to set priority to below 0");
+        Logger::writeLog(WARNING_MESSAGE, "WorldObject::setPriority(): attempted to set priority to below 0");
         priority = 0;
     } else if (priority > MAX_PRIORITY) {
-        Logger::writeLog(WARNING, "WorldObject::setPriority(): attempted to set priority above max priority");
+        Logger::writeLog(WARNING_MESSAGE, "WorldObject::setPriority(): attempted to set priority above max priority");
         priority = MAX_PRIORITY;
     }
     this->priority = priority;
@@ -164,10 +164,10 @@ int WorldObject::getAltitude() const {
 
 WorldObject & WorldObject::setAltitude(int altitude) {
     if (altitude < -MAX_BELOW_ALTITUDE) {
-        Logger::writeLog(WARNING, "WorldObject::setAltitude(): attempted to set priority below min altitude");
+        Logger::writeLog(WARNING_MESSAGE, "WorldObject::setAltitude(): attempted to set priority below min altitude");
         altitude = -MAX_BELOW_ALTITUDE;
     } else if (altitude > MAX_ABOVE_ALTITUDE) {
-        Logger::writeLog(WARNING, "WorldObject::setAltitude(): attempted to set priority above max altitude");
+        Logger::writeLog(WARNING_MESSAGE, "WorldObject::setAltitude(): attempted to set priority above max altitude");
         altitude = MAX_PRIORITY;
     }
     this->altitude = altitude;
