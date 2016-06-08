@@ -108,9 +108,9 @@ World & World::addObject(WorldObject * p_object, bool shouldUpdate, bool shouldD
             subscribeObject(iterator->current(), p_object);
         }
         
-        Logger::writeLog(PLAIN, "World::addObject(): added object[%d] to world[%d]", p_object->getID(), id);
+        Logger::writeLog(PLAIN_MESSAGE, "World::addObject(): added object[%d] to world[%d]", p_object->getID(), id);
     } else {
-        Logger::writeLog(WARNING, "World::addObject(): attempted to add nullptr");
+        Logger::writeLog(WARNING_MESSAGE, "World::addObject(): attempted to add nullptr");
     }
     
     return *this;
@@ -134,11 +134,11 @@ World & World::removeObject(WorldObject * p_object) {
                 unsubscribeObject(iterator->current(), p_object);
             }
         } else {
-            Logger::writeLog(WARNING,"World::removeObject(): attempted to remove object not in world's list of all objects");
+            Logger::writeLog(WARNING_MESSAGE,"World::removeObject(): attempted to remove object not in world's list of all objects");
         }
         delete p_object;
     } else {
-        Logger::writeLog(WARNING, "World::removeObject(): attempted to remove nullptr");
+        Logger::writeLog(WARNING_MESSAGE, "World::removeObject(): attempted to remove nullptr");
     }
     return *this;
 }
@@ -180,7 +180,7 @@ World & World::unsubscribeObjects(std::string eventTag, LinkedList<WorldObject*>
             return *this;
         }
     }
-    Logger::writeLog(WARNING, "World::unregisterObjects(): attempted to unregister objects from non-existant event");
+    Logger::writeLog(WARNING_MESSAGE, "World::unregisterObjects(): attempted to unregister objects from non-existant event");
     return *this;
 }
 
@@ -283,7 +283,7 @@ void World::generatePath(WorldObject * p_object) {
                             p_nextElement = p_vertex;
                         }
                     } else {
-                        Logger::writeLog(ERROR, "World::generatePath(): collisions is empty");
+                        Logger::writeLog(ERROR_MESSAGE, "World::generatePath(): collisions is empty");
                     }
                 }
                 delete p_rec;
@@ -309,7 +309,7 @@ void World::generatePath(WorldObject * p_object) {
                             p_nextElement = p_edge;
                         }
                     } else {
-                        Logger::writeLog(ERROR, "World::generatePath(): collisions is empty");
+                        Logger::writeLog(ERROR_MESSAGE, "World::generatePath(): collisions is empty");
                     }
                 }
                 delete p_lineShape;
@@ -324,7 +324,7 @@ void World::generatePath(WorldObject * p_object) {
             float prevPercentage = percentage;
             percentage *= (1.f - percentageUsed);
             if (percentage == prevPercentage) {
-                Logger::writeLog(ERROR, "World::generatePath(): percentage did not progress");
+                Logger::writeLog(ERROR_MESSAGE, "World::generatePath(): percentage did not progress");
                 percentage = 0; //TODO this is still a problem
             }
         } else {
@@ -348,7 +348,7 @@ void World::generatePath(WorldObject * p_object) {
 }
 
 void World::update(Collection<Event*> & events) {
-    Logger::writeLog(PLAIN, "starting world[%d] update %d", id, updateTimestamp);
+    Logger::writeLog(PLAIN_MESSAGE, "starting world[%d] update %d", id, updateTimestamp);
     
     for (Iterator<Event*> * iterator = events.createIterator(); !iterator->complete(); iterator->next()) {
         if (iterator->current()->hasTag(KEYBOARD_EVENT_TAG)) { //TODO for debugging
@@ -386,7 +386,7 @@ void World::updateObject(WorldObject * p_object) {
 }
 
 void World::draw() {
-    Logger::writeLog(PLAIN, "starting world[%d] draw %d", id, drawTimestamp);
+    Logger::writeLog(PLAIN_MESSAGE, "starting world[%d] draw %d", id, drawTimestamp);
     
     for (int i = 0; i <= MAX_BELOW_ALTITUDE + MAX_ABOVE_ALTITUDE; i++) {
         if (i == MAX_BELOW_ALTITUDE) {

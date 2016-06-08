@@ -8,6 +8,8 @@
 
 #include "Logger.hpp"
 
+#include <stdio.h>
+#include <stdarg.h>
 #include <string>
 
 using namespace nautical;
@@ -27,7 +29,7 @@ void Logger::writeLog(MESSAGE_TYPE type, const char * entry, ...) {
     va_start(args, entry);
     
     switch (type) {
-        case WARNING: {
+        case WARNING_MESSAGE: {
             fprintf(logWarningsFile, "WARNING: ");
             vfprintf(logWarningsFile, entry, args);
             fprintf(logWarningsFile, "\n");
@@ -36,7 +38,7 @@ void Logger::writeLog(MESSAGE_TYPE type, const char * entry, ...) {
             
             fprintf(logFile, "WARNING: ");
             break;
-        } case ERROR: {
+        } case ERROR_MESSAGE: {
             fprintf(logErrorsFile, "ERROR: ");
             vfprintf(logErrorsFile, entry, args);
             fprintf(logErrorsFile, "\n");

@@ -15,6 +15,7 @@
 #endif
 #ifdef _WIN32
 #include "SDL.h"
+#include <windows.h>
 #endif
 
 #include "Logger.hpp"
@@ -65,12 +66,12 @@ bool GameManager::startup() {
         return init;
     
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) { //initialize SDL
-        Logger::writeLog(ERROR, "GameManager::init(): %s\n", SDL_GetError());
+        Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s\n", SDL_GetError());
         return false;
     } else {
         p_window = SDL_CreateWindow("Climber", 0, 0, GraphicsManager::screenWidth, GraphicsManager::screenHeight, SDL_WINDOW_SHOWN); //create window
         if (p_window == nullptr) {
-            Logger::writeLog(ERROR, "GameManager::init(): %s\n", SDL_GetError());
+            Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s\n", SDL_GetError());
             return false;
         } else {
             if (AUTO_LOCK_CURSOR)
@@ -78,7 +79,7 @@ bool GameManager::startup() {
             
             p_renderer = SDL_CreateRenderer(p_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); //init renderer
             if (p_renderer == nullptr) {
-                Logger::writeLog(ERROR, "GameManager::init(): %s\n", SDL_GetError());
+                Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s\n", SDL_GetError());
                 return false;
             } else {
                 SDL_SetRenderDrawBlendMode(p_renderer, SDL_BLENDMODE_BLEND);
@@ -131,11 +132,11 @@ bool GameManager::shutdown() {
 
 void GameManager::run() {
     if (!startup()) {
-        Logger::writeLog(ERROR, "GameManager::run(): attempted to run game loop without first initializing window");
+        Logger::writeLog(ERROR_MESSAGE, "GameManager::run(): attempted to run game loop without first initializing window");
         return;
     }
     
-    Logger::writeLog(PLAIN, "GameManager::run(): starting game loop...");
+    Logger::writeLog(PLAIN_MESSAGE, "GameManager::run(): starting game loop...");
     
     reset = false;
     running = true;
@@ -183,10 +184,15 @@ void GameManager::run() {
         long elapsed = SDL_GetTicks() - start;
         long wait = (targetTime - elapsed);
         if (wait >= 0) {
+#ifdef __APPLE__
             usleep((useconds_t)(wait * 1000));
+#endif
+#ifdef _WIN32
+			Sleep(wait);
+#endif
             //printf("Hit deadline with %ld ms to spare! (targetTime: %ld)\n", wait, targetTime);
         } else {
-            Logger::writeLog(WARNING, "Missed deadline by %ld ms", -wait);
+            Logger::writeLog(WARNING_MESSAGE, "Missed deadline by %ld ms", -wait);
         }
     }
     
@@ -233,10 +239,10 @@ void GameManager::pollEvents(Collection<Event*> & events) {
                         nautical::DEBUG_MODE = !nautical::DEBUG_MODE;
                         break;
                     case SDLK_PERIOD:
-                        GraphicsManager::setZoom(GraphicsManager::getZoom() * (4.0 / 3.0));
+                        GraphicsManager::setZoom(GraphicsManager::getZoom() * (4.f / 3.f));
                         break;
                     case SDLK_COMMA:
-                        GraphicsManager::setZoom(GraphicsManager::getZoom() * (3.0 / 4.0));
+                        GraphicsManager::setZoom(GraphicsManager::getZoom() * (3.f / 4.f));
                         break;
                     case SDLK_r:
                         running = false;

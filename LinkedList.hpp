@@ -145,7 +145,7 @@ namespace nautical {
     template<typename T>
     bool LinkedList<T>::remove(T element) {
         if (headNode == nullptr) { //list is empty
-            Logger::writeLog(WARNING, "LinkedList<T>::remove(): attempted to remove element from empty list\n");
+            Logger::writeLog(WARNING_MESSAGE, "LinkedList<T>::remove(): attempted to remove element from empty list\n");
             return false;
         }
         
@@ -173,7 +173,7 @@ namespace nautical {
             }
         }
         
-        Logger::writeLog(WARNING, "LinkedList<T>::remove(): attempted to remove element not found in list\n");
+        Logger::writeLog(WARNING_MESSAGE, "LinkedList<T>::remove(): attempted to remove element not found in list\n");
         return false; //t not found in list
     }
     
@@ -189,7 +189,7 @@ namespace nautical {
     template<typename T>
     bool LinkedList<T>::getElementByIndex(int index, T * p_element) const {
         if ((index < 0) || (index > Collection<T>::sizeVal - 1)) {
-            Logger::writeLog(ERROR, "LinkedList<T>::getElement(): index out of bounds");
+            Logger::writeLog(ERROR_MESSAGE, "LinkedList<T>::getElement(): index out of bounds");
             return false;
         }
         

@@ -45,10 +45,9 @@ void Parabola::init(double x1, double y1, double x2, double y2, double length) {
     }
     
     if (findDistance(Coordinate(x1, y1), Coordinate(x2, y2)) > (length - 0.0001)) {
-        Logger::writeLog(WARNING, "Rope::init(): distance between coordinates is greater than length of parabola\n");
+        Logger::writeLog(WARNING_MESSAGE, "Rope::init(): distance between coordinates is greater than length of parabola");
         
         double dx = x2 - x1;
-        
         //set a, b, c to straight line
         a = 0;
         b = ((dx != 0) ? ((y2 - y1) / (x2 - x1)) : 0); //ensures no dividing by zero //TODO account for vertical lines

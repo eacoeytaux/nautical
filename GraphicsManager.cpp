@@ -119,7 +119,7 @@ void GraphicsManager::setCenter(Coordinate center, bool hardSet) {
 
 void GraphicsManager::setCenterSpeedRatio(float centerSpeedRatio) {
     if ((centerSpeedRatio > 1) || (centerSpeedRatio <= 0))
-        Logger::writeLog(WARNING, "GraphicsManager::setCenterSpeedRatio(): centerSpeedRatio must be between [1, 0)");
+        Logger::writeLog(WARNING_MESSAGE, "GraphicsManager::setCenterSpeedRatio(): centerSpeedRatio must be between [1, 0)");
     else
         GraphicsManager::centerSpeedRatio = centerSpeedRatio;
 }
@@ -151,7 +151,7 @@ void GraphicsManager::setZoom(float zoom, bool hardSet) {
 
 void GraphicsManager::setZoomSpeedRatio(float zoomSpeedRatio) {
     if ((zoomSpeedRatio > 1) || (zoomSpeedRatio <= 0))
-        Logger::writeLog(WARNING, "GraphicsManager::setZoomSpeedRatio(): zoomSpeedRatio must be between [1, 0)");
+        Logger::writeLog(WARNING_MESSAGE, "GraphicsManager::setZoomSpeedRatio(): zoomSpeedRatio must be between [1, 0)");
     else
         GraphicsManager::zoomSpeedRatio = zoomSpeedRatio;
 }
@@ -215,7 +215,7 @@ SpriteSheet * GraphicsManager::loadSpriteSheet(std::string filePath, int widthCo
     bool failureFlag = false;
     SpriteSheet * p_sheet = new SpriteSheet(&failureFlag, p_renderer, filePath, widthCount, heightCount, scale);
     if (failureFlag) {
-        Logger::writeLog(ERROR, "GraphicsManager::createSpriteSheet(): could not load spritesheet from filepath %s", filePath.c_str());
+        Logger::writeLog(ERROR_MESSAGE, "GraphicsManager::createSpriteSheet(): could not load spritesheet from filepath %s", filePath.c_str());
         return nullptr;
     } else {
         return p_sheet;
