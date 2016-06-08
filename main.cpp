@@ -6,6 +6,7 @@
 //  Copyright © 2015 EthanCo. All rights reserved.
 //
 
+#define _USE_MATH_DEFINES
 #include <cstdio>
 
 #include "GameManager.hpp"

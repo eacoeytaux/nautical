@@ -9,6 +9,7 @@
 #ifndef __Nautical__MaxMinValue__
 #define __Nautical__MaxMinValue__
 
+#define _USE_MATH_DEFINES
 #include <cmath>
 
 namespace nautical {

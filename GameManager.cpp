@@ -8,10 +8,14 @@
 
 #include "GameManager.hpp"
 
-#include <unistd.h>
-
+#ifdef __APPLE__
 #include "SDL2/SDL.h"
-#include "SDL2/SDL_joystick.h"
+
+#include <unistd.h>
+#endif
+#ifdef _WIN32
+#include "SDL.h"
+#endif
 
 #include "Logger.hpp"
 #include "GraphicsManager.hpp"

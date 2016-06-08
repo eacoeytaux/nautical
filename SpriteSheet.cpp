@@ -8,7 +8,13 @@
 
 #include "SpriteSheet.hpp"
 
+#ifdef __APPLE__
 #include "SDL2_image/SDL_image.h"
+#endif
+#ifdef _WIN32
+#include "SDL_image.h"
+#endif
+
 
 using namespace nautical;
 

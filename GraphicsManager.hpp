@@ -11,7 +11,12 @@
 
 #include <string>
 
+#ifdef __APPLE__
 #include "SDL2/SDL.h"
+#endif
+#ifdef _WIN32
+#include "SDL.h"
+#endif
 
 #include "SpriteSheet.hpp"
 #include "Color.hpp"
