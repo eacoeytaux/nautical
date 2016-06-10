@@ -138,8 +138,16 @@ void Player::update() {
         addToForce(Vector(0.3, 0));
     
     if (p_rope) { //TODO
-        //if (p_rope->getState() == Rope::TAUGHT)
-        //addToForce(Vector(findAngle(getCenter(), p_rope->getHead()), (findDistance(getCenter(), p_rope->getHead()) - p_rope->getLength()) * 2));
+        if (p_rope->isTaught() && (p_rope->getState() == Rope::SET)) {
+            //F = -kx - bv
+            static double k = 0.000000000, b = 2; //k and b are constants in equation
+            double x = findDistance(getCenter(), p_rope->getHead()) - p_rope->getLength(); //distance from end to end
+            double v = (getVel() + getForce()).getMagnitude(); //relative velocity
+            
+            static double damper = 0.6;
+            
+            addToForce(Vector(findAngle(p_rope->getHead(), getCenter()), (-(k * x) - (b * v)) * damper));
+        }
     }
     
     addToVel(getForce());

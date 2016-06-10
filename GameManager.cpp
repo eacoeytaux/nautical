@@ -33,8 +33,9 @@
 #include "Player.hpp"
 #include "Polygon.hpp"
 #include "Flame.hpp"
+#include "Tentacle.hpp"
 
-#define FPS 30
+#define FPS 3
 #define AUTO_LOCK_CURSOR false
 
 using namespace nautical;
@@ -144,7 +145,7 @@ void GameManager::run() {
     Queue<Event*> events;
     World level;
     
-    Coordinate playerCoor(390, 640);
+    Coordinate playerCoor(390, 480);
     level.addObject(new climber::Player(playerCoor));
     GraphicsManager::setCenter(playerCoor, true);
     
