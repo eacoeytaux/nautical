@@ -50,7 +50,7 @@ namespace nautical {
         
         World & handleEvent(Event * p_event);
         
-        float generatePath(MapHitbox * p_hitbox, Vector * p_vel);
+        float generatePath(WorldObject * p_object, float percentage);
         
         virtual void update(Collection<Event*> & events);
         virtual void draw();
@@ -64,6 +64,8 @@ namespace nautical {
         int id,
         updateTimestamp = 0,
         drawTimestamp = 0;
+        
+        static bool drawBumpers; //DEBUGGING
         
         Map map;
         bool darknessInEffect = false;

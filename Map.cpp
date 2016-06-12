@@ -8,6 +8,8 @@
 
 #include "Map.hpp"
 
+#include "MapHitbox.hpp"
+
 using namespace nautical;
 
 float Map::defaultAirResistanceCoefficient = 0.995;
@@ -96,26 +98,24 @@ void Map::draw() const {
     }
 }
 
-void Map::drawBumpers(Rectangle rec, bool drawCatches) const {
+void Map::drawBumpers(MapHitbox * p_hitbox, bool drawCatches) const {
     for (Iterator<MapEdge*> * iterator = edges.createIterator(); !iterator->complete(); iterator->next()) {
-        MapEdge * p_edge = iterator->current();
-        LineShape * p_lineShape = p_edge->generateBumperRectangle(rec);
-        p_lineShape->Drawable::draw(Color(CYAN).setA(127));
-        delete p_lineShape;
+        Shape * p_bumper = p_hitbox->createBumper(iterator->current());
+        p_bumper->Drawable::draw(Color(CYAN).setA(127));
+        delete p_bumper;
         if (drawCatches) {
-            LinkedList<MapCatch> catches = p_edge->findCatches(rec, this);
+            LinkedList<MapCatch> catches = p_hitbox->findCatches(iterator->current(), this);
             for (Iterator<MapCatch> * subIterator = catches.createIterator(); !subIterator->complete(); subIterator->next()) {
                 GraphicsManager::drawLine(subIterator->current().getLine(), Color(YELLOW).setA(64));
             }
         }
     }
     for (Iterator<MapVertex*> * iterator = vertices.createIterator(); !iterator->complete(); iterator->next()) {
-        MapVertex * p_vertex = iterator->current();
-        Rectangle * p_rec = p_vertex->generateBumperRectangle(rec);
-        p_rec->Drawable::draw(Color(CYAN).setA(127));
-        delete p_rec;
+        Shape * p_bumper = p_hitbox->createBumper(iterator->current());
+        p_bumper->Drawable::draw(Color(CYAN).setA(127));
+        delete p_bumper;
         if (drawCatches) {
-            LinkedList<MapCatch> catches = p_vertex->findCatches(rec, this);
+            LinkedList<MapCatch> catches = p_hitbox->findCatches(iterator->current(), this);
             for (Iterator<MapCatch> * subIterator = catches.createIterator(); !subIterator->complete(); subIterator->next()) {
                 GraphicsManager::drawLine(subIterator->current().getLine(), Color(YELLOW).setA(64));
             }

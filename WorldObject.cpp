@@ -83,7 +83,6 @@ WorldObject & WorldObject::addToVel(Vector vel) {
     return *this;
 }
 
-
 WorldObject & WorldObject::moveTo(Coordinate coor) {
     return move(Vector(center, coor));
 }

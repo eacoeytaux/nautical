@@ -10,7 +10,6 @@
 
 #ifdef __APPLE__
 #include "SDL2/SDL.h"
-
 #include <unistd.h>
 #endif
 #ifdef _WIN32
@@ -35,7 +34,7 @@
 #include "Flame.hpp"
 #include "Tentacle.hpp"
 
-#define FPS 3
+#define FPS 30
 #define AUTO_LOCK_CURSOR false
 
 using namespace nautical;

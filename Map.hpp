@@ -18,6 +18,7 @@
 
 namespace nautical {
     class World;
+    class MapHitbox;
     
     class Map : public Drawable {
     public:
@@ -39,7 +40,7 @@ namespace nautical {
         static void setDefaultAirResistanceCoefficient(float airResistanceCoefficient);
         
         void draw() const; //for debugging only
-        void drawBumpers(Rectangle rec, bool drawCatches = true) const; //for debugging on;y
+        void drawBumpers(MapHitbox * p_hitbox, bool drawCatches = true) const; //for debugging on;y
         
     private:
         World * p_parent;

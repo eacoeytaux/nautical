@@ -26,6 +26,8 @@ namespace nautical {
     const std::string WORLD_OBJECT_TAG = "world_object";
     
     class WorldObject : public Updatable, public Drawable, public Tagable {
+        friend class World;
+        
     public:
         WorldObject(Coordinate pos);
         WorldObject(const WorldObject & other);

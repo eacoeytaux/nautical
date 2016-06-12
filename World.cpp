@@ -20,6 +20,8 @@
 
 using namespace nautical;
 
+bool World::drawBumpers = false;
+
 World::World() {
     static int id = 0;
     this->id = id++;
@@ -347,21 +349,25 @@ World & World::handleEvent(Event * p_event) {
  p_object->setObjectPos(objPos);
  }*/
 
-float World::generatePath(MapHitbox * p_hitbox, Vector * p_vel) {
+float World::generatePath(WorldObject * p_object, float percentage) {
+    Vector * p_vel = &(p_object->vel);
+    MapHitbox * p_hitbox = p_object->p_hitbox;
+    
+    if (p_vel->getMagnitude() < 0.000000001)
+        return 1;
+    
     Shape * p_shape = p_hitbox->getShape();
     Coordinate center = p_hitbox->getCenter();
     const MapElement * p_element = p_hitbox->getElement();
+    const MapElement * p_prevElement = p_element;
+    
+    *p_vel *= percentage;
     
     bool velAdjusted = false;
     if (!p_hitbox->adjustVector(p_vel)) {
         p_element = nullptr;
     } else {
         velAdjusted = true;
-    }
-    
-    if (p_vel->getMagnitude() == 0.f) {
-        delete p_shape;
-        return 1;
     }
     
     Coordinate nextCenter = center;
@@ -397,7 +403,7 @@ float World::generatePath(MapHitbox * p_hitbox, Vector * p_vel) {
         for (Iterator<MapVertex*> * iterator = map.getVerticesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
             MapVertex * p_vertex = iterator->current();
             
-            if (p_vertex == p_element)
+            if (p_vertex == p_prevElement)
                 continue;
             
             Queue<Coordinate> collisions;
@@ -423,7 +429,7 @@ float World::generatePath(MapHitbox * p_hitbox, Vector * p_vel) {
         for (Iterator<MapEdge*> * iterator = map.getEdgesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
             MapEdge * p_edge = iterator->current();
             
-            if (p_edge == p_element)
+            if (p_edge == p_prevElement)
                 continue;
             
             Queue<Coordinate> collisions;
@@ -448,13 +454,16 @@ float World::generatePath(MapHitbox * p_hitbox, Vector * p_vel) {
     
     //finished checking collisions
     
+    p_object->move(nextVel);
     p_hitbox->setElement(p_nextElement);
-    *p_vel = nextVel;
     
-    float percentage = 1.f;
+    *p_vel /= percentage;//nextVel / percentage;
+    
+    
+    float percentageUsed = 1.f;
     if ((distance.getValue() < INFINITY) && (p_vel->getMagnitude() != 0))
-        percentage = distance.getValue() / p_vel->getMagnitude();
-    return percentage;
+        percentageUsed = distance.getValue() / p_vel->getMagnitude();
+    return percentageUsed;
 }
 
 void World::update(Collection<Event*> & events) {
@@ -464,6 +473,8 @@ void World::update(Collection<Event*> & events) {
         if (iterator->current()->hasTag(KEYBOARD_EVENT_TAG)) { //TODO for debugging
             if ((static_cast<KeyboardEvent*>(iterator->current())->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(iterator->current())->getKey() == KeyboardEvent::O))
                 setDarknessInEffect(!isDarknessInEffect());
+            else if ((static_cast<KeyboardEvent*>(iterator->current())->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(iterator->current())->getKey() == KeyboardEvent::B))
+                drawBumpers = !drawBumpers;
         }
         
         handleEvent(iterator->current());
@@ -500,7 +511,8 @@ void World::draw() {
     for (int i = 0; i <= MAX_BELOW_ALTITUDE + MAX_ABOVE_ALTITUDE; i++) {
         if (i == MAX_BELOW_ALTITUDE) {
             map.draw();
-            //map.drawBumpers(climber::Player(Coordinate(0, 0)).getHitbox());// Rectangle(Coordinate(0, 0), 60, 80, Angle(Angle::degreesToRadians(45))), true);
+            if (drawBumpers && DEBUG_MODE)
+                map.drawBumpers(climber::Player(Coordinate(0, 0)).getMapHitbox());
         }
         
         for (Iterator<WorldObject*> * iterator = objectsToDraw[i].createIterator(); !iterator->complete(); iterator->next()) {

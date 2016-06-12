@@ -1,3 +1,4 @@
+
 //
 //  Player.cpp
 //  Nautical
@@ -140,7 +141,7 @@ void Player::update() {
     if (p_rope) { //TODO
         if (p_rope->isTaught() && (p_rope->getState() == Rope::SET)) {
             //F = -kx - bv
-            static double k = 0.000000000, b = 2; //k and b are constants in equation
+            static double k = 0.0000000001, b = 2; //k and b are constants in equation
             double x = findDistance(getCenter(), p_rope->getHead()) - p_rope->getLength(); //distance from end to end
             double v = (getVel() + getForce()).getMagnitude(); //relative velocity
             
@@ -158,11 +159,15 @@ void Player::update() {
         setVel(getVel() * getParent()->getMap()->getAirResistanceCoefficient());
     }
     
-    Vector vel = getVel();
-    float percentageUsed = getParent()->generatePath(p_hitbox, &vel);
-    setMapHitbox(p_hitbox);
+    //Vector vel = getVel();
+    float percentageUsed = 1.f;
+    do {
+        percentageUsed *= (1 - getParent()->generatePath(this, percentageUsed));
+    } while (percentageUsed > 0);
+    //setMapHitbox(p_hitbox);
     delete p_hitbox;
-    move(vel);// * percentageUsed);
+    //setVel(vel);
+    
     
     if (p_rope)
         p_rope->setOrigin(getCenter());

@@ -10,10 +10,12 @@
 #define __Nautical__Utility__
 
 #include <string>
+#ifdef _WIN32
 #define _USE_MATH_DEFINES
+#endif
 #include <cmath>
 
-#ifdef M_PI
+#ifndef M_PI
 #define M_PI       3.14159265358979323846264338328      // Pi 
 #endif
 
