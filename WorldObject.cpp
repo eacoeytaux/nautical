@@ -55,6 +55,15 @@ WorldObject & WorldObject::setMapHitbox(MapHitbox * p_hitbox) {
     return *this;
 }
 
+const MapElement * WorldObject::getMapElement() const {
+    return p_hitbox->getElement();
+}
+
+WorldObject & WorldObject::setMapElement(const MapElement * p_element) {
+    p_hitbox->setElement(p_element);
+    return *this;
+}
+
 Vector WorldObject::getForce() const {
     return force;
 }
@@ -66,6 +75,7 @@ WorldObject & WorldObject::setForce(Vector force) {
 
 WorldObject & WorldObject::addToForce(Vector force) {
     this->force += force;
+    this->force.setOrigin(center);
     return *this;
 }
 
@@ -75,6 +85,7 @@ Vector WorldObject::getVel() const {
 
 WorldObject & WorldObject::setVel(Vector vel) {
     this->vel = vel;
+    this->vel.setOrigin(center);
     return *this;
 }
 

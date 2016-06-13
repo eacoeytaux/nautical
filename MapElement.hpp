@@ -60,20 +60,6 @@ namespace nautical {
         static double getDefaultFrictionCoefficient(double value = 1) { return MapElement::defaultFrictionCoefficient * value; }
         static void setDefaultFrictionCoefficient(float frictionCoefficient) { MapElement::defaultFrictionCoefficient = frictionCoefficient; }
         
-        enum ObjectPos {
-            UNDEFINED,
-            ABOVE,
-            RIGHT,
-            BELOW,
-            LEFT
-        };
-        virtual bool adjustVectorRectangle(Rectangle rectangle, Vector * p_vector, ObjectPos pos = UNDEFINED) const = 0; //TODO distinguish rectangles and circles?
-        
-        virtual Shape * generateBumperRectangle(Rectangle rectangle) const = 0;
-        virtual Shape * generateBumperCircle(Circle circle) const = 0;
-        
-        virtual LinkedList<MapCatch> findCatches(Rectangle rectangle, const Map * p_map) const = 0;
-        
         virtual void update() { }
         virtual void draw() const = 0; //for debugging
         

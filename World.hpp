@@ -50,7 +50,7 @@ namespace nautical {
         
         World & handleEvent(Event * p_event);
         
-        float generatePath(WorldObject * p_object, float percentage);
+        Vector generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement, LinkedList<const MapElement*> * p_elementsNotToCheck); //TODO rename function
         
         virtual void update(Collection<Event*> & events);
         virtual void draw();

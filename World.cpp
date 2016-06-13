@@ -349,35 +349,36 @@ World & World::handleEvent(Event * p_event) {
  p_object->setObjectPos(objPos);
  }*/
 
-float World::generatePath(WorldObject * p_object, float percentage) {
-    Vector * p_vel = &(p_object->vel);
-    MapHitbox * p_hitbox = p_object->p_hitbox;
-    
-    if (p_vel->getMagnitude() < 0.000000001)
-        return 1;
+Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement, LinkedList<const MapElement*> * p_elementsNotToCheck) {
+    Vector vel = *p_vel;
+    //if (vel.getMagnitude() < 0.0000001)
+    //    return 0;
     
     Shape * p_shape = p_hitbox->getShape();
     Coordinate center = p_hitbox->getCenter();
     const MapElement * p_element = p_hitbox->getElement();
     const MapElement * p_prevElement = p_element;
     
-    *p_vel *= percentage;
+    if (p_prevElement)
+        p_elementsNotToCheck->insert(p_prevElement);
+    
+    vel *= *p_percentage;
     
     bool velAdjusted = false;
-    if (!p_hitbox->adjustVector(p_vel)) {
+    if (!p_hitbox->adjustVector(&vel)) {
         p_element = nullptr;
     } else {
         velAdjusted = true;
     }
+    *p_nextElement = p_element;
     
     Coordinate nextCenter = center;
-    Vector nextVel = *p_vel;
-    const MapElement * p_nextElement = p_element;
+    Vector nextVel = vel;
     
     int lowerBound, upperBound;
     lowerBound = p_shape->getLowerBoundX();
     upperBound = p_shape->getUpperBoundX();
-    (p_vel->isDxPositive() ? upperBound : lowerBound) += p_vel->getDx();
+    (vel.isDxPositive() ? upperBound : lowerBound) += vel.getDx();
     
     MinValue distance;
     
@@ -386,7 +387,7 @@ float World::generatePath(WorldObject * p_object, float percentage) {
         for (Iterator<MapCatch> * iterator = catches.createIterator(); !iterator->complete(); iterator->next()) {
             MapCatch mapCatch = iterator->current();
             
-            Line adjustedVelLine = Line(center, center + *p_vel);
+            Line adjustedVelLine = Line(center, center + vel);
             
             if (mapCatch.getLine().intersects(adjustedVelLine)) {
                 Coordinate collision = mapCatch.getCollision();
@@ -394,7 +395,7 @@ float World::generatePath(WorldObject * p_object, float percentage) {
                 if (distance.update(collisionVel.getMagnitude())) {
                     nextCenter = collision;
                     nextVel = collisionVel;
-                    p_nextElement = mapCatch.getElement(p_element);
+                    *p_nextElement = mapCatch.getElement(p_element);
                 }
             }
         }
@@ -403,11 +404,11 @@ float World::generatePath(WorldObject * p_object, float percentage) {
         for (Iterator<MapVertex*> * iterator = map.getVerticesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
             MapVertex * p_vertex = iterator->current();
             
-            if (p_vertex == p_prevElement)
+            if (p_elementsNotToCheck->contains(p_vertex))
                 continue;
             
             Queue<Coordinate> collisions;
-            Line adjustedVelLine = Line(center, center + *p_vel);
+            Line adjustedVelLine = Line(center, center + vel);
             Shape * p_bumper = p_hitbox->createBumper(p_vertex);
             if (p_bumper->intersectsLine(adjustedVelLine, &collisions)) {
                 Coordinate collision;
@@ -416,7 +417,7 @@ float World::generatePath(WorldObject * p_object, float percentage) {
                     if (distance.update(collisionVel.getMagnitude())) {
                         nextCenter = collision;
                         nextVel = collisionVel;
-                        p_nextElement = p_vertex;
+                        *p_nextElement = p_vertex;
                     }
                 } else {
                     Logger::writeLog(ERROR_MESSAGE, "World::generatePath(): collisions is empty");
@@ -429,11 +430,11 @@ float World::generatePath(WorldObject * p_object, float percentage) {
         for (Iterator<MapEdge*> * iterator = map.getEdgesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
             MapEdge * p_edge = iterator->current();
             
-            if (p_edge == p_prevElement)
+            if (p_elementsNotToCheck->contains(p_edge))
                 continue;
             
             Queue<Coordinate> collisions;
-            Line adjustedVelLine(center, center + *p_vel);
+            Line adjustedVelLine(center, center + vel);
             Shape * p_bumper = p_hitbox->createBumper(p_edge);
             if (p_bumper->intersectsLine(adjustedVelLine, &collisions)) {
                 Coordinate collision;
@@ -442,7 +443,7 @@ float World::generatePath(WorldObject * p_object, float percentage) {
                     if (distance.update(collisionVel.getMagnitude())) {
                         nextCenter = collision;
                         nextVel = collisionVel;
-                        p_nextElement = p_edge;
+                        *p_nextElement = p_edge;
                     }
                 } else {
                     Logger::writeLog(ERROR_MESSAGE, "World::generatePath(): collisions is empty");
@@ -451,19 +452,21 @@ float World::generatePath(WorldObject * p_object, float percentage) {
             delete p_bumper;
         }
     }
+    delete p_shape;
     
     //finished checking collisions
     
-    p_object->move(nextVel);
-    p_hitbox->setElement(p_nextElement);
+    if (p_vel)
+        *p_vel = vel / *p_percentage;
     
-    *p_vel /= percentage;//nextVel / percentage;
+    *p_percentage = 0.f;
+    if ((distance.getValue() < INFINITY) && (vel.getMagnitude() != 0))
+        *p_percentage = 1 - (distance.getValue() / vel.getMagnitude());
     
+    if (nextVel.getMagnitude() != 0)
+        p_elementsNotToCheck->clear();
     
-    float percentageUsed = 1.f;
-    if ((distance.getValue() < INFINITY) && (p_vel->getMagnitude() != 0))
-        percentageUsed = distance.getValue() / p_vel->getMagnitude();
-    return percentageUsed;
+    return nextVel;
 }
 
 void World::update(Collection<Event*> & events) {
@@ -506,7 +509,7 @@ void World::updateObject(WorldObject * p_object) {
 }
 
 void World::draw() {
-    Logger::writeLog(PLAIN_MESSAGE, "starting world[%d] draw %d", id, drawTimestamp);
+    //Logger::writeLog(PLAIN_MESSAGE, "starting world[%d] draw %d", id, drawTimestamp);
     
     for (int i = 0; i <= MAX_BELOW_ALTITUDE + MAX_ABOVE_ALTITUDE; i++) {
         if (i == MAX_BELOW_ALTITUDE) {
@@ -533,3 +536,4 @@ void World::draw() {
     
     drawTimestamp++;
 }
+

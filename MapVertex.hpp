@@ -31,13 +31,6 @@ namespace nautical {
         MapEdge * getEdgeBack() const;
         MapVertex & setEdgeBack(MapEdge * p_edge);
         
-        bool adjustVectorRectangle(Rectangle rectangle, Vector * p_vector, ObjectPos pos = UNDEFINED) const;
-        
-        Rectangle * generateBumperRectangle(Rectangle rectangle) const;
-        Circle * generateBumperCircle(Circle circle) const;
-        
-        LinkedList<MapCatch> findCatches(Rectangle rectangle, const Map * p_map) const;
-        
         virtual void draw() const;
         
     private:

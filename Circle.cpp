@@ -81,7 +81,7 @@ bool Circle::contains(Coordinate coor) const {
     return findDistance(center, coor) <= radius;
 }
 
-bool Circle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const {
+bool Circle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const { //TODO account for vertical/horizontal lines
     double a = (pow(line.getM(), 2) + 1);
     double b = ((-2 * center.getX()) + (2 * line.getB() * line.getM()) + (-2 * line.getM() * center.getY()));
     double c = (pow(center.getX(), 2) + pow(line.getB(), 2) + (-2 * line.getB() * center.getY()) + pow(center.getY(), 2) - pow(radius, 2));

@@ -26,8 +26,6 @@ namespace nautical {
     const std::string WORLD_OBJECT_TAG = "world_object";
     
     class WorldObject : public Updatable, public Drawable, public Tagable {
-        friend class World;
-        
     public:
         WorldObject(Coordinate pos);
         WorldObject(const WorldObject & other);
@@ -38,6 +36,8 @@ namespace nautical {
         Coordinate getCenter() const;
         MapHitbox * getMapHitbox() const; //should delete pointer after use
         WorldObject & setMapHitbox(MapHitbox * p_hitbox); //should delete pointer after use
+        const MapElement * getMapElement() const;
+        WorldObject & setMapElement(const MapElement * p_element);
         Vector getForce() const;
         WorldObject & setForce(Vector force);
         WorldObject & addToForce(Vector force);

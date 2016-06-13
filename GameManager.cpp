@@ -19,6 +19,7 @@
 
 #include "Logger.hpp"
 #include "GraphicsManager.hpp"
+#include "Random.hpp"
 #include "Queue.hpp"
 #include "Coordinate.hpp"
 #include "KeyboardEvent.hpp"
@@ -34,7 +35,7 @@
 #include "Flame.hpp"
 #include "Tentacle.hpp"
 
-#define FPS 30
+#define FPS 60
 #define AUTO_LOCK_CURSOR false
 
 using namespace nautical;
@@ -105,6 +106,8 @@ bool GameManager::startup() {
             //}
         }
     }
+    
+    Random::initRand(0); //DEBUGGING switch to non-constant
     
     return (init = true);
 }

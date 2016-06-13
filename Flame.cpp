@@ -13,6 +13,7 @@
 using namespace nautical;
 using namespace climber;
 
+//TODO use more defines
 #define FADE_SPEED 2
 
 Flame::Flame(nautical::Coordinate pos) :

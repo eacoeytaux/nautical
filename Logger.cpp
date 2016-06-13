@@ -26,12 +26,16 @@ void Logger::writeLog(MESSAGE_TYPE type, const char * entry, ...) {
     static FILE * logErrorsFile = fopen("nautical-errors.log", "w+");
     
     va_list args;
+    va_list argsWarning;
+    va_list argsError;
     va_start(args, entry);
+    va_start(argsWarning, entry);
+    va_start(argsError, entry);
     
     switch (type) {
         case WARNING_MESSAGE: {
             fprintf(logWarningsFile, "WARNING: ");
-            vfprintf(logWarningsFile, entry, args);
+            vfprintf(logWarningsFile, entry, argsWarning);
             fprintf(logWarningsFile, "\n");
             if (flush)
                 fflush(logWarningsFile);
@@ -40,7 +44,7 @@ void Logger::writeLog(MESSAGE_TYPE type, const char * entry, ...) {
             break;
         } case ERROR_MESSAGE: {
             fprintf(logErrorsFile, "ERROR: ");
-            vfprintf(logErrorsFile, entry, args);
+            vfprintf(logErrorsFile, entry, argsError);
             fprintf(logErrorsFile, "\n");
             if (flush)
                 fflush(logErrorsFile);
@@ -58,4 +62,7 @@ void Logger::writeLog(MESSAGE_TYPE type, const char * entry, ...) {
         fflush(logFile);
     
     va_end(args);
+    va_end(argsWarning);
+    va_end(argsError);
+
 }

@@ -82,9 +82,13 @@ bool Player::handleEvent(Event * p_event) {
             case KeyboardEvent::LEFTARROW: {
                 switch (p_keyboardEvent->getAction()) {
                     case nautical::KeyboardEvent::KEY_PRESSED:
+                        if (!isMovingLeft())
+                            Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingLeft set to true");
                         setMovingLeft(true);
                         return true;
                     default:
+                        if (isMovingLeft())
+                            Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingLeft set to false");
                         setMovingLeft(false);
                         return true;
                 }
@@ -92,9 +96,13 @@ bool Player::handleEvent(Event * p_event) {
             case KeyboardEvent::RIGHTARROW: {
                 switch (p_keyboardEvent->getAction()) {
                     case nautical::KeyboardEvent::KEY_PRESSED:
+                        if (!isMovingRight())
+                            Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingRight set to true");
                         setMovingRight(true);
                         return true;
                     default:
+                        if (isMovingRight())
+                            Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingRight set to false");
                         setMovingRight(false);
                         return true;
                 }
@@ -108,13 +116,16 @@ bool Player::handleEvent(Event * p_event) {
         switch (p_mouseEvent->getAction()) {
             case MouseEvent::LEFT_BUTTON_PRESS:
                 if (!p_rope) {
-                    p_rope = new Rope(this, getCenter(), 250, findAngle(getCenter(), GraphicsManager::screenToWorld(GraphicsManager::getMouseCoor())), 10, 20); //TODO add current velocity of player to rope's velocity
+                    Coordinate target = GraphicsManager::screenToWorld(GraphicsManager::getMouseCoor());
+                    p_rope = new Rope(this, getCenter(), 250, findAngle(getCenter(), target), 10, 20); //TODO add current velocity of player to rope's velocity
                     getParent()->addObject(p_rope);
+                    Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): p_rope set to EXTENDING, target set to (%f:%f)", target.getX(), target.getY());
                     return true;
                 }
             case MouseEvent::LEFT_BUTTON_RELEASE:
                 if (p_rope) {
                     p_rope->setState(Rope::RETRACTING);
+                    Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): p_rope set to RETRACTING");
                     return true;
                 }
             default:
@@ -138,7 +149,7 @@ void Player::update() {
     if (isMovingRight())
         addToForce(Vector(0.3, 0));
     
-    if (p_rope) { //TODO
+    /*if (p_rope) { //TODO
         if (p_rope->isTaught() && (p_rope->getState() == Rope::SET)) {
             //F = -kx - bv
             static double k = 0.0000000001, b = 2; //k and b are constants in equation
@@ -149,7 +160,7 @@ void Player::update() {
             
             addToForce(Vector(findAngle(p_rope->getHead(), getCenter()), (-(k * x) - (b * v)) * damper));
         }
-    }
+    }*/
     
     addToVel(getForce());
     
@@ -159,15 +170,37 @@ void Player::update() {
         setVel(getVel() * getParent()->getMap()->getAirResistanceCoefficient());
     }
     
-    //Vector vel = getVel();
+    World * p_parent = getParent();
     float percentageUsed = 1.f;
+    Vector vel = getVel();
+    LinkedList<const MapElement*> elementsNotToCheck;
     do {
-        percentageUsed *= (1 - getParent()->generatePath(this, percentageUsed));
+        MapHitbox * p_hitbox = getMapHitbox();
+        Vector movement = p_parent->generatePath(&percentageUsed, &vel, p_hitbox, &p_element, &elementsNotToCheck);
+        delete p_hitbox;
+        
+        //check movement here
+        if (p_rope) {
+            if (p_rope->getState() == Rope::SET) {
+                double distance = findDistance(p_rope->getHead(), movement.getDestination());
+                if (distance > p_rope->getLength()) {
+                    Queue<Coordinate> intersections;
+                    Circle(p_rope->getHead(), p_rope->getLength()).intersectsLine(Line(movement.getOrigin(), movement.getDestination()), &intersections);
+                    Coordinate coor;
+                    if (intersections.pop(&coor)) {
+                        //TODO stop movement
+                    } else {
+                        Logger::writeLog(ERROR_MESSAGE, "Player::update(): did not find collision with rope boundaries");
+                    }
+                }
+            }
+        }
+        
+        setMapElement(p_element);
+        move(movement);
+        setVel(vel);
     } while (percentageUsed > 0);
-    //setMapHitbox(p_hitbox);
     delete p_hitbox;
-    //setVel(vel);
-    
     
     if (p_rope)
         p_rope->setOrigin(getCenter());

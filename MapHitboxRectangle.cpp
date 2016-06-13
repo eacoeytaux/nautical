@@ -8,6 +8,7 @@
 
 #include "MapHitboxRectangle.hpp"
 
+#include "Random.hpp"
 #include "Queue.hpp"
 #include "SortedList.hpp"
 
@@ -44,17 +45,27 @@ bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, Vector * p_vec
     double recAngleValue = recAngle.getValue();
     
     Coordinate recCenter = rec.getCenter();
-    Angle recDiagonalAngle = Angle(rec.getWidth(), rec.getHeight());
+    double recDiagonalAngleValue = Angle(rec.getWidth(), rec.getHeight()).getValue();
     
     Angle angleToOrigin = findAngle(p_vertex->getCoor(), recCenter);
     
-    if ((angleToOrigin.getValue() > M_PI - recDiagonalAngle.getValue() + recAngleValue) || (angleToOrigin.getValue() < -M_PI + recDiagonalAngle.getValue() + recAngleValue)) {
+    /*if ((angleToOrigin.getValue() == M_PI - recDiagonalAngleValue + recAngleValue) && Random::getRandBool()) {
         return p_vector->subtractAngle(Angle(M_PI) + recAngle);
-    } else if (angleToOrigin.getValue() > recDiagonalAngle.getValue() + recAngleValue) {
+    } else if ((angleToOrigin.getValue() == recDiagonalAngleValue + recAngleValue) && Random::getRandBool()) {
         return p_vector->subtractAngle(Angle(M_PI_2) + recAngle);
-    } else if (angleToOrigin.getValue() > -recDiagonalAngle.getValue() + recAngleValue) {
+    } else if ((angleToOrigin.getValue() == -recDiagonalAngleValue + recAngleValue) && Random::getRandBool()) {
         return p_vector->subtractAngle(recAngle);
-    } else {
+    } else if ((angleToOrigin.getValue() == -M_PI + recDiagonalAngleValue + recAngleValue) && Random::getRandBool()) {
+        return p_vector->subtractAngle(Angle(-M_PI_2) + recAngle);
+    }*/
+    
+    if ((angleToOrigin.getValue() > M_PI - recDiagonalAngleValue + recAngleValue) || (angleToOrigin.getValue() < -M_PI + recDiagonalAngleValue + recAngleValue)) {
+        return p_vector->subtractAngle(Angle(M_PI) + recAngle);
+    } else if (angleToOrigin.getValue() > recDiagonalAngleValue + recAngleValue) {
+        return p_vector->subtractAngle(Angle(M_PI_2) + recAngle);
+    } else if (angleToOrigin.getValue() > -recDiagonalAngleValue + recAngleValue) {
+        return p_vector->subtractAngle(recAngle);
+    } else { //if (angleToOrigin.getValue() > -M_PI + recDiagonalAngleValue + recAngleValue) {
         return p_vector->subtractAngle(Angle(-M_PI_2) + recAngle);
     }
 }
@@ -91,7 +102,7 @@ LinkedList<MapCatch> MapHitboxRectangle::findCatches(const MapEdge * p_edge, con
         
         Queue<Coordinate> collisions;
         LineShape * p_lineShape = createBumper(p_edge);
-        LineShape * p_lineShape2 = p_edge2->generateBumperRectangle(rec);
+        LineShape * p_lineShape2 = createBumper(p_edge2);
         if (p_lineShape->intersectsShape(p_lineShape2, &collisions)) {
             Coordinate collision;
             if (collisions.pop(&collision))
