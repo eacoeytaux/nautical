@@ -156,7 +156,7 @@ void GameManager::run() {
     flame->addOrigin(40);
     //flame->addOrigin(20, Vector(-15, 0));
     //flame->addOrigin(20, Vector(15, 0));
-    //level.addObject(flame);
+    level.addObject(flame);
     
     Clock timer;
     while (running) {

@@ -23,12 +23,22 @@ namespace nautical {
         static void setInEffect(bool b);
         
         static float getPercentage();
-        static void setPercentage(float p);
+        static void setPercentage(float percentage);
         
         static void addShape(Shape * p_shape, int layer);
         static void clearShapes();
         
         static void draw();
+        
+    private:
+        static bool inEffect;
+        
+        static float percentage;
+        static LinkedList<Shape*> subtractedShapes[DARKNESS_LAYERS];
+        static MinValue lowerBoundX;
+        static MinValue lowerBoundY;
+        static MaxValue upperBoundX;
+        static MaxValue upperBoundY;
     };
 }
 

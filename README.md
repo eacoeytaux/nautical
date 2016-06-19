@@ -18,7 +18,7 @@ to switch between DEBUG_MODE, press enter
 
 in DEBUG_MODE:
 
-    Show bumpers and normals with 'B'
+- show bumpers and normals with 'B'
 
 
 TODOs:

@@ -16,13 +16,13 @@
 
 using namespace nautical;
 
-bool inEffect = false;
-float percentage = 1.f;
-LinkedList<Shape*> subtractedShapes[DARKNESS_LAYERS];
-MinValue lowerBoundX;
-MinValue lowerBoundY;
-MaxValue upperBoundX;
-MaxValue upperBoundY;
+bool DarknessOverlay::inEffect = false;
+float DarknessOverlay::percentage = 1.f;
+LinkedList<Shape*> DarknessOverlay::subtractedShapes[DARKNESS_LAYERS];
+MinValue DarknessOverlay::lowerBoundX;
+MinValue DarknessOverlay::lowerBoundY;
+MaxValue DarknessOverlay::upperBoundX;
+MaxValue DarknessOverlay::upperBoundY;
 
 bool DarknessOverlay::isInEffect() {
     return inEffect;
@@ -36,8 +36,8 @@ float DarknessOverlay::getPercentage() {
     return percentage;
 }
 
-void DarknessOverlay::setPercentage(float p) {
-    percentage = p;
+void DarknessOverlay::setPercentage(float percentage) {
+    DarknessOverlay::percentage = percentage;
 }
 
 void DarknessOverlay::addShape(Shape * p_shape, int layer) {
