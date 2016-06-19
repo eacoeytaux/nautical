@@ -58,7 +58,7 @@ namespace nautical {
         }
         
         static double getDefaultFrictionCoefficient(double value = 1) { return MapElement::defaultFrictionCoefficient * value; }
-        static void setDefaultFrictionCoefficient(float frictionCoefficient) { MapElement::defaultFrictionCoefficient = frictionCoefficient; }
+        static void setDefaultFrictionCoefficient(double frictionCoefficient) { MapElement::defaultFrictionCoefficient = frictionCoefficient; }
         
         virtual void update() { }
         virtual void draw() const = 0; //for debugging
@@ -68,8 +68,8 @@ namespace nautical {
         
     private:
         bool sticky; //whether or not gravity affects object while on edge
-        float frictionCoefficient;
-        static float defaultFrictionCoefficient;
+        double frictionCoefficient;
+        static double defaultFrictionCoefficient;
     };
 }
 

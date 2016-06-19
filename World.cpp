@@ -353,8 +353,8 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
     Vector nextVel = vel;
     
     int lowerBound, upperBound;
-    lowerBound = p_shape->getLowerBoundX();
-    upperBound = p_shape->getUpperBoundX();
+    lowerBound = (int)(p_shape->getLowerBoundX());
+    upperBound = (int)(p_shape->getUpperBoundX());
     (vel.isDxPositive() ? upperBound : lowerBound) += vel.getDx();
     
     MinValue distance;
@@ -449,7 +449,7 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
     
     *p_percentage = 0.f;
     if ((distance.getValue() < INFINITY) && (vel.getMagnitude() != 0))
-        *p_percentage = 1 - (distance.getValue() / vel.getMagnitude());
+        *p_percentage = 1.f - (float)(distance.getValue() / vel.getMagnitude());
     
     return nextVel;
 }

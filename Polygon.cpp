@@ -200,9 +200,10 @@ bool Polygon::intersectsLine(Line line, Queue<Coordinate> * p_intersections) con
     while (intersections.size() > 0) { //TODO there HAS to be a more efficient way to do this
         Iterator<Coordinate> * iterator = intersections.createIterator();
         Coordinate closestCoor = iterator->current();
+        MinValue distance(findDistance(origin, closestCoor));
         for (iterator->next(); !iterator->complete(); iterator->next()) {
             Coordinate coor = iterator->current();
-            if (findDistance(origin, coor))
+            if (distance.update(findDistance(origin, coor)))
                 closestCoor = coor;
         }
         p_intersections->insert(closestCoor);

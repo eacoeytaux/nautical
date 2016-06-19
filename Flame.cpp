@@ -50,7 +50,7 @@ void Flame::update() {
         if (p_origin->orangeCountdown.check()) {
             Spark * p_spark = new Spark;
             p_spark->center = p_origin->origin;
-            p_spark->width = p_origin->flameWidth * (Random::getRandFloat(0.3) + 0.7);
+            p_spark->width = p_origin->flameWidth * (Random::getRandDouble(0.3) + 0.7);
             p_spark->alpha = 255;
             orangeParticles.insert(p_spark);
             p_origin->orangeCountdown.reset(5 + Random::getRandInt(5));
@@ -60,7 +60,7 @@ void Flame::update() {
         if (p_origin->yellowCountdown.check()) {
             Spark * p_spark = new Spark;
             p_spark->center = p_origin->origin;
-            p_spark->width = p_origin->flameWidth * (Random::getRandFloat(0.2) + 0.3);
+            p_spark->width = p_origin->flameWidth * (Random::getRandDouble(0.2) + 0.3);
             p_spark->alpha = 255;
             yellowParticles.insert(p_spark);
             p_origin->yellowCountdown.reset(7 + Random::getRandInt(5));
@@ -72,7 +72,7 @@ void Flame::update() {
     for (Iterator<Spark*> * iterator = orangeParticles.createIterator(); !iterator->complete(); iterator->next()) {
         Spark * p_spark = iterator->current();
         
-        p_spark->center += (Vector(Angle(Random::getRandFloat(M_PI_2) + M_PI_4), Random::getRandFloat(0.5) + 0.5));
+        p_spark->center += (Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5));
         p_spark->width *= 0.97;
         p_spark->alpha -= FADE_SPEED;
         
@@ -90,7 +90,7 @@ void Flame::update() {
     for (Iterator<Spark*> * iterator = yellowParticles.createIterator(); !iterator->complete(); iterator->next()) {
         Spark * p_spark = iterator->current();
         
-        p_spark->center += (Vector(Angle(Random::getRandFloat(M_PI_2) + M_PI_4), Random::getRandFloat(0.5) + 0.5));
+        p_spark->center += (Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5));
         p_spark->width *= 0.97;
         p_spark->alpha -= FADE_SPEED;
         
@@ -109,7 +109,7 @@ void Flame::update() {
         static Vector moveVec[DARKNESS_LAYERS];
         if (count.check()) {
             for (int i = 0; i < DARKNESS_LAYERS; i++) {
-                moveVec[i] = Vector(Angle(Random::getRandFloat(M_PI * 2)), Random::getRandFloat(2));
+                moveVec[i] = Vector(Angle(Random::getRandDouble(M_PI * 2)), Random::getRandDouble(2));
             }
             count.reset();
         }
@@ -128,12 +128,12 @@ void Flame::draw() const {
     if (p_sheet) {
         for (Iterator<Spark*> * iterator = orangeParticles.createIterator(); !iterator->complete(); iterator->next()) {
             Spark * p_spark = iterator->current();
-            p_sheet->setScale(p_spark->width);
+            p_sheet->setScale((float)(p_spark->width));
             GraphicsManager::drawImageFromSpriteSheet(p_sheet, 0, p_spark->center, rotationAngle, false, false, p_spark->alpha);
         }
         for (Iterator<Spark*> * iterator = yellowParticles.createIterator(); !iterator->complete(); iterator->next()) {
             Spark * p_spark = iterator->current();
-            p_sheet->setScale(p_spark->width);
+            p_sheet->setScale((float)(p_spark->width));
             GraphicsManager::drawImageFromSpriteSheet(p_sheet, 1, p_spark->center, rotationAngle, false, false, p_spark->alpha);
         }
     }

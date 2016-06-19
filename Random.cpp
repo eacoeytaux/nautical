@@ -12,7 +12,7 @@
 
 using namespace nautical;
 
-void Random::initRand(int seed) {
+void Random::initRand(unsigned int seed) {
     srand(seed);
 }
 
@@ -20,8 +20,8 @@ int Random::getRandInt(int range, int lowerBound) {
     return (rand() % range) + lowerBound;
 }
 
-float Random::getRandFloat(float range, float lowerBound) {
-    return ((static_cast<float>(rand()) / static_cast<float>(RAND_MAX)) * range) + lowerBound;
+double Random::getRandDouble(double range, double lowerBound) {
+    return ((static_cast<double>(rand()) / static_cast<double>(RAND_MAX)) * range) + lowerBound;
 }
 
 bool Random::getRandBool(float trueOdds) {
@@ -30,5 +30,5 @@ bool Random::getRandBool(float trueOdds) {
     else if (trueOdds <= 0)
         return false;
     
-    return (getRandFloat() <= trueOdds);
+    return (getRandDouble() <= trueOdds);
 }

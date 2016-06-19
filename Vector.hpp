@@ -55,10 +55,10 @@ namespace nautical {
         Vector & operator+=(const Vector & vec);
         Vector operator-(const Vector & vec) const;
         Vector & operator-=(const Vector & vec);
-        Vector operator*(const float & f) const;
-        Vector & operator*=(const float & f);
-        Vector operator/(const float & f) const;
-        Vector & operator/=(const float & f);
+        Vector operator*(const double & d) const;
+        Vector & operator*=(const double & d);
+        Vector operator/(const double & d) const;
+        Vector & operator/=(const double & d);
         
         bool operator==(const Vector & vec) const;
         bool operator!=(const Vector & vec) const;
@@ -98,7 +98,6 @@ namespace nautical {
     inline Line operator-(const Line & line, const Vector & vec) {
         return Line(line.getCoor1() - vec, line.getCoor1() - vec);
     }
-    
     
     inline bool Vector::operator==(const Vector & vec) const {
         return ((origin == vec.origin) && (dx == vec.dx) && (dy == vec.dy));

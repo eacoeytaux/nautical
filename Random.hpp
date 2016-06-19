@@ -12,9 +12,9 @@
 namespace nautical {
     class Random {
     public:
-        static void initRand(int seed);
+        static void initRand(unsigned int seed);
         static int getRandInt(int range, int lowerBound = 0);
-        static float getRandFloat(float range = 1, float lowerBound = 0);
+        static double getRandDouble(double range = 1, double lowerBound = 0);
         static bool getRandBool(float trueOdds = 0.5); //returns a boolean with trueOdds chance of true and 1 - trueOdds chance of false
     };
 }

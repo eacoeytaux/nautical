@@ -19,7 +19,7 @@ CONTROLS:
 
 in DEBUG_MODE:
 
-    - show bumpers and normals with 'B'
+- show bumpers and normals with 'B'
 
 
 

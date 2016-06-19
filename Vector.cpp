@@ -240,22 +240,22 @@ Vector & Vector::operator-=(const Vector & vec) {
     return *this;
 }
 
-Vector Vector::operator*(const float & f) const {
-    return Vector(dx * f, dy * f, origin);
+Vector Vector::operator*(const double & d) const {
+    return Vector(dx * d, dy * d, origin);
 }
 
-Vector & Vector::operator*=(const float & f) {
-    setDx(dx * f);
-    setDy(dy * f);
+Vector & Vector::operator*=(const double & d) {
+    setDx(dx * d);
+    setDy(dy * d);
     return *this;
 }
 
-Vector Vector::operator/(const float & f) const {
-    return Vector(dx / f, dy / f, origin);
+Vector Vector::operator/(const double & d) const {
+    return Vector(dx / d, dy / d, origin);
 }
 
-Vector & Vector::operator/=(const float & f) {
-    setDx(dx / f);
-    setDy(dy / f);
+Vector & Vector::operator/=(const double & d) {
+    setDx(dx / d);
+    setDy(dy / d);
     return *this;
 }

@@ -213,7 +213,7 @@ void Player::update() {
         static Vector moveVec[DARKNESS_LAYERS];
         if (count.check()) {
             for (int i = 0; i < DARKNESS_LAYERS; i++) {
-                moveVec[i] = Vector(Angle(Random::getRandFloat(M_PI * 2)), Random::getRandFloat(2));
+                moveVec[i] = Vector(Angle(Random::getRandDouble(M_PI * 2)), Random::getRandDouble(2));
             }
             count.reset();
         }

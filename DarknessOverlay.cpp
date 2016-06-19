@@ -69,8 +69,8 @@ void DarknessOverlay::draw() { //TODO optimize (only needs to check between yLow
     for (int i = 0; i < DARKNESS_LAYERS; i++) {
         int screenWidth = GraphicsManager::getScreenWidth();
         int screenHeight = GraphicsManager::getScreenHeight();
-        int screenLowerBoundX = fmin(0, GraphicsManager::worldToScreenX(lowerBoundX.getValue()));
-        int screenUpperBoundX = fmax(GraphicsManager::worldToScreenX(upperBoundX.getValue()), screenWidth);
+        int screenLowerBoundX = (int)fmin(0, GraphicsManager::worldToScreenX(lowerBoundX.getValue()));
+        int screenUpperBoundX = (int)fmax(GraphicsManager::worldToScreenX(upperBoundX.getValue()), screenWidth);
         for (int y = 0; y <= screenHeight; y++) {
             double yWorld = GraphicsManager::screenToWorldY(y);
             Line screenLine(GraphicsManager::screenToWorld(Coordinate(screenLowerBoundX, y)).moveX(-1), GraphicsManager::screenToWorld(Coordinate(screenUpperBoundX, y)));
@@ -112,7 +112,7 @@ void DarknessOverlay::draw() { //TODO optimize (only needs to check between yLow
             }
             
             for (Iterator<Line> * iterator = linesToDraw.createIterator(); !iterator->complete(); iterator->next()) {
-                GraphicsManager::drawLine(iterator->current(), Color(BLACK).setA(fmin(51 * (i + i + 1), 255) * percentage)); //TODO better way to calculate alpha?
+                GraphicsManager::drawLine(iterator->current(), Color(BLACK).setA((unsigned char)(fmin(51 * (i + i + 1), 255) * percentage))); //TODO better way to calculate alpha?
             }
         }
     }

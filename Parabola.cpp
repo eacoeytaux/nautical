@@ -130,7 +130,18 @@ bool Parabola::inRangeX(double x) const {
     return inRange(x, xLeft, xRight);
 }
 
-bool Parabola::intersects(Line line, Queue<Coordinate> * p_intersections) const {
+bool Parabola::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const {
+    if (line.isVertical()) {
+        double xIntersection = line.getCoor1().getX();
+        double yIntersection = calculateY(xIntersection);
+        Coordinate coor(xIntersection, yIntersection);
+        if (line.inBox(coor) && inRangeX(xIntersection)) {
+            if (p_intersections)
+                p_intersections->insert(coor);
+            return true;
+        }
+    }
+    
     double newB = b - line.getM();
     double newC = c - line.getB();
     
@@ -152,7 +163,6 @@ bool Parabola::intersects(Line line, Queue<Coordinate> * p_intersections) const 
             } else {
                 double xDistance1 = fabs(line.getCoor1().getX() - coor1.getX());
                 double xDistance2 = fabs(line.getCoor1().getX() - coor2.getX());
-                
                 if (xDistance1 <= xDistance2) {
                     p_intersections->insert(coor1);
                     p_intersections->insert(coor2);

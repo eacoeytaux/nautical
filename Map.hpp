@@ -48,8 +48,8 @@ namespace nautical {
         SortedList<MapVertex*> vertices;
         SortedList<MapEdge*> edges;
         
-        float airResistanceCoefficient;
-        static float defaultAirResistanceCoefficient;
+        double airResistanceCoefficient;
+        static double defaultAirResistanceCoefficient;
     };
 }
 

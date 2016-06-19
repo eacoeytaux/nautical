@@ -12,8 +12,8 @@
 
 using namespace nautical;
 
-float Map::defaultAirResistanceCoefficient = 0.995;
-float MapElement::defaultFrictionCoefficient = 0.9;
+double Map::defaultAirResistanceCoefficient = 0.995;
+double MapElement::defaultFrictionCoefficient = 0.9;
 
 //these functions used to sort edges and vertices
 double weighMapVertex(MapVertex * const * pp_vertex) {

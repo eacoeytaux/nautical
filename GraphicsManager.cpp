@@ -170,8 +170,8 @@ void GraphicsManager::drawCoordinate(double x, double y, Color color, bool adjus
     }
     
     static SDL_Rect rect;
-    rect.x = x - 1;
-    rect.y = y - 1;
+    rect.x = (int)x - 1;
+    rect.y = (int)y - 1;
     rect.w = 3;
     rect.h = 3;
     
