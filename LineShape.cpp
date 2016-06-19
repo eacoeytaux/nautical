@@ -43,7 +43,7 @@ double LineShape::getUpperBoundY() const {
 }
 
 bool LineShape::contains(Coordinate coor) const {
-    return false; //TODO maybe if Line.inLine() is implemented?
+    return false;
 }
 
 bool LineShape::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const {
@@ -66,8 +66,8 @@ LineShape & LineShape::move(Vector vector) {
     return *this;
 }
 
-LineShape & LineShape::rotateAboutCoordinate(Angle angle, Coordinate coor) {
-    line.rotateAboutCoordinate(angle, coor);
+LineShape & LineShape::rotateAboutCoordinate(Coordinate coor, Angle angle) {
+    line.rotateAboutCoordinate(coor, angle);
     return *this;
 }
 

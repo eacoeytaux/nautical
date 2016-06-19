@@ -42,7 +42,7 @@ namespace nautical {
         virtual bool intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections = nullptr) const = 0;
         
         virtual Shape & move(Vector vector) = 0;
-        virtual Shape & rotateAboutCoordinate(Angle angle, Coordinate coor = Coordinate(0, 0)) = 0;
+        virtual Shape & rotateAboutCoordinate(Coordinate coor, Angle angle) = 0;
         
         virtual void draw() const = 0;
         
@@ -69,7 +69,7 @@ namespace nautical {
             int screenLowerBoundY = (int)GraphicsManager::worldToScreenY(getLowerBoundY()) + 1;
             int screenUpperBoundX = (int)GraphicsManager::worldToScreenX(getUpperBoundX()) + 1;
             int screenUpperBoundY = (int)GraphicsManager::worldToScreenY(getUpperBoundY()) - 1;
-            for (int y = screenUpperBoundY; y <= screenLowerBoundY; y++) { //TODO optimize (does not to check 0 to screenHeight)
+            for (int y = screenUpperBoundY; y <= screenLowerBoundY; y++) { //TODO optimize (does not need to check 0 to screenHeight)
                 double yWorld = GraphicsManager::screenToWorldY(y);
                 Line screenLine(GraphicsManager::screenToWorld(Coordinate(screenLowerBoundX, y)).moveX(-1), GraphicsManager::screenToWorld(Coordinate(screenUpperBoundX, y).moveX(1)));
                 

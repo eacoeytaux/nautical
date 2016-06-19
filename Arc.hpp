@@ -40,6 +40,8 @@ namespace nautical {
         bool inArc(Angle angle) const;
         bool inArc(Coordinate coor) const;
         
+        Arc & rotateAboutCoordinate(Coordinate coor, Angle angle);
+        
     private:
         Coordinate origin;
         double originDistance;

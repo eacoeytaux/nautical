@@ -251,27 +251,27 @@ Polygon & Polygon::move(Vector vector) {
     return *this;
 }
 
-Polygon & Polygon::rotateAboutCoordinate(Angle angle, Coordinate coor) {
+Polygon & Polygon::rotateAboutCoordinate(Coordinate coor, Angle angle) {
     Queue<Coordinate> newVertices;
     for (Iterator<Coordinate> * iterator = vertices.createIterator(); !iterator->complete(); iterator->next()) {
-        newVertices.insert(iterator->current().rotateAboutCoordinate(angle, coor));
+        newVertices.insert(iterator->current().rotateAboutCoordinate(coor, angle));
     }
     vertices = newVertices;
     Queue<Line> newEdges;
     for (Iterator<Line> * iterator = edges.createIterator(); !iterator->complete(); iterator->next()) {
-        newEdges.insert(iterator->current().rotateAboutCoordinate(angle, coor));
+        newEdges.insert(iterator->current().rotateAboutCoordinate(coor, angle));
     }
     edges = newEdges;
     
     if (!convex) {
         Queue<Coordinate> newConvexVertices;
         for (Iterator<Coordinate> * iterator = convexVertices.createIterator(); !iterator->complete(); iterator->next()) {
-            newConvexVertices.insert(iterator->current().rotateAboutCoordinate(angle, coor));
+            newConvexVertices.insert(iterator->current().rotateAboutCoordinate(coor, angle));
         }
         convexVertices = newConvexVertices;
         Queue<Line> newConvexEdges;
         for (Iterator<Line> * iterator = convexEdges.createIterator(); !iterator->complete(); iterator->next()) {
-            newConvexEdges.insert(iterator->current().rotateAboutCoordinate(angle, coor));
+            newConvexEdges.insert(iterator->current().rotateAboutCoordinate(coor, angle));
         }
         convexEdges = newConvexEdges;
     } else {

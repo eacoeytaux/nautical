@@ -112,7 +112,7 @@ void DarknessOverlay::draw() { //TODO optimize (only needs to check between yLow
             }
             
             for (Iterator<Line> * iterator = linesToDraw.createIterator(); !iterator->complete(); iterator->next()) {
-                GraphicsManager::drawLine(iterator->current(), Color(BLACK).setA((unsigned char)(fmin(51 * (i + i + 1), 255) * percentage))); //TODO better way to calculate alpha?
+                GraphicsManager::drawLine(iterator->current(), Color(BLACK).setA((unsigned char)(fmin(51 * (i + i + 1), 255) * percentage)));
             }
         }
     }

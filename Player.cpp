@@ -9,13 +9,12 @@
 
 #include "Player.hpp"
 
+#include "Random.hpp"
+#include "Countdown.hpp"
 #include "KeyboardEvent.hpp"
 #include "MouseEvent.hpp"
+#include "DarknessOverlay.hpp"
 #include "MapHitboxRectangle.hpp"
-
-#include "DarknessOverlay.hpp" //TODO delete
-#include "Random.hpp" //TODO delete
-#include "Countdown.hpp" //TODO delete
 
 using namespace nautical;
 using namespace climber;
@@ -209,7 +208,7 @@ void Player::update() {
     //lighting
     if (DarknessOverlay::isInEffect()) {
         Circle * p_circle = new Circle(getCenter(), 150);
-        static Countdown count(1);
+        static Countdown count(1); //TODO make these not static
         static Vector moveVec[DARKNESS_LAYERS];
         if (count.check()) {
             for (int i = 0; i < DARKNESS_LAYERS; i++) {
@@ -223,6 +222,7 @@ void Player::update() {
             DarknessOverlay::addShape(p_circleToAdd, i);
             p_circle->setRadius(p_circle->getRadius() + 10);
         }
+        delete p_circle;
     }
 }
 

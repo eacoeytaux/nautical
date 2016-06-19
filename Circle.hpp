@@ -42,7 +42,7 @@ namespace nautical {
         bool intersectsCircle(const Circle * p_circle, Queue<Coordinate> * p_intersections = nullptr) const;
         
         Circle & move(Vector vector);
-        Circle & rotateAboutCoordinate(Angle angle, Coordinate coor = Coordinate(0, 0));
+        Circle & rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         void draw() const;
         

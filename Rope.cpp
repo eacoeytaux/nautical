@@ -139,8 +139,8 @@ void Rope::draw() const {
             wave.draw();
             break;
         } case SET: {
-            if (DEBUG_MODE)
-                Circle(head, length).setColor(Color(255, 255, 255, 64)).draw(); //for debugging
+            if (World::DRAW_BUMPERS && DEBUG_MODE)
+                Circle(head, length).setColor(Color(255, 255, 255, 64)).draw(); //DEBUGGING
             if (taught)
                 GraphicsManager::drawLine(line, Color(255, 153, 153));
             else

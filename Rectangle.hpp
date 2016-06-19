@@ -26,7 +26,7 @@ namespace nautical {
         double getHeight() const;
         Rectangle & setHeight(double height);
         Angle getAngle() const;
-        Rectangle & setAngle(Angle angle); //TODO add rotate
+        Rectangle & setAngle(Angle angle);
         
         Coordinate getTopRightCoor() const;
         Coordinate getBottomRightCoor() const;
@@ -50,7 +50,7 @@ namespace nautical {
         bool intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections = nullptr) const;
         
         Rectangle & move(Vector vector);
-        Rectangle & rotateAboutCoordinate(Angle angle, Coordinate coor = Coordinate(0, 0));
+        Rectangle & rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         void draw() const;
         

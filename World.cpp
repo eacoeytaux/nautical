@@ -15,17 +15,38 @@
 #include "MapHitbox.hpp"
 #include "WorldObject.hpp"
 
-#include "KeyboardEvent.hpp" //TODO delete
+//DEBUGGING
+#include "KeyboardEvent.hpp"
 #include "Player.hpp" //TODO delete
 
 using namespace nautical;
 
 bool World::DRAW_BUMPERS = false;
 
-World::World() {
+//functions used for weighing WorldObjects in SortedLists
+double weighWorldObjectByX(WorldObject * const * p_object) {
+    return (*p_object)->getCenter().getX();
+}
+
+double weighWorldObjectByY(WorldObject * const * p_object) {
+    return (*p_object)->getCenter().getY();
+}
+
+World::World(bool verticalWorld) {
     static int id = 0;
     this->id = id++;
     
+    allObjects = SortedList<WorldObject*>(verticalWorld ? &weighWorldObjectByY : &weighWorldObjectByX);
+    objectsToDelete = SortedList<WorldObject*>(verticalWorld ? &weighWorldObjectByY : &weighWorldObjectByX);
+    for (int i = 0; i < MAX_PRIORITY + 1; i++) {
+        objectsToUpdate[i] = SortedList<WorldObject*>(verticalWorld ? &weighWorldObjectByY : &weighWorldObjectByX);
+    }
+    for (int i = 0; i < MAX_BELOW_ALTITUDE + MAX_ABOVE_ALTITUDE + 1; i++) {
+        objectsToDraw[i] = SortedList<WorldObject*>(verticalWorld ? &weighWorldObjectByY : &weighWorldObjectByX);
+    }
+    
+    //generate map //TODO move this somewhere else
+    map = Map(verticalWorld);
     Map * p_map = &map;
     MapVertex * v0 = p_map->createVertex(Coordinate(100, 640));
     MapVertex * v1 = p_map->createVertex(Coordinate(10, 340));
@@ -63,6 +84,10 @@ int World::getUpdateTimestamp() const {
 
 int World::getDrawTimestamp() const {
     return drawTimestamp;
+}
+
+bool World::isVertical() const {
+    return isVertical();
 }
 
 const Map * World::getMap() const {
@@ -338,12 +363,6 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
     
     vel *= *p_percentage;
     
-    Vector tempVel = vel;
-    if (p_element && !p_hitbox->adjustVector(&tempVel)) {
-        int x = 5;
-        x++;
-    }
-    
     if (p_element && !p_hitbox->adjustVector(&vel))
         p_element = nullptr;
     
@@ -353,9 +372,12 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
     Vector nextVel = vel;
     
     int lowerBound, upperBound;
-    lowerBound = (int)(p_shape->getLowerBoundX());
-    upperBound = (int)(p_shape->getUpperBoundX());
-    (vel.isDxPositive() ? upperBound : lowerBound) += vel.getDx();
+    lowerBound = (int)(verticalWorld ? p_shape->getLowerBoundY() : p_shape->getLowerBoundX());
+    upperBound = (int)(verticalWorld ? p_shape->getUpperBoundY() : p_shape->getUpperBoundX());
+    if (verticalWorld)
+        (vel.isDyPositive() ? upperBound : lowerBound) += vel.getDy();
+    else
+        (vel.isDxPositive() ? upperBound : lowerBound) += vel.getDx();
     
     MinValue distance;
     
@@ -458,7 +480,7 @@ void World::update(Collection<Event*> & events) {
     Logger::writeLog(PLAIN_MESSAGE, "starting world[%d] update %d", id, updateTimestamp);
     
     for (Iterator<Event*> * iterator = events.createIterator(); !iterator->complete(); iterator->next()) {
-        if (iterator->current()->hasTag(KEYBOARD_EVENT_TAG)) { //TODO for debugging
+        if (iterator->current()->hasTag(KEYBOARD_EVENT_TAG)) { //DEBUGGING
             if ((static_cast<KeyboardEvent*>(iterator->current())->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(iterator->current())->getKey() == KeyboardEvent::O)) {
                 DarknessOverlay::setInEffect(!DarknessOverlay::isInEffect());
             } else if ((static_cast<KeyboardEvent*>(iterator->current())->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(iterator->current())->getKey() == KeyboardEvent::B)) {
@@ -522,4 +544,3 @@ void World::draw() {
     
     drawTimestamp++;
 }
-

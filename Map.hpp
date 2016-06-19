@@ -22,8 +22,10 @@ namespace nautical {
     
     class Map : public Drawable {
     public:
-        Map();
+        Map(bool verticalMap = false);
         virtual ~Map();
+        
+        bool isVertical() const;
         
         virtual MapVertex * createVertex(Coordinate coor);
         virtual MapEdge * createEdge(MapVertex * p_vertexBack, MapVertex * p_vertexFront, bool sticky = false);
@@ -44,6 +46,8 @@ namespace nautical {
         
     private:
         World * p_parent;
+        
+        bool verticalMap;
         
         SortedList<MapVertex*> vertices;
         SortedList<MapEdge*> edges;

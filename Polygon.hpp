@@ -38,7 +38,7 @@ namespace nautical {
         bool intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections = nullptr) const;
         
         Polygon & move(Vector vector);
-        Polygon & rotateAboutCoordinate(Angle angle, Coordinate coor = Coordinate(0, 0));
+        Polygon & rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         void draw() const;
         

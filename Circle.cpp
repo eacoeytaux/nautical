@@ -81,10 +81,10 @@ bool Circle::contains(Coordinate coor) const {
     return findDistance(center, coor) <= radius;
 }
 
-bool Circle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const { //TODO account for vertical/horizontal lines
+bool Circle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const {
     bool lineIsVertical = line.isVertical(); //if line is vertical then m and b won't be properly set so the line is rotated by M_PI_4 to give it a proper m and b and then line and collisions are rotated back into place
     if (lineIsVertical)
-        line.rotateAboutCoordinate(-M_PI_4, center);
+        line.rotateAboutCoordinate(center, -M_PI_2);
     
     double a = (pow(line.getM(), 2) + 1);
     double b = ((-2 * center.getX()) + (2 * line.getB() * line.getM()) + (-2 * line.getM() * center.getY()));
@@ -100,9 +100,9 @@ bool Circle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) cons
     Coordinate minus(xMinus, yMinus);
     
     if (lineIsVertical) { //if line was rotated, undo rotation on line and collisions
-        line.rotateAboutCoordinate(M_PI_4, center);
-        plus.rotateAboutCoordinate(M_PI_4, center);
-        minus.rotateAboutCoordinate(M_PI_4, center);
+        line.rotateAboutCoordinate(center, M_PI_2);
+        plus.rotateAboutCoordinate(center, M_PI_2);
+        minus.rotateAboutCoordinate(center, M_PI_2);
     }
     
     if (line.inBox(plus)) {
@@ -165,8 +165,8 @@ Circle & Circle::move(Vector vector) {
     return *this;
 }
 
-Circle & Circle::rotateAboutCoordinate(Angle angle, Coordinate coor) {
-    center.rotateAboutCoordinate(angle, coor);
+Circle & Circle::rotateAboutCoordinate(Coordinate coor, Angle angle) {
+    center.rotateAboutCoordinate(coor, angle);
     return *this;
 }
 

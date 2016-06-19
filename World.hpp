@@ -24,12 +24,14 @@ namespace nautical {
     
     class World {
     public:
-        World();
+        World(bool verticalWorld = false);
         virtual ~World();
         
         int getID() const;
         int getUpdateTimestamp() const;
         int getDrawTimestamp() const;
+        
+        bool isVertical() const;
         
         const Map * getMap() const;
         Map * getMap();
@@ -61,9 +63,11 @@ namespace nautical {
         updateTimestamp = 0,
         drawTimestamp = 0;
         
+        bool verticalWorld;
+        
         Map map;
         
-        LinkedList<WorldObject*> allObjects,
+        SortedList<WorldObject*> allObjects,
         objectsToDelete,
         objectsToUpdate[MAX_PRIORITY + 1],
         objectsToDraw[MAX_BELOW_ALTITUDE + MAX_ABOVE_ALTITUDE + 1];

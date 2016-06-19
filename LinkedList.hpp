@@ -13,8 +13,6 @@
 
 #include "Logger.hpp"
 
-//TODO by adding a tailNode, cycling through entire list to add item would be unneccessary
-
 namespace nautical {
     template<typename T>
     class LinkedList : public Collection<T> {

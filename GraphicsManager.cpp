@@ -195,16 +195,16 @@ void GraphicsManager::drawLine(double x1, double y1, double x2, double y2, Color
     }
     
     setRenderColor(p_renderer, color);
-    SDL_RenderDrawLine(p_renderer, x1, y1, x2, y2);
+    SDL_RenderDrawLine(p_renderer, (int)x1, (int)y1, (int)x2, (int)y2);
 }
 
 void GraphicsManager::drawParabola(Parabola parabola, Color color, bool adjust) {
     Coordinate coor1 = parabola.getLeftCoor();
     Coordinate coor2 = parabola.getRightCoor();
     
-    int newY, lastY = parabola.calculateY(coor1.getX());
-    for (int x = coor1.getX() + 1; x < coor2.getX(); x++) {
-        newY = parabola.calculateY(x);
+    int newY, lastY = (int)parabola.calculateY(coor1.getX());
+    for (int x = (int)coor1.getX() + 1; x < coor2.getX(); x++) {
+        newY = (int)parabola.calculateY(x);
         drawLine(x - 1, lastY, x, newY, color, adjust);
         lastY = newY;
     }
@@ -248,10 +248,10 @@ void GraphicsManager::drawImageFromSpriteSheet(const SpriteSheet * p_sheet, int 
     srcRect.h = height / heightCount;
     
     SDL_Rect dstRect;
-    dstRect.x = coor.getX() - (scale * width / widthCount / 2);
-    dstRect.y = coor.getY() - (scale * height / heightCount / 2);
-    dstRect.w = scale * width / widthCount;
-    dstRect.h = scale * height / heightCount;
+    dstRect.x = (int)(coor.getX() - (scale * width / widthCount / 2));
+    dstRect.y = (int)(coor.getY() - (scale * height / heightCount / 2));
+    dstRect.w = (int)(scale * width / widthCount);
+    dstRect.h = (int)(scale * height / heightCount);
     
     SDL_RendererFlip flip = SDL_FLIP_NONE;
     if (flipHorizontal || flipVertical) {
@@ -263,7 +263,11 @@ void GraphicsManager::drawImageFromSpriteSheet(const SpriteSheet * p_sheet, int 
             flip = (SDL_RendererFlip)(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL);
     }
     
-    SDL_SetTextureAlphaMod(p_sheet->getTexture(), alpha); //TODO only call this when necessary?
+    static int lastAlpha = 255;
+    if (alpha != lastAlpha) {
+        SDL_SetTextureAlphaMod(p_sheet->getTexture(), (Uint8)alpha);
+        lastAlpha = alpha;
+    }
     
     SDL_RenderCopyEx(p_renderer, p_sheet->getTexture(), &srcRect, &dstRect, Angle::radiansToDegrees(angle.getValue()), nullptr, flip);
 }

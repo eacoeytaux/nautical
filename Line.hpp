@@ -41,7 +41,7 @@ namespace nautical {
         bool intersectsLine(Line line, Coordinate * p_intersection = nullptr) const;
         Coordinate closestCoordinate(Coordinate coor) const;
         
-        Line & rotateAboutCoordinate(Angle angle, Coordinate coor = Coordinate(0, 0));
+        Line & rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         bool operator==(const Line & line) const;
         bool operator!=(const Line & line) const;

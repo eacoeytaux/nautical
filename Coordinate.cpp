@@ -44,7 +44,7 @@ Coordinate & Coordinate::moveY(double dy) {
     return *this;
 }
 
-Coordinate & Coordinate::rotateAboutCoordinate(Angle angle, Coordinate coor) {
+Coordinate & Coordinate::rotateAboutCoordinate(Coordinate coor, Angle angle) {
     Vector vec(coor, *this);
     vec.rotate(angle);
     *this = vec.getDestination();

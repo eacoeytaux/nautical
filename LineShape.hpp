@@ -32,7 +32,7 @@ namespace nautical {
         bool intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections = nullptr) const;
         
         LineShape & move(Vector vector);
-        LineShape & rotateAboutCoordinate(Angle angle, Coordinate coor = Coordinate(0, 0));
+        LineShape & rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         void draw() const;
         void drawFilled() const;

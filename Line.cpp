@@ -145,7 +145,6 @@ bool Line::inBoxY(double y) const {
 }
 
 bool Line::inBox(double x, double y) const {
-    //if (((m * x) + b) != y) return false; //checks to see if y = f(x) //TODO fix: rounding errors?
     return inBoxX(x) && inBoxY(y);
 }
 
@@ -247,9 +246,9 @@ Coordinate Line::closestCoordinate(Coordinate coor) const {
     }
 }
 
-Line & Line::rotateAboutCoordinate(Angle angle, Coordinate coor) {
-    Coordinate coor1 = getCoor1().rotateAboutCoordinate(angle, coor);
-    Coordinate coor2 = getCoor2().rotateAboutCoordinate(angle, coor);
+Line & Line::rotateAboutCoordinate(Coordinate coor, Angle angle) {
+    Coordinate coor1 = getCoor1().rotateAboutCoordinate(coor, angle);
+    Coordinate coor2 = getCoor2().rotateAboutCoordinate(coor, angle);
     init(coor1.getX(), coor1.getY(), coor2.getX(), coor2.getY());
     return *this;
 }

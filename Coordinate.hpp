@@ -24,7 +24,7 @@ namespace nautical {
         Coordinate & setY(double y);
         Coordinate & moveY(double dy);
         
-        Coordinate & rotateAboutCoordinate(Angle angle, Coordinate coor = Coordinate(0, 0));
+        Coordinate & rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         bool operator==(const Coordinate & coor) const;
         bool operator!=(const Coordinate & coor) const;

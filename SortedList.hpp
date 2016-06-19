@@ -26,9 +26,9 @@ double returnDouble(const double * p_d) {
 
 namespace nautical {
     template<typename T>
-    class SortedList : public Collection<T> { //TODO iterate with more efficient algorithm, it's a sorted collection for crying out loud!
+    class SortedList : public Collection<T> {
     public:
-        SortedList(double (*weigh)(const T*), bool containDuplicates = true);
+        SortedList(double (*weigh)(const T*) = nullptr, bool containDuplicates = true); //weigh is default set to nullptr but MUST be set to non-nullptr to function
         virtual ~SortedList();
         
         bool clear();

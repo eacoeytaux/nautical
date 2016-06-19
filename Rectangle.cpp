@@ -161,8 +161,8 @@ Rectangle & Rectangle::move(Vector vector) {
     return *this;
 }
 
-Rectangle & Rectangle::rotateAboutCoordinate(Angle angle, Coordinate coor) {
-    center.rotateAboutCoordinate(angle, coor);
+Rectangle & Rectangle::rotateAboutCoordinate(Coordinate coor, Angle angle) {
+    center.rotateAboutCoordinate(coor, angle);
     this->angle += angle;
     return *this;
 }

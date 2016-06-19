@@ -16,17 +16,26 @@ double Map::defaultAirResistanceCoefficient = 0.995;
 double MapElement::defaultFrictionCoefficient = 0.9;
 
 //these functions used to sort edges and vertices
-double weighMapVertex(MapVertex * const * pp_vertex) {
+double weighMapVertexX(MapVertex * const * pp_vertex) {
     return (*pp_vertex)->getCoor().getX();
 }
 
-double weighMapEdge(MapEdge * const * pp_edge) {
+double weighMapVertexY(MapVertex * const * pp_vertex) {
+    return (*pp_vertex)->getCoor().getY();
+}
+
+double weighMapEdgeX(MapEdge * const * pp_edge) {
     return (*pp_edge)->getVertexFront()->getCoor().getX();
 }
 
-Map::Map() :
-vertices(SortedList<MapVertex*>(&weighMapVertex)),
-edges((SortedList<MapEdge*>(&weighMapEdge))),
+double weighMapEdgeY(MapEdge * const * pp_edge) {
+    return (*pp_edge)->getVertexFront()->getCoor().getY();
+}
+
+Map::Map(bool verticalMap) :
+verticalMap(verticalMap),
+vertices(SortedList<MapVertex*>(verticalMap ? &weighMapVertexY : &weighMapVertexX)),
+edges((SortedList<MapEdge*>(verticalMap ? &weighMapEdgeY : &weighMapEdgeX))),
 airResistanceCoefficient(defaultAirResistanceCoefficient) { }
 
 Map::~Map() {
@@ -39,6 +48,10 @@ Map::~Map() {
     }
 }
 
+bool Map::isVertical() const {
+    return verticalMap;
+}
+
 MapVertex * Map::createVertex(Coordinate coor) {
     MapVertex * p_vertex = new MapVertex(coor);
     p_vertex->setParent(this);
@@ -49,8 +62,8 @@ MapVertex * Map::createVertex(Coordinate coor) {
 MapEdge * Map::createEdge(MapVertex * p_vertexBack, MapVertex * p_vertexFront, bool sticky) {
     MapEdge * p_edge = new MapEdge(p_vertexBack, p_vertexFront, sticky);
     p_edge->setParent(this);
-    double edgeDx = p_edge->getVertexFront()->getCoor().getX() - p_edge->getVertexBack()->getCoor().getX();
-    edges.insert(p_edge, edgeDx, 0);
+    double largestEdgeLength = fabs(verticalMap ? (p_edge->getVertexFront()->getCoor().getY() - p_edge->getVertexBack()->getCoor().getY()) : (p_edge->getVertexFront()->getCoor().getX() - p_edge->getVertexBack()->getCoor().getX())); //TODO does this need to be fabsed?
+    edges.insert(p_edge, largestEdgeLength, 0);
     return p_edge;
 }
 
