@@ -119,6 +119,7 @@ void Flame::update() {
             DarknessOverlay::addShape(p_circleToAdd, i);
             p_circle->setRadius(p_circle->getRadius() + 10);
         }
+        delete p_circle;
     }
 }
 

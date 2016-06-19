@@ -15,6 +15,7 @@
 #include "SDL_image.h"
 #endif
 
+#include "Logger.hpp"
 
 using namespace nautical;
 
@@ -22,14 +23,14 @@ SpriteSheet::SpriteSheet(bool * failureFlag, SDL_Renderer * renderer, std::strin
 	SDL_Surface * loadedSurface = IMG_Load(filePath.c_str());
     
     if (loadedSurface == nullptr) {
-        printf("SpriteSheet Error: Unable to load image %s: SDL_image Error: %s\n", filePath.c_str(), IMG_GetError());
+        Logger::writeLog(ERROR_MESSAGE, "SpriteSheet::SpriteSheet(): Unable to load image %s: SDL_image Error: %s", filePath.c_str(), IMG_GetError());
         
         if (failureFlag != nullptr)
             *failureFlag = true;
     } else {
         texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
         if (texture == nullptr) {
-            printf("SpriteSheet Error: Unable to create texture from %s: SDL Error: %s\n", filePath.c_str(), SDL_GetError());
+            Logger::writeLog(ERROR_MESSAGE, "SpriteSheet::SpriteSheet(): Unable to create texture from %s: SDL Error: %s", filePath.c_str(), SDL_GetError());
             
             if (failureFlag != nullptr)
                 *failureFlag = true;
@@ -37,7 +38,7 @@ SpriteSheet::SpriteSheet(bool * failureFlag, SDL_Renderer * renderer, std::strin
         SDL_FreeSurface(loadedSurface);
         
         if (SDL_QueryTexture(texture, nullptr, nullptr, &imageWidth, &imageHeight) < 0) {
-            printf("SpriteSheet Error: %s\n", SDL_GetError());
+            Logger::writeLog(ERROR_MESSAGE, "SpriteSheet::SpriteSheet(): %s", SDL_GetError());
         }
     }
 }

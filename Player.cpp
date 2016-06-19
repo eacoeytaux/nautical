@@ -11,6 +11,7 @@
 
 #include "Random.hpp"
 #include "Countdown.hpp"
+#include "ControllerEvent.hpp"
 #include "KeyboardEvent.hpp"
 #include "MouseEvent.hpp"
 #include "DarknessOverlay.hpp"
@@ -21,6 +22,7 @@ using namespace climber;
 
 Player::Player(Coordinate pos) : Mob(pos) {
     appendTag(PLAYER_TAG);
+    subscribeEvent(CONTROLLER_EVENT_TAG);
     subscribeEvent(KEYBOARD_EVENT_TAG);
     subscribeEvent(MOUSE_EVENT_TAG);
     
@@ -73,14 +75,101 @@ Player & Player::move(Vector vec) {
 }
 
 bool Player::handleEvent(Event * p_event) {
-    if (p_event->hasTag(KEYBOARD_EVENT_TAG)) {
+    if (p_event->hasTag(CONTROLLER_EVENT_TAG)) {
+        ControllerEvent * p_controllerEvent = static_cast<ControllerEvent*>(p_event);
+        
+        switch (p_controllerEvent->getAction()) {
+            case ControllerEvent::JOYSTICK_MOVEMENT: {
+                if (p_controllerEvent->getJoystickIndex() == 0) {
+                    if (p_controllerEvent->isOutsideDeadzone()) {
+                        double joystickAngleValue = p_controllerEvent->getJoystickAngle().getValue();
+                        if ((joystickAngleValue > M_PI_2 + M_PI_4) || (joystickAngleValue <= -(M_PI_2 + M_PI_4))) {
+                            if (!isMovingLeft())
+                                Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingLeft set to true");
+                            setMovingLeft(true);
+                            
+                            if (isMovingRight())
+                                Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingRight set to false");
+                            setMovingRight(false);
+                        } else if (joystickAngleValue > M_PI_4) {
+                            if (isMovingLeft())
+                                Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingLeft set to false");
+                            setMovingLeft(false);
+                            
+                            if (isMovingRight())
+                                Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingRight set to false");
+                            setMovingRight(false);
+                            
+                            //TODO look up
+                        } else if (joystickAngleValue > -M_PI_4) {
+                            if (isMovingLeft())
+                                Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingLeft set to false");
+                            setMovingLeft(false);
+                            
+                            if (!isMovingRight())
+                                Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingRight set to true");
+                            setMovingRight(true);
+                        } else {
+                            if (isMovingLeft())
+                                Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingLeft set to false");
+                            setMovingLeft(false);
+                            
+                            if (isMovingRight())
+                                Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingRight set to false");
+                            setMovingRight(false);
+                            
+                            //TODO look down
+                        }
+                        break;
+                    } else {
+                        if (isMovingLeft())
+                            Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingLeft set to false");
+                        setMovingLeft(false);
+                        
+                        if (isMovingRight())
+                            Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingRight set to false");
+                        setMovingRight(false);
+                    }
+                    
+                    return true;
+                } else if (p_controllerEvent->getJoystickIndex() == 1) {
+                    //TODO set grappling angle
+                }
+            }
+            case ControllerEvent::HAT_VALUE_CHANGE: {
+                if (p_controllerEvent->isRightPressed()) {
+                    if (!isMovingRight())
+                        Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingRight set to true");
+                    setMovingRight(true);
+                } else {
+                    if (isMovingRight())
+                        Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingRight set to false");
+                    setMovingRight(false);
+                }
+                
+                if (p_controllerEvent->isLeftPressed()) {
+                    if (!isMovingLeft())
+                        Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingLeft set to true");
+                    setMovingLeft(true);
+                } else {
+                    if (isMovingLeft())
+                        Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingLeft set to false");
+                    setMovingLeft(false);
+                }
+                
+                return true;
+            }
+            default:
+                break;
+        }
+    } else if (p_event->hasTag(KEYBOARD_EVENT_TAG)) {
         KeyboardEvent * p_keyboardEvent = static_cast<KeyboardEvent*>(p_event);
         
         switch (p_keyboardEvent->getKey()) {
             case KeyboardEvent::A:
             case KeyboardEvent::LEFTARROW: {
                 switch (p_keyboardEvent->getAction()) {
-                    case nautical::KeyboardEvent::KEY_PRESSED:
+                    case KeyboardEvent::KEY_PRESSED:
                         if (!isMovingLeft())
                             Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingLeft set to true");
                         setMovingLeft(true);
@@ -94,7 +183,7 @@ bool Player::handleEvent(Event * p_event) {
             } case KeyboardEvent::D:
             case KeyboardEvent::RIGHTARROW: {
                 switch (p_keyboardEvent->getAction()) {
-                    case nautical::KeyboardEvent::KEY_PRESSED:
+                    case KeyboardEvent::KEY_PRESSED:
                         if (!isMovingRight())
                             Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): movingRight set to true");
                         setMovingRight(true);
@@ -149,17 +238,17 @@ void Player::update() {
         addToForce(Vector(0.3, 0));
     
     /*if (p_rope) { //TODO
-        if (p_rope->isTaught() && (p_rope->getState() == Rope::SET)) {
-            //F = -kx - bv
-            static double k = 0.0000000001, b = 2; //k and b are constants in equation
-            double x = findDistance(getCenter(), p_rope->getHead()) - p_rope->getLength(); //distance from end to end
-            double v = (getVel() + getForce()).getMagnitude(); //relative velocity
-            
-            static double damper = 0.6;
-            
-            addToForce(Vector(findAngle(p_rope->getHead(), getCenter()), (-(k * x) - (b * v)) * damper));
-        }
-    }*/
+     if (p_rope->isTaught() && (p_rope->getState() == Rope::SET)) {
+     //F = -kx - bv
+     static double k = 0.0000000001, b = 2; //k and b are constants in equation
+     double x = findDistance(getCenter(), p_rope->getHead()) - p_rope->getLength(); //distance from end to end
+     double v = (getVel() + getForce()).getMagnitude(); //relative velocity
+     
+     static double damper = 0.6;
+     
+     addToForce(Vector(findAngle(p_rope->getHead(), getCenter()), (-(k * x) - (b * v)) * damper));
+     }
+     }*/
     
     addToVel(getForce());
     
@@ -228,7 +317,7 @@ void Player::update() {
 
 void Player::draw() const {
     Shape * p_hitboxShape = getMapHitbox()->getShape();
-        p_hitboxShape->draw();
+    p_hitboxShape->draw();
     delete p_hitboxShape;
     if (nautical::DEBUG_MODE) {
         getVel().draw(5);

@@ -9,12 +9,14 @@
 #include "GameManager.hpp"
 
 #ifdef __APPLE__
-#include "SDL2/SDL.h"
 #include <unistd.h>
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_joystick.h"
 #endif
 #ifdef _WIN32
-#include "SDL.h"
 #include <windows.h>
+#include "SDL.h"
+#include "SDL_joystick.h"
 #endif
 
 #include "Logger.hpp"
@@ -22,7 +24,9 @@
 #include "Clock.hpp"
 #include "Random.hpp"
 #include "Queue.hpp"
+#include "Angle.hpp"
 #include "Coordinate.hpp"
+#include "ControllerEvent.hpp"
 #include "KeyboardEvent.hpp"
 #include "MouseEvent.hpp"
 
@@ -39,6 +43,9 @@
 #define FPS 60
 #define AUTO_LOCK_CURSOR false
 
+#define MAX_CONTROLLERS 4 //TODO implement this
+#define CONTROLLER_DEAD_ZONE 8000
+
 using namespace nautical;
 
 KeyboardEvent::Key getKeyFromSDLKey(int SDL_key);
@@ -50,10 +57,7 @@ bool fullscreen = false;
 
 SDL_Renderer * p_renderer = nullptr;
 
-//const int SCREEN_WIDTH = 960;
-//const int SCREEN_HEIGHT = 640;
-//const int SCREEN_CENTER_X = SCREEN_WIDTH / 2;
-//const int SCREEN_CENTER_Y = SCREEN_HEIGHT / 2;
+SDL_Joystick * controller = nullptr;
 
 const long targetTime = 1000 / FPS;
 int totalCycles = 0;
@@ -68,12 +72,12 @@ bool GameManager::startup() {
         return init;
     
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) { //initialize SDL
-        Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s\n", SDL_GetError());
+        Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s", SDL_GetError());
         return false;
     } else {
         p_window = SDL_CreateWindow("Climber", 0, 0, GraphicsManager::screenWidth, GraphicsManager::screenHeight, SDL_WINDOW_SHOWN); //create window
         if (p_window == nullptr) {
-            Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s\n", SDL_GetError());
+            Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s", SDL_GetError());
             return false;
         } else {
             if (AUTO_LOCK_CURSOR)
@@ -81,7 +85,7 @@ bool GameManager::startup() {
             
             p_renderer = SDL_CreateRenderer(p_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); //init renderer
             if (p_renderer == nullptr) {
-                Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s\n", SDL_GetError());
+                Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s", SDL_GetError());
                 return false;
             } else {
                 SDL_SetRenderDrawBlendMode(p_renderer, SDL_BLENDMODE_BLEND);
@@ -98,13 +102,13 @@ bool GameManager::startup() {
             //}
             
             //if using controller, init controller
-            //SDL_JoystickEventState(SDL_ENABLE);
-            //controller = SDL_JoystickOpen(0);
-            //if (controller == nullptr) {
-            //    Logger::writeLog("Controller not loaded");
-            //} else {
-            //    Logger::writeLog("Controller loaded! Controller name: %s\n", SDL_JoystickName(controller));
-            //}
+            SDL_JoystickEventState(SDL_ENABLE);
+            controller = SDL_JoystickOpen(0);
+            if (controller == nullptr) {
+                Logger::writeLog(PLAIN_MESSAGE, "GameManager::init(): Controller not loaded");
+            } else {
+                Logger::writeLog(PLAIN_MESSAGE, "GameManager::init(): Controller loaded! Controller name: %s", SDL_JoystickName(controller));
+            }
         }
     }
     
@@ -121,8 +125,8 @@ bool GameManager::shutdown() {
     //Mix_Quit();
     
     //close controller
-    //SDL_JoystickClose(controller);
-    //controller = nullptr;
+    SDL_JoystickClose(controller);
+    controller = nullptr;
     
     //close window and renderer
     SDL_DestroyRenderer(p_renderer);
@@ -252,6 +256,52 @@ void GameManager::pollEvents(Collection<Event*> & events) {
                         reset = true;
                         break;
                 }
+                break;
+            }
+            case SDL_JOYBUTTONDOWN: {
+                ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::BUTTON_PRESS);
+                p_controllerEvent->setButtonIndex(event.jbutton.button);
+                events.insert(p_controllerEvent);
+                break;
+            }
+            case SDL_JOYBUTTONUP: {
+                ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::BUTTON_RELEASE);
+                p_controllerEvent->setButtonIndex(event.jbutton.button);
+                events.insert(p_controllerEvent);
+                break;
+            }
+            case SDL_JOYHATMOTION: {
+                ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::HAT_VALUE_CHANGE);
+                int hatValue = event.jhat.value;
+                p_controllerEvent->setUpPressed(hatValue & 1).setRightPressed(hatValue & 2).setDownPressed(hatValue & 4).setLeftPressed(hatValue & 8);
+                events.insert(p_controllerEvent);
+                break;
+            }
+            case SDL_JOYAXISMOTION: {
+                static bool outsideDeadzone = false;
+                static int xDir, yDir;
+                if (event.jaxis.axis == 0) {
+                    xDir = event.jaxis.value;
+                } else if (event.jaxis.axis == 1) {
+                    yDir = event.jaxis.value;
+                }
+                
+                double distanceFromCenter = findDistance(xDir, yDir); //TODO is this right? it might be confined to a square instead of a circle, need to double check
+                if (distanceFromCenter > CONTROLLER_DEAD_ZONE) {
+                    outsideDeadzone = true;
+                    Angle joystickAngle((double)xDir, (double)-yDir);
+                    
+                    ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::JOYSTICK_MOVEMENT);
+                    p_controllerEvent->setJoystickIndex(event.jaxis.axis).setOutsideDeadzone(true).setJoystickAngle(joystickAngle).setJoystickMagnitude(distanceFromCenter);
+                    events.insert(p_controllerEvent);
+                } else if (outsideDeadzone) { //joystick has gone from outside to inside deadzone
+                    outsideDeadzone = false;
+                    
+                    ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::JOYSTICK_MOVEMENT);
+                    p_controllerEvent->setJoystickIndex(event.jaxis.axis).setOutsideDeadzone(false);
+                    events.insert(p_controllerEvent);
+                }
+                
                 break;
             }
         }
@@ -428,7 +478,7 @@ KeyboardEvent::Key getKeyFromSDLKey(int SDL_key) {
     }
 }
 
-void GameManager::runTests() {
+void GameManager::runTests() { //DEBUGGING
     /*Queue<Coordinate> coors;
     coors.insert(Coordinate(150, 250));
     coors.insert(Coordinate(220, 300));
