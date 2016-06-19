@@ -172,12 +172,10 @@ void Player::update() {
     
     World * p_parent = getParent();
     float percentageUsed = 1.f;
-    Vector vel = getVel();
-    LinkedList<const MapElement*> elementsNotToCheck;
     do {
-        vel.setOrigin(getCenter());
+        Vector vel = getVel();
         MapHitbox * p_hitbox = getMapHitbox();
-        Vector movement = p_parent->generatePath(&percentageUsed, &vel, p_hitbox, &p_element, &elementsNotToCheck);
+        Vector movement = p_parent->generatePath(&percentageUsed, &vel, p_hitbox, &p_element);
         delete p_hitbox;
         
         //check movement here
@@ -189,6 +187,8 @@ void Player::update() {
                     Circle(p_rope->getHead(), p_rope->getLength()).intersectsLine(Line(movement.getOrigin(), movement.getDestination()), &intersections);
                     Coordinate coor;
                     if (intersections.pop(&coor)) {
+                        int x = 5;
+                        x++;
                         //TODO stop movement
                     } else {
                         Logger::writeLog(ERROR_MESSAGE, "Player::update(): did not find collision with rope boundaries");
@@ -207,7 +207,7 @@ void Player::update() {
         p_rope->setOrigin(getCenter());
     
     //lighting
-    if (getParent()->isDarknessInEffect()) {
+    if (DarknessOverlay::isInEffect()) {
         Circle * p_circle = new Circle(getCenter(), 150);
         static Countdown count(1);
         static Vector moveVec[DARKNESS_LAYERS];
@@ -220,7 +220,7 @@ void Player::update() {
         for (int i = 0; i < DARKNESS_LAYERS; i++) {
             Circle * p_circleToAdd = new Circle(*p_circle);
             p_circleToAdd->move(moveVec[i]);
-            getParent()->addShapeToDarknessOverlay(p_circleToAdd, i);
+            DarknessOverlay::addShape(p_circleToAdd, i);
             p_circle->setRadius(p_circle->getRadius() + 10);
         }
     }
@@ -228,7 +228,6 @@ void Player::update() {
 
 void Player::draw() const {
     Shape * p_hitboxShape = getMapHitbox()->getShape();
-    if (!World::drawBumpers || !DEBUG_MODE)
         p_hitboxShape->draw();
     delete p_hitboxShape;
     if (nautical::DEBUG_MODE) {

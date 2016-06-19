@@ -20,7 +20,7 @@
 
 using namespace nautical;
 
-bool World::drawBumpers = false;
+bool World::DRAW_BUMPERS = false;
 
 World::World() {
     static int id = 0;
@@ -71,29 +71,6 @@ const Map * World::getMap() const {
 
 Map * World::getMap() {
     return &map;
-}
-
-bool World::isDarknessInEffect() const {
-    return darknessInEffect;
-}
-
-World & World::setDarknessInEffect(bool darkness) {
-    darknessInEffect = darkness;
-    return *this;
-}
-
-float World::getDarknessOverlayPercentage() const {
-    return darknessOverlay.getPercentage();
-}
-
-World & World::setDarknessOverlayPercentage(float percentage) {
-    darknessOverlay.setPercentage(percentage);
-    return *this;
-}
-
-World & World::addShapeToDarknessOverlay(Shape * p_shape, int layer) {
-    darknessOverlay.addShape(p_shape, layer);
-    return *this;
 }
 
 World & World::addObject(WorldObject * p_object, bool shouldUpdate, bool shouldDraw) {
@@ -349,20 +326,23 @@ World & World::handleEvent(Event * p_event) {
  p_object->setObjectPos(objPos);
  }*/
 
-Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement, LinkedList<const MapElement*> * p_elementsNotToCheck) {
+Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement) {
     Vector vel = *p_vel;
-    if (vel.getMagnitude() < 0)
-        return 0;
+    //if (vel.getMagnitude() < 0)
+    //    return 0;
     
     Shape * p_shape = p_hitbox->getShape();
     Coordinate center = p_hitbox->getCenter();
     const MapElement * p_element = p_hitbox->getElement();
     const MapElement * p_prevElement = p_element;
     
-    if (p_prevElement)
-        p_elementsNotToCheck->insert(p_prevElement);
-    
     vel *= *p_percentage;
+    
+    Vector tempVel = vel;
+    if (p_element && !p_hitbox->adjustVector(&tempVel)) {
+        int x = 5;
+        x++;
+    }
     
     if (p_element && !p_hitbox->adjustVector(&vel))
         p_element = nullptr;
@@ -387,11 +367,6 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
             Line adjustedVelLine = Line(center, center + vel);
             
             if (mapCatch.getLine().intersectsLine(adjustedVelLine)) {
-                if (mapCatch.getElement1()->hasTag(MAP_EDGE_TAG) && mapCatch.getElement2()->hasTag(MAP_EDGE_TAG)) {
-                    int x = 5;
-                    x++;
-                }
-                
                 Coordinate collision = mapCatch.getCollision();
                 Vector collisionVel(center, collision);
                 if ((collisionVel.getMagnitude() > 0) && distance.update(collisionVel.getMagnitude())) {
@@ -409,7 +384,7 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
         for (Iterator<MapVertex*> * iterator = map.getVerticesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
             MapVertex * p_vertex = iterator->current();
             
-            if (p_elementsNotToCheck->contains(p_vertex))
+            if (p_vertex == p_prevElement)
                 continue;
             
             Queue<Coordinate> collisions;
@@ -439,7 +414,7 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
         for (Iterator<MapEdge*> * iterator = map.getEdgesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
             MapEdge * p_edge = iterator->current();
             
-            if (p_elementsNotToCheck->contains(p_edge))
+            if (p_edge == p_prevElement)
                 continue;
             
             Queue<Coordinate> collisions;
@@ -476,9 +451,6 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
     if ((distance.getValue() < INFINITY) && (vel.getMagnitude() != 0))
         *p_percentage = 1 - (distance.getValue() / vel.getMagnitude());
     
-    //if (nextVel.getMagnitude() != 0)
-    p_elementsNotToCheck->clear();
-    
     return nextVel;
 }
 
@@ -487,10 +459,12 @@ void World::update(Collection<Event*> & events) {
     
     for (Iterator<Event*> * iterator = events.createIterator(); !iterator->complete(); iterator->next()) {
         if (iterator->current()->hasTag(KEYBOARD_EVENT_TAG)) { //TODO for debugging
-            if ((static_cast<KeyboardEvent*>(iterator->current())->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(iterator->current())->getKey() == KeyboardEvent::O))
-                setDarknessInEffect(!isDarknessInEffect());
-            else if ((static_cast<KeyboardEvent*>(iterator->current())->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(iterator->current())->getKey() == KeyboardEvent::B))
-                drawBumpers = !drawBumpers;
+            if ((static_cast<KeyboardEvent*>(iterator->current())->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(iterator->current())->getKey() == KeyboardEvent::O)) {
+                DarknessOverlay::setInEffect(!DarknessOverlay::isInEffect());
+            } else if ((static_cast<KeyboardEvent*>(iterator->current())->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(iterator->current())->getKey() == KeyboardEvent::B)) {
+                DRAW_BUMPERS = !DRAW_BUMPERS;
+                MapEdge::DRAW_NORMALS = !MapEdge::DRAW_NORMALS;
+            }
         }
         
         handleEvent(iterator->current());
@@ -527,7 +501,7 @@ void World::draw() {
     for (int i = 0; i <= MAX_BELOW_ALTITUDE + MAX_ABOVE_ALTITUDE; i++) {
         if (i == MAX_BELOW_ALTITUDE) {
             map.draw();
-            if (drawBumpers && DEBUG_MODE)
+            if (DRAW_BUMPERS && DEBUG_MODE)
                 map.drawBumpers(climber::Player(Coordinate(0, 0)).getMapHitbox());
         }
         
@@ -543,9 +517,8 @@ void World::draw() {
         }
     }
     
-    if (darknessInEffect)
-        darknessOverlay.draw();
-    darknessOverlay.clearShapes();
+    DarknessOverlay::draw();
+    DarknessOverlay::clearShapes();
     
     drawTimestamp++;
 }

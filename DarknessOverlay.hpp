@@ -9,8 +9,6 @@
 #ifndef DarknessOverlay_hpp
 #define DarknessOverlay_hpp
 
-#include "Drawable.hpp"
-
 #include "MaxMinValue.hpp"
 #include "LinkedList.hpp"
 
@@ -19,27 +17,18 @@
 namespace nautical {
     class Shape;
     
-    class DarknessOverlay : public Drawable {
+    class DarknessOverlay {
     public:
-        DarknessOverlay();
-        DarknessOverlay(const DarknessOverlay & overlay);
-        virtual ~DarknessOverlay();
+        static bool isInEffect();
+        static void setInEffect(bool b);
         
-        float getPercentage() const;
-        DarknessOverlay & setPercentage(float percentage);
+        static float getPercentage();
+        static void setPercentage(float p);
         
-        DarknessOverlay & addShape(Shape * p_shape, int layer);
-        DarknessOverlay & clearShapes();
+        static void addShape(Shape * p_shape, int layer);
+        static void clearShapes();
         
-        void draw() const;
-        
-    private:
-        float percentage = 1;
-        LinkedList<Shape*> subtractedShapes[DARKNESS_LAYERS];
-        MinValue lowerBoundX;
-        MinValue lowerBoundY;
-        MaxValue upperBoundX;
-        MaxValue upperBoundY;
+        static void draw();
     };
 }
 

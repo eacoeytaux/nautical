@@ -149,7 +149,7 @@ Vector & Vector::mirrorVertical() {
     return *this;
 }
 
-bool Vector::subtractAngle(Angle angle, bool includeParallel) {
+bool Vector::subtractAngle(Angle angle) {
     Angle vectorAngle = getAngle();
     
     Angle angleDifference;
@@ -163,7 +163,7 @@ bool Vector::subtractAngle(Angle angle, bool includeParallel) {
         angleDifference = angle - vectorAngle;
     }
     
-    if (includeParallel ? ((fabs(angleDifference.getValue()) - M_PI_2) < 0) : ((fabs(angleDifference.getValue()) - M_PI_2) <= 0))
+    if (fabs(angleDifference.getValue()) - M_PI_2 < -0.00001) //account for rounding error (prevents bug where object falls through map when moving at very slow speeds > 0)
         return false;
     
     angleDifference += (angleDifference.getValue() > 0) ? -M_PI_2 : M_PI_2;

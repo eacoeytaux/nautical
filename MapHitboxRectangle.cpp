@@ -41,20 +41,11 @@ MapHitboxRectangle & MapHitboxRectangle::setRectangle(Rectangle rec) {
 }
 
 bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, Vector * p_vector) const {
-    Coordinate center = p_vector->getOrigin();
-    
-    Shape * p_bumper = createBumper(p_vertex);
-    if (!p_bumper->contains(center)) {
-        delete p_bumper;
-        return false;
-    }
-    delete p_bumper;
-    
     Angle recAngle = rec.getAngle();
     double recAngleValue = recAngle.getValue();
     
     double recDiagonalAngleValue = Angle(rec.getWidth(), rec.getHeight()).getValue();
-    double angleToOriginValue = findAngle(p_vertex->getCoor(), center).getValue();
+    double angleToOriginValue = findAngle(p_vertex->getCoor(), p_vector->getOrigin()).getValue();
     
     enum MapEdgeRelativePosition {
         UNDEFINED = 0,
@@ -115,13 +106,13 @@ bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, Vector * p_vec
     //adjust vector according to angle
     switch (edgePos) {
         case ABOVE:
-            return p_vector->subtractAngle(Angle(M_PI_2) + recAngle, false);
+            return p_vector->subtractAngle(Angle(M_PI_2) + recAngle);
         case RIGHT:
-            return p_vector->subtractAngle(recAngle, false);
+            return p_vector->subtractAngle(recAngle);
         case BELOW:
-            return p_vector->subtractAngle(Angle(-M_PI_2) + recAngle, false);
+            return p_vector->subtractAngle(Angle(-M_PI_2) + recAngle);
         case LEFT:
-            return p_vector->subtractAngle(Angle(M_PI) + recAngle, false);
+            return p_vector->subtractAngle(Angle(M_PI) + recAngle);
         case UNDEFINED:
         default:
             return false;

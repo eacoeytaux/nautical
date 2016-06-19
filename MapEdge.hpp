@@ -33,6 +33,8 @@ namespace nautical {
         
         virtual void draw() const;
         
+        static bool DRAW_NORMALS; //DEBUGGING
+        
     private:
         Line line;
         Angle normal;

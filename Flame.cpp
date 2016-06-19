@@ -103,7 +103,7 @@ void Flame::update() {
         delete p_spark;
     }
     
-    if (getParent()->isDarknessInEffect()) {
+    if (DarknessOverlay::isInEffect()) {
         Circle * p_circle = new Circle(getCenter(), 100);
         static Countdown count(1);
         static Vector moveVec[DARKNESS_LAYERS];
@@ -116,7 +116,7 @@ void Flame::update() {
         for (int i = 0; i < DARKNESS_LAYERS; i++) {
             Circle * p_circleToAdd = new Circle(*p_circle);
             p_circleToAdd->move(moveVec[i]);
-            getParent()->addShapeToDarknessOverlay(p_circleToAdd, i);
+            DarknessOverlay::addShape(p_circleToAdd, i);
             p_circle->setRadius(p_circle->getRadius() + 10);
         }
     }

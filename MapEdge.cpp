@@ -13,9 +13,9 @@
 #include "Map.hpp"
 #include "MapVertex.hpp"
 
-#define DRAW_NORMALS false
-
 using namespace nautical;
+
+bool MapEdge::DRAW_NORMALS = false;
 
 MapEdge::MapEdge(MapVertex * p_vertexBack, MapVertex * p_vertexFront, bool sticky) :
 MapElement(sticky),

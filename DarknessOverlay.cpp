@@ -16,53 +16,40 @@
 
 using namespace nautical;
 
-DarknessOverlay::DarknessOverlay() {
-    setColor(DEFAULT_COLOR);
-    for (int i = 0; i < DARKNESS_LAYERS; i++) {
-        for (Iterator<Shape*> * iterator = subtractedShapes[i].createIterator(); !iterator->complete(); iterator->next()) {
-            lowerBoundX.update(iterator->current()->getLowerBoundX());
-        }
-    }
+bool inEffect = false;
+float percentage = 1.f;
+LinkedList<Shape*> subtractedShapes[DARKNESS_LAYERS];
+MinValue lowerBoundX;
+MinValue lowerBoundY;
+MaxValue upperBoundX;
+MaxValue upperBoundY;
+
+bool DarknessOverlay::isInEffect() {
+    return inEffect;
 }
 
-DarknessOverlay::DarknessOverlay(const DarknessOverlay & overlay) {
-    setColor(DEFAULT_COLOR);
-    lowerBoundX = overlay.lowerBoundX;
-    for (int i = 0; i < DARKNESS_LAYERS; i++) {
-        for (Iterator<Shape*> * iterator = overlay.subtractedShapes[i].createIterator(); !iterator->complete(); iterator->next()) {
-            subtractedShapes[i].insert(iterator->current()->copyPtr());
-        }
-    }
+void DarknessOverlay::setInEffect(bool b) {
+    inEffect = b;
 }
 
-DarknessOverlay::~DarknessOverlay() {
-    for (int i = 0; i < DARKNESS_LAYERS; i++) {
-        for (Iterator<Shape*> * iterator = subtractedShapes[i].createIterator(); !iterator->complete(); iterator->next()) {
-            delete iterator->current();
-        }
-    }
-}
-
-float DarknessOverlay::getPercentage() const {
+float DarknessOverlay::getPercentage() {
     return percentage;
 }
 
-DarknessOverlay & DarknessOverlay::setPercentage(float percentage) {
-    this->percentage = percentage;
-    return *this;
+void DarknessOverlay::setPercentage(float p) {
+    percentage = p;
 }
 
-DarknessOverlay & DarknessOverlay::addShape(Shape * p_shape, int layer) {
+void DarknessOverlay::addShape(Shape * p_shape, int layer) {
     //TODO layer bounds checking
     subtractedShapes[layer].insert(p_shape);
     lowerBoundX.update(p_shape->getLowerBoundX());
     upperBoundY.update(p_shape->getLowerBoundY());
     lowerBoundX.update(p_shape->getUpperBoundX());
     upperBoundY.update(p_shape->getUpperBoundY());
-    return *this;
 }
 
-DarknessOverlay & DarknessOverlay::clearShapes() {
+void DarknessOverlay::clearShapes() {
     for (int i = 0; i < DARKNESS_LAYERS; i++) {
         for (Iterator<Shape*> * iterator = subtractedShapes[i].createIterator(); !iterator->complete(); iterator->next()) {
             delete iterator->current();
@@ -73,10 +60,12 @@ DarknessOverlay & DarknessOverlay::clearShapes() {
     lowerBoundY.reset();
     upperBoundX.reset();
     upperBoundY.reset();
-    return *this;
 }
 
-void DarknessOverlay::draw() const { //TODO optimize (only needs to check between yLowerBound and yUpperBound)
+void DarknessOverlay::draw() { //TODO optimize (only needs to check between yLowerBound and yUpperBound)
+    if (!inEffect)
+        return;
+    
     for (int i = 0; i < DARKNESS_LAYERS; i++) {
         int screenWidth = GraphicsManager::getScreenWidth();
         int screenHeight = GraphicsManager::getScreenHeight();
@@ -123,7 +112,7 @@ void DarknessOverlay::draw() const { //TODO optimize (only needs to check betwee
             }
             
             for (Iterator<Line> * iterator = linesToDraw.createIterator(); !iterator->complete(); iterator->next()) {
-                GraphicsManager::drawLine(iterator->current(), Color(getColor()).setA(fmin(51 * (i + i + 1), 255) * percentage)); //TODO better way to calculate alpha?
+                GraphicsManager::drawLine(iterator->current(), Color(BLACK).setA(fmin(51 * (i + i + 1), 255) * percentage)); //TODO better way to calculate alpha?
             }
         }
     }

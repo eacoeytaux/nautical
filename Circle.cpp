@@ -82,6 +82,10 @@ bool Circle::contains(Coordinate coor) const {
 }
 
 bool Circle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const { //TODO account for vertical/horizontal lines
+    bool lineIsHorizontalOrVertical = line.isHorizontal() || line.isVertical(); //if line is horizontal or vertical, m and b won't be properly set so the line is rotated by M_PI_4 to give it a proper m and b and then line and collisions are rotated back into place
+    if (lineIsHorizontalOrVertical)
+        line.rotateAboutCoordinate(-M_PI_4, center);
+    
     double a = (pow(line.getM(), 2) + 1);
     double b = ((-2 * center.getX()) + (2 * line.getB() * line.getM()) + (-2 * line.getM() * center.getY()));
     double c = (pow(center.getX(), 2) + pow(line.getB(), 2) + (-2 * line.getB() * center.getY()) + pow(center.getY(), 2) - pow(radius, 2));
@@ -94,6 +98,12 @@ bool Circle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) cons
     
     Coordinate plus(xPlus, yPlus);
     Coordinate minus(xMinus, yMinus);
+    
+    if (lineIsHorizontalOrVertical) { //if line was rotated, undo rotation on line and collisions
+        line.rotateAboutCoordinate(M_PI_4, center);
+        plus.rotateAboutCoordinate(M_PI_4, center);
+        minus.rotateAboutCoordinate(M_PI_4, center);
+    }
     
     if (line.inBox(plus)) {
         if (p_intersections) {

@@ -1,30 +1,40 @@
 # nautical
-nautical game engine
+nautical game engine v0.2
 
 
-Controls:
+CONTROLS:
 
-Pause with 'P'
+pause with 'P'
 
-Move player with 'WASD'
+move player with 'WASD'
 
-Shoot grapple with mouse, release to retract
+shoot grapple with mouse, release to retract
 
-Zoom with ',' and '.'
+zoom with ',' and '.'
 
-Turn on darkness with 'O'
+turn on darkness with 'O'
 
-To switch between DEBUG_MODE, press enter
+to switch between DEBUG_MODE, press enter
 
-In DEBUG_MODE:
+in DEBUG_MODE:
 
-        Show bumpers with 'B'
+    Show bumpers and normals with 'B'
 
 
 TODOs:
 
 
-1) edit World::generatePath() to allow for MapObject interuption between vector adjustments
+1) fix bugs in movement in map
+
+2) edit World::generatePath() to allow for MapObject interuption between vector adjustments
+
+3) various TODOs in project (search for "TODO" in project files)
+
+4) saving
 
 
-2) various TODOs in project (search for "TODO" in project files)
+KNOWN BUGS:
+
+- sometimes object will jump to other end of edge when passing to vertex
+
+- in DarknessOverlay subtracted shapes cause issues when going off-screen

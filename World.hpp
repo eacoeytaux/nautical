@@ -34,12 +34,6 @@ namespace nautical {
         const Map * getMap() const;
         Map * getMap();
         
-        bool isDarknessInEffect() const;
-        World & setDarknessInEffect(bool darkness);
-        float getDarknessOverlayPercentage() const;
-        World & setDarknessOverlayPercentage(float percentage);
-        World & addShapeToDarknessOverlay(Shape * p_shape, int layer);
-        
         World & addObject(WorldObject * p_object, bool shouldUpdate = true, bool shouldDraw = true);
         World & markObjectForRemoval(WorldObject * p_object); //TODO when should object be deleted?
         
@@ -50,12 +44,12 @@ namespace nautical {
         
         World & handleEvent(Event * p_event);
         
-        Vector generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement, LinkedList<const MapElement*> * p_elementsNotToCheck); //TODO rename function and remove p_elementsNotToCheck?
+        Vector generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement); //TODO rename function
         
         virtual void update(Collection<Event*> & events);
         virtual void draw();
         
-        static bool drawBumpers; //DEBUGGING
+        static bool DRAW_BUMPERS; //DEBUGGING
         
     protected:
         World & removeObject(WorldObject * p_object);
@@ -68,8 +62,6 @@ namespace nautical {
         drawTimestamp = 0;
         
         Map map;
-        bool darknessInEffect = false;
-        DarknessOverlay darknessOverlay;
         
         LinkedList<WorldObject*> allObjects,
         objectsToDelete,
