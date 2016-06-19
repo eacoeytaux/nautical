@@ -351,8 +351,8 @@ World & World::handleEvent(Event * p_event) {
 
 Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement, LinkedList<const MapElement*> * p_elementsNotToCheck) {
     Vector vel = *p_vel;
-    //if (vel.getMagnitude() < 0.0000001)
-    //    return 0;
+    if (vel.getMagnitude() < 0)
+        return 0;
     
     Shape * p_shape = p_hitbox->getShape();
     Coordinate center = p_hitbox->getCenter();
@@ -364,12 +364,9 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
     
     vel *= *p_percentage;
     
-    bool velAdjusted = false;
-    if (!p_hitbox->adjustVector(&vel)) {
+    if (p_element && !p_hitbox->adjustVector(&vel))
         p_element = nullptr;
-    } else {
-        velAdjusted = true;
-    }
+    
     *p_nextElement = p_element;
     
     Coordinate nextCenter = center;
@@ -389,13 +386,21 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
             
             Line adjustedVelLine = Line(center, center + vel);
             
-            if (mapCatch.getLine().intersects(adjustedVelLine)) {
+            if (mapCatch.getLine().intersectsLine(adjustedVelLine)) {
+                if (mapCatch.getElement1()->hasTag(MAP_EDGE_TAG) && mapCatch.getElement2()->hasTag(MAP_EDGE_TAG)) {
+                    int x = 5;
+                    x++;
+                }
+                
                 Coordinate collision = mapCatch.getCollision();
                 Vector collisionVel(center, collision);
-                if (distance.update(collisionVel.getMagnitude())) {
+                if ((collisionVel.getMagnitude() > 0) && distance.update(collisionVel.getMagnitude())) {
                     nextCenter = collision;
                     nextVel = collisionVel;
-                    *p_nextElement = mapCatch.getElement(p_element);
+                    
+                    Vector tempVector = *p_vel;
+                    tempVector.setOrigin(collision);
+                    *p_nextElement = (p_hitbox->adjustVector(mapCatch.getElement(p_element), &tempVector)) ? mapCatch.getElement(p_element) : nullptr;
                 }
             }
         }
@@ -413,11 +418,15 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
             if (p_bumper->intersectsLine(adjustedVelLine, &collisions)) {
                 Coordinate collision;
                 if (collisions.pop(&collision)) {
-                    Vector collisionVel(center, collision);
-                    if (distance.update(collisionVel.getMagnitude())) {
-                        nextCenter = collision;
-                        nextVel = collisionVel;
-                        *p_nextElement = p_vertex;
+                    Vector tempVector = *p_vel;
+                    tempVector.setOrigin(collision);
+                    if (p_hitbox->adjustVector(p_vertex, &tempVector)) {
+                        Vector collisionVel(center, collision);
+                        if ((collisionVel.getMagnitude() > 0) && distance.update(collisionVel.getMagnitude())) {
+                            nextCenter = collision;
+                            nextVel = collisionVel;
+                            *p_nextElement = p_vertex;
+                        }
                     }
                 } else {
                     Logger::writeLog(ERROR_MESSAGE, "World::generatePath(): collisions is empty");
@@ -439,11 +448,15 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
             if (p_bumper->intersectsLine(adjustedVelLine, &collisions)) {
                 Coordinate collision;
                 if (collisions.pop(&collision)) {
-                    Vector collisionVel(center, collision);
-                    if (distance.update(collisionVel.getMagnitude())) {
-                        nextCenter = collision;
-                        nextVel = collisionVel;
-                        *p_nextElement = p_edge;
+                    Vector tempVector = *p_vel;
+                    tempVector.setOrigin(collision);
+                    if (p_hitbox->adjustVector(p_edge, &tempVector)) {
+                        Vector collisionVel(center, collision);
+                        if ((collisionVel.getMagnitude() > 0) && distance.update(collisionVel.getMagnitude())) {
+                            nextCenter = collision;
+                            nextVel = collisionVel;
+                            *p_nextElement = p_edge;
+                        }
                     }
                 } else {
                     Logger::writeLog(ERROR_MESSAGE, "World::generatePath(): collisions is empty");
@@ -463,8 +476,8 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
     if ((distance.getValue() < INFINITY) && (vel.getMagnitude() != 0))
         *p_percentage = 1 - (distance.getValue() / vel.getMagnitude());
     
-    if (nextVel.getMagnitude() != 0)
-        p_elementsNotToCheck->clear();
+    //if (nextVel.getMagnitude() != 0)
+    p_elementsNotToCheck->clear();
     
     return nextVel;
 }

@@ -190,7 +190,7 @@ bool Polygon::intersectsLine(Line line, Queue<Coordinate> * p_intersections) con
     LinkedList<Coordinate> intersections(false);
     for (Iterator<Line> * iterator = edges.createIterator(); !iterator->complete(); iterator->next()) {
         Coordinate intersection;
-        if (iterator->current().intersects(line, &intersection))
+        if (iterator->current().intersectsLine(line, &intersection))
             intersections.insert(intersection);
     }
     if (intersections.size() == 0)

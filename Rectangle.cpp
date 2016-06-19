@@ -120,10 +120,10 @@ bool Rectangle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) c
     Coordinate coor1, coor2;
     bool intersects = false, intersectsTwice = false;
     
-    (intersects ? intersectsTwice : intersects) |= line.intersects(getTopLine(), intersects ? &coor2 : &coor1);
-    (intersects ? intersectsTwice : intersects) |= line.intersects(getRightLine(), intersects ? &coor2 : &coor1);
-    (intersects ? intersectsTwice : intersects) |= line.intersects(getBottomLine(), intersects ? &coor2 : &coor1);
-    (intersects ? intersectsTwice : intersects) |= line.intersects(getLeftLine(), intersects ? &coor2 : &coor1);
+    (intersects ? intersectsTwice : intersects) |= line.intersectsLine(getTopLine(), intersects ? &coor2 : &coor1);
+    (intersects ? intersectsTwice : intersects) |= line.intersectsLine(getRightLine(), intersects ? &coor2 : &coor1);
+    (intersects ? intersectsTwice : intersects) |= line.intersectsLine(getBottomLine(), intersects ? &coor2 : &coor1);
+    (intersects ? intersectsTwice : intersects) |= line.intersectsLine(getLeftLine(), intersects ? &coor2 : &coor1);
     
     if (intersects) {
         if (p_intersections) {

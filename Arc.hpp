@@ -9,30 +9,47 @@
 #ifndef Arc_hpp
 #define Arc_hpp
 
+#include "Queue.hpp"
 #include "Angle.hpp"
 #include "Coordinate.hpp"
-#include "Circle.hpp"
+#include "Line.hpp"
 
 namespace nautical {
-    /*class Arc {
+    class Arc {
     public:
-        Arc(Coordinate origin, Angle startAngle, Angle endAngle, bool clockwise = true);
+        Arc(Coordinate origin = Coordinate(), double originDistance = 0, Angle startAngle = Angle(), Angle endAngle = Angle(), bool clockwise = true);
         virtual ~Arc();
         
-        double getLength() const;
+        Coordinate getOrigin() const;
+        Arc & setOrigin(Coordinate origin);
+        double getOriginDistance() const;
+        Arc & setOriginDistance(double distance);
+        Angle getStartAngle() const;
+        Arc & setStartAngle(Angle angle);
+        Angle getEndAngle() const;
+        Arc & setEndAngle(Angle angle);
+        Angle getDAngle() const;
+        double getArcLength() const;
+        bool isClockwise() const;
+        Arc & setClockwise(bool clockwise);
         Coordinate getStartCoor() const;
         Coordinate getEndCoor() const;
-        Angle getStartAngle() const;
-        Angle getEndAngle() const;
         
-        bool intersects(Line line, Queue<Coordinate> * p_intersections) const;
+        bool intersectsArc(Arc arc, Queue<Coordinate> * p_intersections) const;
+        bool intersectsLine(Line line, Queue<Coordinate> * p_intersections) const;
+        bool inArc(Angle angle) const;
+        bool inArc(Coordinate coor) const;
         
     private:
-        Circle circle;
+        Coordinate origin;
+        double originDistance;
         Angle startAngle,
-        endAngle;
+        endAngle,
+        dAngle;
         bool clockwise;
-    };*/
+        
+        Arc & setDAngle();
+    };
 }
 
 #endif /* Arc_hpp */

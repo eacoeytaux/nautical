@@ -19,6 +19,7 @@
 
 #include "Logger.hpp"
 #include "GraphicsManager.hpp"
+#include "Clock.hpp"
 #include "Random.hpp"
 #include "Queue.hpp"
 #include "Coordinate.hpp"
@@ -155,11 +156,11 @@ void GameManager::run() {
     flame->addOrigin(40);
     //flame->addOrigin(20, Vector(-15, 0));
     //flame->addOrigin(20, Vector(15, 0));
-    level.addObject(flame);
+    //level.addObject(flame);
     
-    unsigned int start;
+    Clock timer;
     while (running) {
-        start = SDL_GetTicks();
+        timer.delta();
         
         events.clear();
         pollEvents(events);
@@ -183,11 +184,11 @@ void GameManager::run() {
         SDL_SetRenderDrawColor(p_renderer, 0, 0, 0, 255);
         SDL_RenderClear(p_renderer);
         
-        long elapsed = SDL_GetTicks() - start;
+        long elapsed = timer.split();
         long wait = (targetTime - elapsed);
         if (wait >= 0) {
 #ifdef __APPLE__
-            usleep((useconds_t)(wait * 1000));
+            usleep((useconds_t)(wait * 1000)); //convert milliseconds to microseconds
 #endif
 #ifdef _WIN32
 			Sleep(wait);

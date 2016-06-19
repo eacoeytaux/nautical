@@ -50,10 +50,12 @@ namespace nautical {
         
         World & handleEvent(Event * p_event);
         
-        Vector generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement, LinkedList<const MapElement*> * p_elementsNotToCheck); //TODO rename function
+        Vector generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement, LinkedList<const MapElement*> * p_elementsNotToCheck); //TODO rename function and remove p_elementsNotToCheck?
         
         virtual void update(Collection<Event*> & events);
         virtual void draw();
+        
+        static bool drawBumpers; //DEBUGGING
         
     protected:
         World & removeObject(WorldObject * p_object);
@@ -64,8 +66,6 @@ namespace nautical {
         int id,
         updateTimestamp = 0,
         drawTimestamp = 0;
-        
-        static bool drawBumpers; //DEBUGGING
         
         Map map;
         bool darknessInEffect = false;

@@ -38,7 +38,7 @@ namespace nautical {
         bool inBox(double x, double y) const;
         bool inBox(Coordinate coor) const;
         bool isOnOrBelow(Coordinate coor) const;
-        bool intersects(Line line, Coordinate * p_intersection = nullptr) const;
+        bool intersectsLine(Line line, Coordinate * p_intersection = nullptr) const;
         Coordinate closestCoordinate(Coordinate coor) const;
         
         Line & rotateAboutCoordinate(Angle angle, Coordinate coor = Coordinate(0, 0));

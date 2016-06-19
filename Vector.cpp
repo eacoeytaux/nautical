@@ -149,7 +149,7 @@ Vector & Vector::mirrorVertical() {
     return *this;
 }
 
-bool Vector::subtractAngle(Angle angle) {
+bool Vector::subtractAngle(Angle angle, bool includeParallel) {
     Angle vectorAngle = getAngle();
     
     Angle angleDifference;
@@ -163,7 +163,7 @@ bool Vector::subtractAngle(Angle angle) {
         angleDifference = angle - vectorAngle;
     }
     
-    if ((fabs(angleDifference.getValue()) - M_PI_2) < -0.0001)
+    if (includeParallel ? ((fabs(angleDifference.getValue()) - M_PI_2) < 0) : ((fabs(angleDifference.getValue()) - M_PI_2) <= 0))
         return false;
     
     angleDifference += (angleDifference.getValue() > 0) ? -M_PI_2 : M_PI_2;

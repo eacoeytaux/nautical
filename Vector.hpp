@@ -42,7 +42,7 @@ namespace nautical {
         Vector & mirrorHorizontal();
         Vector & mirrorVertical();
         
-        bool subtractAngle(Angle angle);
+        bool subtractAngle(Angle angle, bool includeParellel = true);
         
         //Line toLine() const;
         //Line toLine(const Coordinate coor, bool subtracted = false) const;

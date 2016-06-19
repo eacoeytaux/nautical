@@ -41,33 +41,102 @@ MapHitboxRectangle & MapHitboxRectangle::setRectangle(Rectangle rec) {
 }
 
 bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, Vector * p_vector) const {
+    Coordinate center = p_vector->getOrigin();
+    
+    Shape * p_bumper = createBumper(p_vertex);
+    if (!p_bumper->contains(center)) {
+        delete p_bumper;
+        return false;
+    }
+    delete p_bumper;
+    
     Angle recAngle = rec.getAngle();
     double recAngleValue = recAngle.getValue();
     
-    Coordinate recCenter = rec.getCenter();
     double recDiagonalAngleValue = Angle(rec.getWidth(), rec.getHeight()).getValue();
+    double angleToOriginValue = findAngle(p_vertex->getCoor(), center).getValue();
     
-    Angle angleToOrigin = findAngle(p_vertex->getCoor(), recCenter);
+    enum MapEdgeRelativePosition {
+        UNDEFINED = 0,
+        ABOVE,
+        RIGHT,
+        BELOW,
+        LEFT
+    } edgePos = UNDEFINED;
     
-    /*if ((angleToOrigin.getValue() == M_PI - recDiagonalAngleValue + recAngleValue) && Random::getRandBool()) {
-        return p_vector->subtractAngle(Angle(M_PI) + recAngle);
-    } else if ((angleToOrigin.getValue() == recDiagonalAngleValue + recAngleValue) && Random::getRandBool()) {
-        return p_vector->subtractAngle(Angle(M_PI_2) + recAngle);
-    } else if ((angleToOrigin.getValue() == -recDiagonalAngleValue + recAngleValue) && Random::getRandBool()) {
-        return p_vector->subtractAngle(recAngle);
-    } else if ((angleToOrigin.getValue() == -M_PI + recDiagonalAngleValue + recAngleValue) && Random::getRandBool()) {
-        return p_vector->subtractAngle(Angle(-M_PI_2) + recAngle);
-    }*/
-    
-    if ((angleToOrigin.getValue() > M_PI - recDiagonalAngleValue + recAngleValue) || (angleToOrigin.getValue() < -M_PI + recDiagonalAngleValue + recAngleValue)) {
-        return p_vector->subtractAngle(Angle(M_PI) + recAngle);
-    } else if (angleToOrigin.getValue() > recDiagonalAngleValue + recAngleValue) {
-        return p_vector->subtractAngle(Angle(M_PI_2) + recAngle);
-    } else if (angleToOrigin.getValue() > -recDiagonalAngleValue + recAngleValue) {
-        return p_vector->subtractAngle(recAngle);
+    if ((angleToOriginValue > M_PI - recDiagonalAngleValue + recAngleValue) || (angleToOriginValue < -M_PI + recDiagonalAngleValue + recAngleValue)) {
+        edgePos = LEFT;
+    } else if (angleToOriginValue > recDiagonalAngleValue + recAngleValue) {
+        edgePos = ABOVE;
+    } else if (angleToOriginValue > -recDiagonalAngleValue + recAngleValue) {
+        edgePos = RIGHT;
     } else { //if (angleToOrigin.getValue() > -M_PI + recDiagonalAngleValue + recAngleValue) {
-        return p_vector->subtractAngle(Angle(-M_PI_2) + recAngle);
+        return BELOW;
     }
+    
+    //check to see if edgePos is in invalid pos
+    MapEdge * p_edgeFront = p_vertex->getEdgeFront(),
+    * p_edgeBack = p_vertex->getEdgeBack();
+    if (p_edgeFront) {
+        double normalAngleValue = p_edgeFront->getNormal().getValue();
+        
+        if (normalAngleValue > M_PI_2) {
+            if (edgePos == BELOW)
+                edgePos = RIGHT;
+        } else if (normalAngleValue > 0) {
+            if (edgePos == RIGHT)
+                edgePos = ABOVE;
+        } else if (normalAngleValue > -M_PI_2) {
+            if (edgePos == ABOVE)
+                edgePos = LEFT;
+        } else {
+            if (edgePos == LEFT)
+                edgePos = BELOW;
+        }
+    }
+    if (p_edgeBack) {
+        double normalAngleValue = p_edgeBack->getNormal().getValue();
+        
+        if (normalAngleValue > M_PI_2) {
+            if (edgePos == LEFT)
+                edgePos = ABOVE;
+        } else if (normalAngleValue > 0) {
+            if (edgePos == ABOVE)
+                edgePos = RIGHT;
+        } else if (normalAngleValue > -M_PI_2) {
+            if (edgePos == RIGHT)
+                edgePos = BELOW;
+        } else {
+            if (edgePos == BELOW)
+                edgePos = LEFT;
+        }
+    }
+    
+    //adjust vector according to angle
+    switch (edgePos) {
+        case ABOVE:
+            return p_vector->subtractAngle(Angle(M_PI_2) + recAngle, false);
+        case RIGHT:
+            return p_vector->subtractAngle(recAngle, false);
+        case BELOW:
+            return p_vector->subtractAngle(Angle(-M_PI_2) + recAngle, false);
+        case LEFT:
+            return p_vector->subtractAngle(Angle(M_PI) + recAngle, false);
+        case UNDEFINED:
+        default:
+            return false;
+    }
+    
+    // perserved if needed to revert to previous code
+    //if ((angleToOrigin.getValue() > M_PI - recDiagonalAngleValue + recAngleValue) || (angleToOrigin.getValue() < -M_PI + recDiagonalAngleValue + recAngleValue)) {
+    //    return p_vector->subtractAngle(Angle(M_PI) + recAngle);
+    //} else if (angleToOrigin.getValue() > recDiagonalAngleValue + recAngleValue) {
+    //    return p_vector->subtractAngle(Angle(M_PI_2) + recAngle);
+    //} else if (angleToOrigin.getValue() > -recDiagonalAngleValue + recAngleValue) {
+    //    return p_vector->subtractAngle(recAngle);
+    //} else { //if (angleToOrigin.getValue() > -M_PI + recDiagonalAngleValue + recAngleValue) {
+    //    return p_vector->subtractAngle(Angle(-M_PI_2) + recAngle);
+    //}
 }
 
 Rectangle * MapHitboxRectangle::createBumper(const MapVertex * p_vertex) const {

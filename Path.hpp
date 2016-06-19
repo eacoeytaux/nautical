@@ -13,21 +13,29 @@
 
 #include "Coordinate.hpp"
 #include "Line.hpp"
-#include "Vector.hpp"
+#include "Arc.hpp"
 
 namespace nautical {
     class Path : public Drawable {
     public:
-        Path(Coordinate origin = Coordinate()) : origin(origin) { }
+        Path() { }
         
-        virtual ~Path() { }
+        virtual ~Path() {
+            for (Iterator<Node*> * iterator = path.createIterator(); !iterator->complete(); iterator->next()) {
+                delete iterator->current();
+            }
+        }
         
         int getCount() {
             return path.size();
         }
         
-        bool addVector(Vector vector) {
-            return path.insert(vector);
+        bool addLine(Line line) {
+            return path.insert(new LineNode(line));
+        }
+        
+        bool addArc(Arc arc) {
+            return path.insert(new ArcNode(arc));
         }
         
         bool clear() {
@@ -35,25 +43,87 @@ namespace nautical {
         }
         
         Coordinate getEndPoint() {
-            Coordinate endPoint = origin;
-            for (Iterator<Vector> * iterator = path.createIterator(); !iterator->complete(); iterator->next())
-                endPoint += iterator->current();
-            
-            return endPoint;
+            Node * p_node = nullptr;
+            if (path.getLastElement(&p_node)) {
+                return p_node->getEndCoor();
+            }
+            return Coordinate();
         }
         
         void draw() const {
-            Coordinate lastCoor = origin;
-            for (Iterator<Vector> * iterator = path.createIterator(); !iterator->complete(); iterator->next()) {
-                Coordinate coor = lastCoor + iterator->current();
-                GraphicsManager::drawLine(Line(lastCoor, coor), getColor());
-                lastCoor = coor;
+            for (Iterator<Node*> * iterator = path.createIterator(); !iterator->complete(); iterator->next()) {
+                iterator->current()->draw();
             }
         }
         
     private:
-        Coordinate origin;
-        LinkedList<Vector> path;
+        struct Node : public Tagable {
+            Node() { appendTag("PathNode"); }
+            virtual bool intersectsNode(Node * p_node, Queue<Coordinate> * p_intersections) const = 0;
+            virtual Coordinate getStartCoor() const = 0;
+            virtual Coordinate getEndCoor() const = 0;
+            virtual void draw() const = 0;
+        };
+        
+        struct LineNode : public Node {
+            Line line;
+            
+            LineNode(Line line) :
+            line(line) { appendTag("LineNode"); }
+            
+            virtual bool intersectsNode(Node * p_node, Queue<Coordinate> * p_intersections) const {
+                if (p_node->hasTag("LineNode")) {
+                    Coordinate intersection;
+                    if (static_cast<LineNode*>(p_node)->line.intersectsLine(line, &intersection)) {
+                        if (p_intersections)
+                            p_intersections->insert(intersection);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else if (p_node->hasTag("ArcNode")) {
+                    return static_cast<ArcNode*>(p_node)->arc.intersectsLine(line, p_intersections);
+                } else {
+                    return false;
+                }
+            }
+            virtual Coordinate getStartCoor() const {
+                return line.getCoor1();
+            }
+            virtual Coordinate getEndCoor() const {
+                return line.getCoor2();
+            }
+            virtual void draw() const {
+                GraphicsManager::drawLine(line);
+            }
+        };
+        
+        struct ArcNode : public Node {
+            Arc arc;
+            
+            ArcNode(Arc arc) :
+            arc(arc) { appendTag("ArcNode"); }
+            virtual bool intersectsNode(Node * p_node, Queue<Coordinate> * p_intersections) const {
+                if (p_node->hasTag("LineNode")) {
+                    return arc.intersectsLine(static_cast<LineNode*>(p_node)->line, p_intersections);
+                } else if (p_node->hasTag("ArcNode")) {
+                    return arc.intersectsArc(static_cast<ArcNode*>(p_node)->arc, p_intersections);
+                } else {
+                    return false;
+                }
+            }
+            virtual Coordinate getStartCoor() const {
+                return arc.getStartCoor();
+            }
+            virtual Coordinate getEndCoor() const {
+                return arc.getEndCoor();
+            }
+            virtual void draw() const {
+                //TODO;
+            }
+        };
+        
+        LinkedList<Node*> path;
     };
 }
 

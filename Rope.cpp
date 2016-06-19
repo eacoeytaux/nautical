@@ -89,7 +89,7 @@ void Rope::update() {
                 setState((overrideRetract = shouldRetract) ? RETRACTING : SET);
             }
             
-            wave = Path(origin);
+            wave = Path();
             Angle angle = findAngle(origin, head);
             double distance = findDistance(origin, head);
             Coordinate lastCoor = origin;
@@ -98,7 +98,7 @@ void Rope::update() {
                 double amplitude = 16 * (1 - (x / distance));// * cos(distance / 64);
                 double angularFrequency = ((((length - distance) / 3) + 1) / length);
                 Coordinate coor = origin + Vector(x, amplitude * sin((angularFrequency * x) + (M_PI * 5))).rotate(angle);
-                wave.addVector(Vector(lastCoor, coor));
+                wave.addLine(Line(lastCoor, coor));
                 lastCoor = coor;
             }
             break;

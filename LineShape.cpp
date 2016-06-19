@@ -48,7 +48,7 @@ bool LineShape::contains(Coordinate coor) const {
 
 bool LineShape::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const {
     Coordinate intersection;
-    if (this->line.intersects(line, &intersection)) {
+    if (this->line.intersectsLine(line, &intersection)) {
         if (p_intersections)
             p_intersections->insert(intersection);
         return true;

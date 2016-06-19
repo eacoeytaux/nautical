@@ -38,6 +38,10 @@ namespace nautical {
         }
         
         virtual bool adjustVector(Vector * p_vector) const {
+            return adjustVector(p_element, p_vector);
+        }
+        
+        virtual bool adjustVector(const MapElement * p_element, Vector * p_vector) const {
             if (p_element) {
                 if (p_element->hasTag(MAP_VERTEX_TAG))
                     return adjustVector(static_cast<const MapVertex*>(p_element), p_vector);

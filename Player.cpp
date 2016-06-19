@@ -175,6 +175,7 @@ void Player::update() {
     Vector vel = getVel();
     LinkedList<const MapElement*> elementsNotToCheck;
     do {
+        vel.setOrigin(getCenter());
         MapHitbox * p_hitbox = getMapHitbox();
         Vector movement = p_parent->generatePath(&percentageUsed, &vel, p_hitbox, &p_element, &elementsNotToCheck);
         delete p_hitbox;
@@ -227,7 +228,8 @@ void Player::update() {
 
 void Player::draw() const {
     Shape * p_hitboxShape = getMapHitbox()->getShape();
-    p_hitboxShape->draw();
+    if (!World::drawBumpers || !DEBUG_MODE)
+        p_hitboxShape->draw();
     delete p_hitboxShape;
     if (nautical::DEBUG_MODE) {
         getVel().draw(5);

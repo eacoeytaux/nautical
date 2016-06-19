@@ -157,7 +157,7 @@ bool Line::isOnOrBelow(Coordinate coor) const {
     return ((((x2 - x1) * (coor.getY() - y1)) - ((y2 - y1) * (coor.getX() - x1))) <= 0);
 }
 
-bool Line::intersects(Line line, Coordinate * p_intersection) const {
+bool Line::intersectsLine(Line line, Coordinate * p_intersection) const {
     if (vertical && line.vertical) {
         if (x1 == line.x1) {
             if (p_intersection)
