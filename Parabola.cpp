@@ -10,6 +10,7 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <algorithm>
 
 #include "Logger.hpp"
 #include "Utility.hpp"
@@ -55,8 +56,8 @@ void Parabola::init(double x1, double y1, double x2, double y2, double length) {
         c = y1 - (b * x1);
     } else {
         if (x1 > x2) { //switches coordinates if coor1 is further right than coor2
-            swap<double>(x1, x2);
-            swap<double>(y1, y2);
+            std::swap(x1, x2);
+            std::swap(y1, y2);
         }
         
         double dx = x2 - x1;
@@ -130,14 +131,14 @@ bool Parabola::inRangeX(double x) const {
     return inRange(x, xLeft, xRight);
 }
 
-bool Parabola::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const {
+bool Parabola::intersectsLine(Line line, std::vector<Coordinate> * p_intersections) const {
     if (line.isVertical()) {
         double xIntersection = line.getCoor1().getX();
         double yIntersection = calculateY(xIntersection);
         Coordinate coor(xIntersection, yIntersection);
         if (line.inBox(coor) && inRangeX(xIntersection)) {
             if (p_intersections)
-                p_intersections->insert(coor);
+                p_intersections->push_back(coor);
             return true;
         }
     }
@@ -157,18 +158,18 @@ bool Parabola::intersectsLine(Line line, Queue<Coordinate> * p_intersections) co
     if (coor1Intersects || coor2Intersects) {
         if (p_intersections) {
             if (!coor2Intersects) {
-                p_intersections->insert(coor1);
+                p_intersections->push_back(coor1);
             } else if (!coor1Intersects) {
-                p_intersections->insert(coor2);
+                p_intersections->push_back(coor2);
             } else {
                 double xDistance1 = fabs(line.getCoor1().getX() - coor1.getX());
                 double xDistance2 = fabs(line.getCoor1().getX() - coor2.getX());
                 if (xDistance1 <= xDistance2) {
-                    p_intersections->insert(coor1);
-                    p_intersections->insert(coor2);
+                    p_intersections->push_back(coor1);
+                    p_intersections->push_back(coor2);
                 } else {
-                    p_intersections->insert(coor2);
-                    p_intersections->insert(coor1);
+                    p_intersections->push_back(coor2);
+                    p_intersections->push_back(coor1);
                 }
             }
         }

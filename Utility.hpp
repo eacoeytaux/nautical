@@ -9,29 +9,29 @@
 #ifndef __Nautical__Utility__
 #define __Nautical__Utility__
 
-#include <string>
-#ifdef _WIN32
 #define _USE_MATH_DEFINES
-#endif
+#include <string>
 #include <cmath>
+#include <vector>
+#include <algorithm>
 
 #ifndef M_PI
-#define M_PI       3.14159265358979323846264338328      // Pi 
+#define M_PI       3.14159265358979323846264338328      // Pi
 #endif
 
 #ifndef M_PI_2
-#define M_PI_2     1.57079632679489661923132169164      // Pi/2 
+#define M_PI_2     1.57079632679489661923132169164      // Pi/2
 #endif
 
 #ifndef M_PI_4
-#define M_PI_4     0.78539816339744830961566084582      // Pi/4 
+#define M_PI_4     0.78539816339744830961566084582      // Pi/4
 #endif
 
+#include "Logger.hpp"
 #include "Angle.hpp"
 #include "Coordinate.hpp"
-#include "LinkedList.hpp"
 
-#define ROUNDING_ERROR_MARGIN 0.0001
+#define ROUNDING_ERROR_MARGIN 0.00001
 
 namespace nautical {
     extern bool DEBUG_MODE;
@@ -78,16 +78,36 @@ namespace nautical {
         return (str1.compare(str2) == 0);
     }
     
-    template<typename T>
-    T flip(T element, bool b = true) { //TODO name this better?
-        return element * (b ? -1 : 1);
-    }
-    
-    template<typename T>
-    void swap(T & t1, T & t2) { //swaps generic elements
-        T temp = t1;
-        t1 = t2;
-        t2 = temp;
+    namespace vector_helpers {
+        template<typename T>
+        inline void removeElementByValue(std::vector<T> & vector, T value, bool removeAll = false) {
+            if (removeAll) {
+                vector.erase(std::remove(vector.begin(), vector.end(), value), vector.end());
+            } else {
+                typename std::vector<T>::iterator it = std::find(vector.begin(), vector.end(), value);
+                if (it != vector.end())
+                    vector.erase(it);
+                else
+                    Logger::writeLog(ERROR_MESSAGE, "removeElementByValue(): attempted to remove non-existant element from vector");
+            }
+        }
+        
+        template<typename T>
+        inline void removeElementByIndex(std::vector<T> & vector, int index) {
+            //TODO index bounds checking
+            vector.erase(vector.begin() + index);
+        }
+        
+        template<typename T>
+        inline int getIndexOfElement(std::vector<T> & vector, T value) { //returns -1 if not found
+            int index = std::find(vector.begin(), vector.end(), value) - vector.begin();
+            return (index >= vector.size()) ? -1 : index;
+        }
+        
+        template<typename T>
+        inline bool containsElement(std::vector<T> & vector, T value) {
+            return getIndexOfElement(vector, value) != -1;
+        }
     }
 }
 

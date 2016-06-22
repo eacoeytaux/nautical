@@ -102,14 +102,16 @@ void Rope::update() {
                 lastCoor = coor;
             }
             break;
-        } case SET: {
+        }
+        case SET: {
             double originHeadDistance = findDistance(origin, head);
             if (originHeadDistance > (length - 0.0001))
                 taught = true;
             else if (originHeadDistance < (length - 0.0001))
                 taught = false;
             break;
-        } case RETRACTING: {
+        }
+        case RETRACTING: {
             if (length <= retractSpeed) {
                 getParent()->markObjectForRemoval(this);
                 p_parent->setRope(nullptr);
@@ -138,7 +140,8 @@ void Rope::draw() const {
         case EXTENDING: {
             wave.draw();
             break;
-        } case SET: {
+        }
+        case SET: {
             if (World::DRAW_BUMPERS && DEBUG_MODE)
                 Circle(head, length).setColor(Color(255, 255, 255, 64)).draw(); //DEBUGGING
             if (taught)
@@ -146,7 +149,8 @@ void Rope::draw() const {
             else
                 GraphicsManager::drawParabola(parabola, WHITE);
             break;
-        } case RETRACTING: {
+        }
+        case RETRACTING: {
             if (taught)
                 GraphicsManager::drawLine(line, WHITE);
             else

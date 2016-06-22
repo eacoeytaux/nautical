@@ -13,12 +13,10 @@
 #include "Tagable.hpp" //base class
 
 #include <string>
+#include <vector>
 
 #include "Logger.hpp"
 #include "Utility.hpp"
-#include "Queue.hpp"
-#include "Stack.hpp"
-#include "SortedList.hpp"
 #include "Coordinate.hpp"
 #include "Line.hpp"
 #include "Vector.hpp"
@@ -38,8 +36,8 @@ namespace nautical {
         virtual double getUpperBoundY() const = 0;
         
         virtual bool contains(Coordinate coor) const = 0;
-        virtual bool intersectsLine(Line line, Queue<Coordinate> * p_intersections = nullptr) const = 0;
-        virtual bool intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections = nullptr) const = 0;
+        virtual bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const = 0;
+        virtual bool intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections = nullptr) const = 0;
         
         virtual Shape & move(Vector vector) = 0;
         virtual Shape & rotateAboutCoordinate(Coordinate coor, Angle angle) = 0;
@@ -47,16 +45,11 @@ namespace nautical {
         virtual void draw() const = 0;
         
         struct IntersectionLine {
-            double xIn = -INFINITY;
-            double xOut = -INFINITY;
+            double xIn, xOut;
             
-            bool operator==(const IntersectionLine & line) {
-                return ((xIn == line.xIn) && (xOut == line.xOut));
-            }
-            
-            static double weighIntersectionLine(const IntersectionLine * p_line) {
-                return p_line->xIn;
-            }
+            struct IntersectionLineComp {
+                inline bool operator()(IntersectionLine line1, IntersectionLine line2) { return (line1.xIn < line2.xIn); }
+            };
         };
         
         virtual void drawFilled(Color color) const {
@@ -73,47 +66,49 @@ namespace nautical {
                 double yWorld = GraphicsManager::screenToWorldY(y);
                 Line screenLine(GraphicsManager::screenToWorld(Coordinate(screenLowerBoundX, y)).moveX(-1), GraphicsManager::screenToWorld(Coordinate(screenUpperBoundX, y).moveX(1)));
                 
-                SortedList<IntersectionLine> lineIntersections(&IntersectionLine::weighIntersectionLine);
-                Queue<Coordinate> intersections;
+                std::vector<IntersectionLine> lineIntersections;
+                std::vector<Coordinate> intersections;
                 if (intersectsLine(screenLine, &intersections)) {
-                    IntersectionLine line;
-                    Coordinate coor;
                     while (intersections.size() > 0) {
-                        if (intersections.pop(&coor)) {
-                            line.xIn = coor.getX();
-                            if (intersections.pop(&coor)) {
-                                line.xOut = coor.getX();
-                                lineIntersections.insert(line); //only add line if line intersections at least twice
-                            } else {
-                                Logger::writeLog(ERROR_MESSAGE, "Shape::drawFilled(): horizontal line intersections shape odd number of times");
-                            }
+                        IntersectionLine line;
+                        
+                        line.xIn = intersections.front().getX();
+                        intersections.pop_back();
+                        
+                        if (intersections.size() > 0) {
+                            line.xOut = intersections.front().getX();
+                            intersections.pop_back();
+                            
+                            lineIntersections.push_back(line);
+                        } else {
+                            Logger::writeLog(ERROR_MESSAGE, "Shape::drawFilled(): horizontal line intersections shape odd number of times");
                         }
                     }
                 }
                 
-                Stack<Line> linesToDraw;
-                for (Iterator<IntersectionLine> * iterator = lineIntersections.createIterator(); !iterator->complete(); iterator->next()) {
-                    IntersectionLine line = iterator->current();
-                    Line prevLineToDraw;
-                    if (linesToDraw.pop(&prevLineToDraw)) {
+                std::vector<Line> linesToDraw;
+                for (std::vector<IntersectionLine>::iterator it = lineIntersections.begin(); it != lineIntersections.end(); it++) {
+                    IntersectionLine line = *it;
+                    if (linesToDraw.size() > 0) {
+                        Line prevLineToDraw = linesToDraw.front();
                         if (line.xIn < prevLineToDraw.getCoor2().getX()) {
-                            linesToDraw.insert(Line(prevLineToDraw.getCoor1(), Coordinate(line.xOut, yWorld)));
+                            linesToDraw.push_back(Line(prevLineToDraw.getCoor1(), Coordinate(line.xOut, yWorld)));
                         } else {
-                            linesToDraw.insert(prevLineToDraw);
-                            linesToDraw.insert(Line(Coordinate(line.xIn, yWorld), Coordinate(line.xOut, yWorld)));
+                            linesToDraw.push_back(prevLineToDraw);
+                            linesToDraw.push_back(Line(Coordinate(line.xIn, yWorld), Coordinate(line.xOut, yWorld)));
                         }
                     } else {
-                        linesToDraw.insert(Line(Coordinate(line.xIn, yWorld), Coordinate(line.xOut, yWorld)));
+                        linesToDraw.push_back(Line(Coordinate(line.xIn, yWorld), Coordinate(line.xOut, yWorld)));
                     }
                 }
                 
-                for (Iterator<Line> * iterator = linesToDraw.createIterator(); !iterator->complete(); iterator->next()) {
-                    GraphicsManager::drawLine(iterator->current(), getColor());
+                for (std::vector<Line>::iterator it = linesToDraw.begin(); it != linesToDraw.end(); it++) {
+                    GraphicsManager::drawLine(*it, getColor());
                 }
             }
         }
         
-        virtual Shape * copyPtr() const = 0;
+        virtual Shape * copyPtr_() const = 0;
         virtual bool operator==(const Shape & shape) const = 0;
         virtual bool operator!=(const Shape & shape) const { return !((*this) == shape); }
     };

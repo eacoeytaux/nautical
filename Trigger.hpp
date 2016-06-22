@@ -11,7 +11,7 @@
 
 #include "Tagable.hpp"
 
-#include "LinkedList.hpp"
+#include <vector>
 
 namespace nautical {
     const std::string TRIGGER_TAG = "trigger";
@@ -50,12 +50,12 @@ namespace nautical {
             
             activatedCount++;
             
-            for (Iterator<Trigger*> * iterator = triggersToEnable.createIterator(); !iterator->complete(); iterator->next()) {
-                iterator->current()->enable();
+            for (std::vector<Trigger*>::iterator it = triggersToEnable.begin(); it != triggersToEnable.end(); it++) {
+                (*it)->enable();
             }
             
-            for (Iterator<Trigger*> * iterator = triggersToDisable.createIterator(); !iterator->complete(); iterator->next()) {
-                iterator->current()->disable();
+            for (std::vector<Trigger*>::iterator it = triggersToDisable.begin(); it != triggersToDisable.end(); it++) {
+                (*it)->disable();
             }
             
             return true;
@@ -77,8 +77,8 @@ namespace nautical {
     private:
         int activatedCount = 0;
         bool enabled, autoDisable;
-        LinkedList<Trigger*> triggersToEnable;
-        LinkedList<Trigger*> triggersToDisable;
+        std::vector<Trigger*> triggersToEnable;
+        std::vector<Trigger*> triggersToDisable;
     };
 }
 

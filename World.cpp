@@ -10,7 +10,6 @@
 
 #include "Logger.hpp"
 #include "MaxMinValue.hpp"
-#include "Queue.hpp"
 #include "Path.hpp"
 #include "MapHitbox.hpp"
 #include "WorldObject.hpp"
@@ -36,14 +35,14 @@ World::World(bool verticalWorld) {
     static int id = 0;
     this->id = id++;
     
-    allObjects = SortedList<WorldObject*>(verticalWorld ? &weighWorldObjectByY : &weighWorldObjectByX);
-    objectsToDelete = SortedList<WorldObject*>(verticalWorld ? &weighWorldObjectByY : &weighWorldObjectByX);
-    for (int i = 0; i < MAX_PRIORITY + 1; i++) {
-        objectsToUpdate[i] = SortedList<WorldObject*>(verticalWorld ? &weighWorldObjectByY : &weighWorldObjectByX);
-    }
-    for (int i = 0; i < MAX_BELOW_ALTITUDE + MAX_ABOVE_ALTITUDE + 1; i++) {
-        objectsToDraw[i] = SortedList<WorldObject*>(verticalWorld ? &weighWorldObjectByY : &weighWorldObjectByX);
-    }
+    /*allObjects = SortedList<WorldObject*>(verticalWorld ? &weighWorldObjectByY : &weighWorldObjectByX);
+     objectsToDelete = SortedList<WorldObject*>(verticalWorld ? &weighWorldObjectByY : &weighWorldObjectByX);
+     for (int i = 0; i < MAX_PRIORITY + 1; i++) {
+     objectsToUpdate[i] = SortedList<WorldObject*>(verticalWorld ? &weighWorldObjectByY : &weighWorldObjectByX);
+     }
+     for (int i = 0; i < MAX_BELOW_ALTITUDE + MAX_ABOVE_ALTITUDE + 1; i++) {
+     objectsToDraw[i] = SortedList<WorldObject*>(verticalWorld ? &weighWorldObjectByY : &weighWorldObjectByX);
+     }*/
     
     //generate map //TODO move this somewhere else
     map = Map(verticalWorld);
@@ -69,8 +68,8 @@ World::World(bool verticalWorld) {
 }
 
 World::~World() {
-    for (Iterator<WorldObject*> * iterator = allObjects.createIterator(); !iterator->complete(); iterator->next()) {
-        delete iterator->current();
+    for (std::vector<WorldObject*>::iterator it = allObjects.begin(); it != allObjects.end(); it++) {
+        delete *it;
     }
 }
 
@@ -102,14 +101,14 @@ World & World::addObject(WorldObject * p_object, bool shouldUpdate, bool shouldD
     if (p_object) {
         p_object->setParent(this);
         
-        allObjects.insert(p_object);
+        allObjects.push_back(p_object);
         if (shouldUpdate)
-            objectsToUpdate[p_object->getPriority()].insert(p_object);
+            objectsToUpdate[p_object->getPriority()].push_back(p_object);
         if (shouldDraw)
-            objectsToDraw[p_object->getAltitude() + MAX_BELOW_ALTITUDE].insert(p_object);
+            objectsToDraw[p_object->getAltitude() + MAX_BELOW_ALTITUDE].push_back(p_object);
         
-        for (Iterator<std::string> * iterator = p_object->getSubscribedEventTagsIterator(); !iterator->complete(); iterator->next()) {
-            subscribeObject(iterator->current(), p_object);
+        for (std::vector<std::string>::const_iterator it = p_object->getSubscribedEventTags()->begin(); it != p_object->getSubscribedEventTags()->end(); it++) {
+            subscribeObject(*it, p_object);
         }
         
         Logger::writeLog(PLAIN_MESSAGE, "World::addObject(): added object[%d] to world[%d]", p_object->getID(), id);
@@ -121,21 +120,21 @@ World & World::addObject(WorldObject * p_object, bool shouldUpdate, bool shouldD
 }
 
 World & World::markObjectForRemoval(WorldObject * p_object) {
-    objectsToDelete.insert(p_object);
+    objectsToDelete.push_back(p_object);
     return *this;
 }
 
 World & World::removeObject(WorldObject * p_object) {
     if (p_object) {
-        if (allObjects.contains(p_object)) {
-            allObjects.remove(p_object);
-            if (objectsToUpdate[p_object->getPriority()].contains(p_object))
-                objectsToUpdate[p_object->getPriority()].remove(p_object);
-            if (objectsToDraw[p_object->getAltitude() + MAX_BELOW_ALTITUDE].contains(p_object))
-                objectsToDraw[p_object->getAltitude() + MAX_BELOW_ALTITUDE].remove(p_object);
+        if (vector_helpers::containsElement(allObjects, p_object)) {
+            vector_helpers::removeElementByValue(allObjects, p_object);
+            if (vector_helpers::containsElement(objectsToUpdate[p_object->getPriority()], p_object))
+                vector_helpers::removeElementByValue(objectsToUpdate[p_object->getPriority()], p_object);
+            if (vector_helpers::containsElement(objectsToDraw[p_object->getAltitude() + MAX_BELOW_ALTITUDE], p_object))
+                vector_helpers::removeElementByValue(objectsToDraw[p_object->getAltitude() + MAX_BELOW_ALTITUDE], p_object);
             
-            for (Iterator<std::string> * iterator = p_object->getSubscribedEventTagsIterator(); !iterator->complete(); iterator->next()) {
-                unsubscribeObject(iterator->current(), p_object);
+            for (std::vector<std::string>::const_iterator it = p_object->getSubscribedEventTags()->begin(); it != p_object->getSubscribedEventTags()->end(); it++) {
+                unsubscribeObject(*it, p_object);
             }
         } else {
             Logger::writeLog(WARNING_MESSAGE,"World::removeObject(): attempted to remove object not in world's list of all objects");
@@ -148,15 +147,9 @@ World & World::removeObject(WorldObject * p_object) {
 }
 
 World & World::subscribeObject(std::string eventTag, WorldObject * p_object) {
-    LinkedList<WorldObject*> objects;
-    objects.insert(p_object);
-    return subscribeObjects(eventTag, objects);
-}
-
-World & World::subscribeObjects(std::string eventTag, LinkedList<WorldObject*> objects) {
-    for (Iterator<EventPairing> * iterator = subscribedObjects.createIterator(); !iterator->complete(); iterator->next()) {
-        if (iterator->current().eventTag == eventTag) {
-            iterator->current().subscribedObjects.Collection<WorldObject*>::insert(&objects);
+    for (std::vector<EventPairing>::iterator it = subscribedObjects.begin(); it != subscribedObjects.end(); it++) {
+        if (it->eventTag == eventTag) {
+            it->subscribedObjects.push_back(p_object);
             return *this;
         }
     }
@@ -164,23 +157,17 @@ World & World::subscribeObjects(std::string eventTag, LinkedList<WorldObject*> o
     //event has not yet been registered
     EventPairing newPair;
     newPair.eventTag = eventTag;
-    newPair.subscribedObjects.Collection<WorldObject*>::insert(&objects);
-    subscribedObjects.insert(newPair);
+    newPair.subscribedObjects.push_back(p_object);
+    subscribedObjects.push_back(newPair);
     return *this;
 }
 
 World & World::unsubscribeObject(std::string eventTag, WorldObject * p_object) {
-    LinkedList<WorldObject*> objects;
-    objects.insert(p_object);
-    return unsubscribeObjects(eventTag, objects);
-}
-
-World & World::unsubscribeObjects(std::string eventTag, LinkedList<WorldObject*> objects) {
-    for (Iterator<EventPairing> * iterator = subscribedObjects.createIterator(); !iterator->complete(); iterator->next()) {
-        if (iterator->current().eventTag == eventTag) {
-            iterator->current().subscribedObjects.Collection<WorldObject*>::remove(&objects);
-            if (iterator->current().subscribedObjects.empty()) //if no objects are subscribed to event, remove event
-                subscribedObjects.remove(iterator->current());
+    for (std::vector<EventPairing>::iterator it = subscribedObjects.begin(); it != subscribedObjects.end(); it++) {
+        if (it->eventTag == eventTag) {
+            vector_helpers::removeElementByValue(it->subscribedObjects, p_object);
+            if (it->subscribedObjects.size() == 0) //if no objects are subscribed to event, remove event
+                vector_helpers::removeElementByValue(subscribedObjects, *it);
             return *this;
         }
     }
@@ -189,11 +176,11 @@ World & World::unsubscribeObjects(std::string eventTag, LinkedList<WorldObject*>
 }
 
 World & World::handleEvent(Event * p_event) {
-    for (Iterator<EventPairing> * iterator = subscribedObjects.createIterator(); !iterator->complete(); iterator->next()) {
-        EventPairing pair = iterator->current();
+    for (std::vector<EventPairing>::iterator it = subscribedObjects.begin(); it != subscribedObjects.end(); it++) {
+        EventPairing pair = *it;
         if (p_event->hasTag(pair.eventTag)) {
-            for (Iterator<WorldObject*> * subIterator = pair.subscribedObjects.createIterator(); !subIterator->complete(); subIterator->next()) {
-                subIterator->current()->handleEvent(p_event);
+            for (std::vector<WorldObject*>::iterator subIt = pair.subscribedObjects.begin(); subIt != pair.subscribedObjects.end(); subIt++) {
+                (*subIt)->handleEvent(p_event);
             }
         }
     }
@@ -356,7 +343,7 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
     //if (vel.getMagnitude() < 0)
     //    return 0;
     
-    Shape * p_shape = p_hitbox->getShape();
+    Shape * p_shape = p_hitbox->getShape_();
     Coordinate center = p_hitbox->getCenter();
     const MapElement * p_element = p_hitbox->getElement();
     const MapElement * p_prevElement = p_element;
@@ -382,9 +369,9 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
     MinValue distance;
     
     if (p_element) { //if touching element, check only element catches
-        LinkedList<MapCatch> catches = p_hitbox->findCatches(&map);
-        for (Iterator<MapCatch> * iterator = catches.createIterator(); !iterator->complete(); iterator->next()) {
-            MapCatch mapCatch = iterator->current();
+        std::vector<MapCatch> catches = p_hitbox->findCatches(&map);
+        for (std::vector<MapCatch>::iterator it = catches.begin(); it != catches.end(); it++) {
+            MapCatch mapCatch = *it;
             
             Line adjustedVelLine = Line(center, center + vel);
             
@@ -403,60 +390,52 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
         }
     } else { //free fall, check all elements
         //check all vertices for collision
-        for (Iterator<MapVertex*> * iterator = map.getVerticesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
-            MapVertex * p_vertex = iterator->current();
+        for (std::vector<MapVertex*>::const_iterator it = map.getVerticesList()->begin(); it != map.getVerticesList()->end(); it++) {//TODO = map.getVerticesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
+            MapVertex * p_vertex = *it;
             
             if (p_vertex == p_prevElement)
                 continue;
             
-            Queue<Coordinate> collisions;
+            std::vector<Coordinate> collisions;
             Line adjustedVelLine = Line(center, center + vel);
-            Shape * p_bumper = p_hitbox->createBumper(p_vertex);
+            Shape * p_bumper = p_hitbox->createBumper_(p_vertex);
             if (p_bumper->intersectsLine(adjustedVelLine, &collisions)) {
-                Coordinate collision;
-                if (collisions.pop(&collision)) {
-                    Vector tempVector = *p_vel;
-                    tempVector.setOrigin(collision);
-                    if (p_hitbox->adjustVector(p_vertex, &tempVector)) {
-                        Vector collisionVel(center, collision);
-                        if ((collisionVel.getMagnitude() > 0) && distance.update(collisionVel.getMagnitude())) {
-                            nextCenter = collision;
-                            nextVel = collisionVel;
-                            *p_nextElement = p_vertex;
-                        }
+                Coordinate collision = collisions.front();
+                Vector tempVector = *p_vel;
+                tempVector.setOrigin(collision);
+                if (p_hitbox->adjustVector(p_vertex, &tempVector)) {
+                    Vector collisionVel(center, collision);
+                    if ((collisionVel.getMagnitude() > 0) && distance.update(collisionVel.getMagnitude())) {
+                        nextCenter = collision;
+                        nextVel = collisionVel;
+                        *p_nextElement = p_vertex;
                     }
-                } else {
-                    Logger::writeLog(ERROR_MESSAGE, "World::generatePath(): collisions is empty");
                 }
             }
             delete p_bumper;
         }
         
         //check all edges for collision
-        for (Iterator<MapEdge*> * iterator = map.getEdgesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
-            MapEdge * p_edge = iterator->current();
+        for (std::vector<MapEdge*>::const_iterator it = map.getEdgesList()->begin(); it != map.getEdgesList()->end(); it++) {//TODO = map.getEdgesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
+            MapEdge * p_edge = *it;
             
             if (p_edge == p_prevElement)
                 continue;
             
-            Queue<Coordinate> collisions;
+            std::vector<Coordinate> collisions;
             Line adjustedVelLine(center, center + vel);
-            Shape * p_bumper = p_hitbox->createBumper(p_edge);
+            Shape * p_bumper = p_hitbox->createBumper_(p_edge);
             if (p_bumper->intersectsLine(adjustedVelLine, &collisions)) {
-                Coordinate collision;
-                if (collisions.pop(&collision)) {
-                    Vector tempVector = *p_vel;
-                    tempVector.setOrigin(collision);
-                    if (p_hitbox->adjustVector(p_edge, &tempVector)) {
-                        Vector collisionVel(center, collision);
-                        if ((collisionVel.getMagnitude() > 0) && distance.update(collisionVel.getMagnitude())) {
-                            nextCenter = collision;
-                            nextVel = collisionVel;
-                            *p_nextElement = p_edge;
-                        }
+                Coordinate collision = collisions.front();
+                Vector tempVector = *p_vel;
+                tempVector.setOrigin(collision);
+                if (p_hitbox->adjustVector(p_edge, &tempVector)) {
+                    Vector collisionVel(center, collision);
+                    if ((collisionVel.getMagnitude() > 0) && distance.update(collisionVel.getMagnitude())) {
+                        nextCenter = collision;
+                        nextVel = collisionVel;
+                        *p_nextElement = p_edge;
                     }
-                } else {
-                    Logger::writeLog(ERROR_MESSAGE, "World::generatePath(): collisions is empty");
                 }
             }
             delete p_bumper;
@@ -476,37 +455,37 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
     return nextVel;
 }
 
-void World::update(Collection<Event*> & events) {
+void World::update(std::vector<Event*> & events) {
     Logger::writeLog(PLAIN_MESSAGE, "starting world[%d] update %d", id, updateTimestamp);
     
-    for (Iterator<Event*> * iterator = events.createIterator(); !iterator->complete(); iterator->next()) {
-        if (iterator->current()->hasTag(KEYBOARD_EVENT_TAG)) { //DEBUGGING
-            if ((static_cast<KeyboardEvent*>(iterator->current())->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(iterator->current())->getKey() == KeyboardEvent::O)) {
+    for (std::vector<Event*>::iterator it = events.begin(); it != events.end(); it++) {
+        if ((*it)->hasTag(KEYBOARD_EVENT_TAG)) { //DEBUGGING
+            if ((static_cast<KeyboardEvent*>(*it)->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(*it)->getKey() == KeyboardEvent::O)) {
                 DarknessOverlay::setInEffect(!DarknessOverlay::isInEffect());
-            } else if ((static_cast<KeyboardEvent*>(iterator->current())->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(iterator->current())->getKey() == KeyboardEvent::B)) {
+            } else if ((static_cast<KeyboardEvent*>(*it)->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(*it)->getKey() == KeyboardEvent::B)) {
                 DRAW_BUMPERS = !DRAW_BUMPERS;
                 MapEdge::DRAW_NORMALS = !MapEdge::DRAW_NORMALS;
             }
         }
         
-        handleEvent(iterator->current());
+        handleEvent(*it);
     }
     
     for (int i = MAX_PRIORITY; i >= 0; i--) {
-        for (Iterator<WorldObject*> * iterator = objectsToUpdate[i].createIterator(); !iterator->complete(); iterator->next()) {
-            WorldObject* p_object = iterator->current();
+        for (std::vector<WorldObject*>::iterator it = objectsToUpdate[i].begin(); it != objectsToUpdate[i].end(); it++) {
+            WorldObject* p_object = *it;
             
-            if (p_object->getPriority() != i) { //if object's priority has changed, move object to appropriate priority but still update object
-                objectsToUpdate[i].remove(p_object);
-                objectsToUpdate[p_object->getPriority()].insert(p_object);
+            if (p_object->getPriority() != i) { //if object's priority has changed, move object to appropriate priority but still update object //TODO this may need to be done after loop
+                vector_helpers::removeElementByValue(objectsToUpdate[i], p_object);
+                objectsToUpdate[p_object->getPriority()].push_back(p_object);
             }
             
             updateObject(p_object);
         }
     }
     
-    for (Iterator<WorldObject*> * iterator = objectsToDelete.createIterator(); !iterator->complete(); iterator->next()) {
-        removeObject(iterator->current());
+    for (std::vector<WorldObject*>::iterator it = objectsToDelete.begin(); it != objectsToDelete.end(); it++) {
+        removeObject(*it);
     }
     objectsToDelete.clear();
     
@@ -524,15 +503,15 @@ void World::draw() {
         if (i == MAX_BELOW_ALTITUDE) {
             map.draw();
             if (DRAW_BUMPERS && DEBUG_MODE)
-                map.drawBumpers(climber::Player(Coordinate(0, 0)).getMapHitbox());
+                map.drawBumpers(climber::Player(Coordinate(0, 0)).getMapHitbox_());
         }
         
-        for (Iterator<WorldObject*> * iterator = objectsToDraw[i].createIterator(); !iterator->complete(); iterator->next()) {
-            WorldObject* p_object = iterator->current();
+        for (std::vector<WorldObject*>::iterator it = objectsToDraw[i].begin(); it != objectsToDraw[i].end(); it++) {
+            WorldObject* p_object = *it;
             
             if ((p_object->getAltitude() + MAX_BELOW_ALTITUDE) != i) { //if object's altitude has changed, move object to appropriate altitude but still draw object
-                objectsToDraw[i].remove(p_object);
-                objectsToDraw[p_object->getAltitude() + MAX_BELOW_ALTITUDE].insert(p_object);
+                vector_helpers::removeElementByValue(objectsToDraw[i], p_object);
+                objectsToDraw[p_object->getAltitude() + MAX_BELOW_ALTITUDE].push_back(p_object);
             }
             
             p_object->Drawable::draw(drawTimestamp);

@@ -9,7 +9,6 @@
 #ifndef Level_hpp
 #define Level_hpp
 
-#include "LinkedList.hpp"
 #include "Event.hpp"
 #include "DarknessOverlay.hpp"
 #include "Map.hpp"
@@ -40,15 +39,13 @@ namespace nautical {
         World & markObjectForRemoval(WorldObject * p_object); //TODO when should object be deleted?
         
         World & subscribeObject(std::string eventTag, WorldObject * p_object);
-        World & subscribeObjects(std::string eventTag, LinkedList<WorldObject*> objects);
         World & unsubscribeObject(std::string eventTag, WorldObject * p_object);
-        World & unsubscribeObjects(std::string eventTag, LinkedList<WorldObject*> objects);
         
         World & handleEvent(Event * p_event);
         
         Vector generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement); //TODO rename function
         
-        virtual void update(Collection<Event*> & events);
+        virtual void update(std::vector<Event*> & events);
         virtual void draw();
         
         static bool DRAW_BUMPERS; //DEBUGGING
@@ -67,18 +64,18 @@ namespace nautical {
         
         Map map;
         
-        SortedList<WorldObject*> allObjects,
+        std::vector<WorldObject*> allObjects,
         objectsToDelete,
         objectsToUpdate[MAX_PRIORITY + 1],
         objectsToDraw[MAX_BELOW_ALTITUDE + MAX_ABOVE_ALTITUDE + 1];
         
         struct EventPairing {
             std::string eventTag;
-            LinkedList<WorldObject*> subscribedObjects;
+            std::vector<WorldObject*> subscribedObjects;
             
             inline bool operator==(const EventPairing & other) const { return (eventTag == other.eventTag); }
         };
-        LinkedList<EventPairing> subscribedObjects;
+        std::vector<EventPairing> subscribedObjects;
     };
 }
 

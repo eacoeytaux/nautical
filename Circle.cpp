@@ -8,12 +8,10 @@
 
 #include "Circle.hpp"
 
-#define CIRCLE_PERCISION 100
-
 using namespace nautical;
 
 bool Circle::circleVectorsCalculated = false;
-LinkedList<Vector*> Circle::circleVectors = LinkedList<Vector*>(); //array of size CIRCLE_PERCISION of vectors that create circle at (0, 0)
+Vector Circle::circleVectors[CIRCLE_PERCISION];
 
 Circle::Circle(Coordinate center, double radius) :
 center(center),
@@ -21,14 +19,10 @@ radius(radius) {
     appendTag(CIRCLE_TAG);
     
     if (!circleVectorsCalculated) {
-        for (int i = 0; i < CIRCLE_PERCISION - 1; i++) {
-            circleVectors.insert(new Vector(cos((M_PI * 2) * ((float)i / (float)(CIRCLE_PERCISION - 1))), sin((M_PI * 2) * ((float)i / (float)(CIRCLE_PERCISION - 1)))));
+        for (int i = 0; i < CIRCLE_PERCISION - 2; i++) {
+            circleVectors[i] = Vector(cos((M_PI * 2) * ((float)i / (float)(CIRCLE_PERCISION - 1))), sin((M_PI * 2) * ((float)i / (float)(CIRCLE_PERCISION - 1))));
         }
-        Vector * p_vec = new Vector();
-        if (circleVectors.getFirstElement(&p_vec))
-            circleVectors.insert(p_vec);
-        else
-            Logger::writeLog(ERROR_MESSAGE, "Circle::Circle(): circleVectors is empty");
+        circleVectors[CIRCLE_PERCISION - 1] = circleVectors[0];
         circleVectorsCalculated = true;
     }
 }
@@ -81,7 +75,7 @@ bool Circle::contains(Coordinate coor) const {
     return findDistance(center, coor) <= radius;
 }
 
-bool Circle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const {
+bool Circle::intersectsLine(Line line, std::vector<Coordinate> * p_intersections) const {
     bool lineIsVertical = line.isVertical(); //if line is vertical then m and b won't be properly set so the line is rotated by M_PI_4 to give it a proper m and b and then line and collisions are rotated back into place
     if (lineIsVertical)
         line.rotateAboutCoordinate(center, -M_PI_2);
@@ -109,34 +103,34 @@ bool Circle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) cons
         if (p_intersections) {
             if (line.inBox(minus)) {
                 if (findDistance(plus, line.getCoor1()) < findDistance(minus, line.getCoor1())) {
-                    p_intersections->insert(plus);
-                    p_intersections->insert(minus);
+                    p_intersections->push_back(plus);
+                    p_intersections->push_back(minus);
                 } else {
-                    p_intersections->insert(minus);
-                    p_intersections->insert(plus);
+                    p_intersections->push_back(minus);
+                    p_intersections->push_back(plus);
                 }
             } else {
-                p_intersections->insert(plus);
+                p_intersections->push_back(plus);
             }
         }
         return true;
     } else if (line.inBox(minus)) {
         if (p_intersections)
-            p_intersections->insert(minus);
+            p_intersections->push_back(minus);
         return true;
     } else {
         return false;
     }
 }
 
-bool Circle::intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections) const {
+bool Circle::intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections) const {
     if (p_shape->hasTag(CIRCLE_TAG))
         return intersectsCircle(static_cast<const Circle*>(p_shape), p_intersections);
     
     return p_shape->intersectsShape(this, p_intersections);
 }
 
-bool Circle::intersectsCircle(const Circle * p_circle, Queue<Coordinate> * p_intersections) const {
+bool Circle::intersectsCircle(const Circle * p_circle, std::vector<Coordinate> * p_intersections) const {
     double distance = findDistance(center, p_circle->center);
     Angle circleAngle = findAngle(center, p_circle->center);
     
@@ -144,7 +138,7 @@ bool Circle::intersectsCircle(const Circle * p_circle, Queue<Coordinate> * p_int
         return false;
     } else if (distance == radius + p_circle->radius) {
         if (p_intersections)
-            p_intersections->insert(center + Vector(circleAngle, radius));
+            p_intersections->push_back(center + Vector(circleAngle, radius));
         return true;
     }
     
@@ -153,8 +147,8 @@ bool Circle::intersectsCircle(const Circle * p_circle, Queue<Coordinate> * p_int
     
     if (p_intersections) {
         Angle angle1 = circleAngle + triangleAngle, angle2 = circleAngle - triangleAngle;
-        p_intersections->insert(center + Vector(angle1, radius));
-        p_intersections->insert(center + Vector(angle2, radius));
+        p_intersections->push_back(center + Vector(angle1, radius));
+        p_intersections->push_back(center + Vector(angle2, radius));
     }
     
     return true;
@@ -171,16 +165,15 @@ Circle & Circle::rotateAboutCoordinate(Coordinate coor, Angle angle) {
 }
 
 void Circle::draw() const {
-    Iterator<Vector*> * iterator = circleVectors.createIterator();
-    Coordinate prevCoor = center + (*(iterator->current()) * radius);
-    for (iterator->next(); !iterator->complete(); iterator->next()) {
-        Coordinate coor = center + (*(iterator->current()) * radius);
+    Coordinate prevCoor = center + (circleVectors[0] * radius);
+    for (int i = 1; i < CIRCLE_PERCISION; i++) {
+        Coordinate coor = center + (circleVectors[i] * radius);
         GraphicsManager::drawLine(Line(prevCoor, coor), getColor());
         prevCoor = coor;
     }
 }
 
-Circle * Circle::copyPtr() const {
+Circle * Circle::copyPtr_() const {
     return new Circle(*this);
 }
 

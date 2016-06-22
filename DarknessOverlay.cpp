@@ -8,8 +8,7 @@
 
 #include "DarknessOverlay.hpp"
 
-#include "Stack.hpp"
-#include "SortedList.hpp"
+#include "Utility.hpp"
 #include "Shape.hpp"
 
 #define DEFAULT_COLOR BLACK
@@ -18,7 +17,7 @@ using namespace nautical;
 
 bool DarknessOverlay::inEffect = false;
 float DarknessOverlay::percentage = 1.f;
-LinkedList<Shape*> DarknessOverlay::subtractedShapes[DARKNESS_LAYERS];
+std::vector<Shape*> DarknessOverlay::subtractedShapes[DARKNESS_LAYERS];
 MinValue DarknessOverlay::lowerBoundX;
 MinValue DarknessOverlay::lowerBoundY;
 MaxValue DarknessOverlay::upperBoundX;
@@ -42,7 +41,7 @@ void DarknessOverlay::setPercentage(float percentage) {
 
 void DarknessOverlay::addShape(Shape * p_shape, int layer) {
     //TODO layer bounds checking
-    subtractedShapes[layer].insert(p_shape);
+    subtractedShapes[layer].push_back(p_shape);
     lowerBoundX.update(p_shape->getLowerBoundX());
     upperBoundY.update(p_shape->getLowerBoundY());
     lowerBoundX.update(p_shape->getUpperBoundX());
@@ -51,8 +50,8 @@ void DarknessOverlay::addShape(Shape * p_shape, int layer) {
 
 void DarknessOverlay::clearShapes() {
     for (int i = 0; i < DARKNESS_LAYERS; i++) {
-        for (Iterator<Shape*> * iterator = subtractedShapes[i].createIterator(); !iterator->complete(); iterator->next()) {
-            delete iterator->current();
+        for (std::vector<Shape*>::iterator it = subtractedShapes[i].begin(); it != subtractedShapes[i].end(); it++) {
+            delete *it;
         }
         subtractedShapes[i].clear();
     }
@@ -75,44 +74,47 @@ void DarknessOverlay::draw() { //TODO optimize (only needs to check between yLow
             double yWorld = GraphicsManager::screenToWorldY(y);
             Line screenLine(GraphicsManager::screenToWorld(Coordinate(screenLowerBoundX, y)).moveX(-1), GraphicsManager::screenToWorld(Coordinate(screenUpperBoundX, y)));
             
-            SortedList<Shape::IntersectionLine> lineIntersections(&Shape::IntersectionLine::weighIntersectionLine);
-            for (Iterator<Shape*> * iterator = subtractedShapes[i].createIterator(); !iterator->complete(); iterator->next()) {
-                Queue<Coordinate> intersections;
-                if (iterator->current()->intersectsLine(screenLine, &intersections)) {
+            std::vector<Shape::IntersectionLine> lineIntersections;
+            for (std::vector<Shape*>::iterator it = subtractedShapes[i].begin(); it != subtractedShapes[i].end(); it++) {
+                std::vector<Coordinate> intersections;
+                if ((*it)->intersectsLine(screenLine, &intersections)) {
                     Shape::IntersectionLine line;
-                    Coordinate coor;
                     while (intersections.size() > 0) {
-                        if (intersections.pop(&coor)) {
-                            line.xIn = coor.getX();
-                            if (intersections.pop(&coor))
-                                line.xOut = coor.getX();
+                        line.xIn = intersections.front().getX();
+                        vector_helpers::removeElementByIndex(intersections, 0);
+                        if (intersections.size() > 0) {
+                            line.xOut = intersections.front().getX();
+                            vector_helpers::removeElementByIndex(intersections, 0);
+                        } else {
+                            line.xOut = screenUpperBoundX;
                         }
-                        lineIntersections.insert(line);
+                        lineIntersections.push_back(line);
                     }
                 }
             }
             
-            Stack<Line> linesToDraw;
-            linesToDraw.insert(screenLine);
-            for (Iterator<Shape::IntersectionLine> * iterator = lineIntersections.createIterator(); !iterator->complete(); iterator->next()) {
-                Shape::IntersectionLine line = iterator->current();
+            std::sort(lineIntersections.begin(), lineIntersections.end(), Shape::IntersectionLine::IntersectionLineComp());
+            
+            std::vector<Line> linesToDraw;
+            linesToDraw.push_back(screenLine);
+            for (std::vector<Shape::IntersectionLine>::iterator it = lineIntersections.begin(); it != lineIntersections.end(); it++) {
                 Line prevLineToDraw;
-                if (linesToDraw.pop(&prevLineToDraw)) {
-                    if (line.xIn > prevLineToDraw.getCoor1().getX()) {
-                        linesToDraw.insert(Line(prevLineToDraw.getCoor1(), Coordinate(line.xIn, yWorld)));
-                        linesToDraw.insert(Line(Coordinate(line.xOut, yWorld), prevLineToDraw.getCoor2()));
-                    } else if (line.xIn < prevLineToDraw.getCoor1().getX()) {
-                        linesToDraw.insert(Line(Coordinate(fmax(line.xOut, prevLineToDraw.getCoor1().getX()), yWorld), prevLineToDraw.getCoor2()));
+                if (linesToDraw.size() > 0) {
+                    if (it->xIn > prevLineToDraw.getCoor1().getX()) {
+                        linesToDraw.push_back(Line(prevLineToDraw.getCoor1(), Coordinate(it->xIn, yWorld)));
+                        linesToDraw.push_back(Line(Coordinate(it->xOut, yWorld), prevLineToDraw.getCoor2()));
+                    } else if (it->xIn < prevLineToDraw.getCoor1().getX()) {
+                        linesToDraw.push_back(Line(Coordinate(fmax(it->xOut, prevLineToDraw.getCoor1().getX()), yWorld), prevLineToDraw.getCoor2()));
                     } else {
-                        linesToDraw.insert(prevLineToDraw);
+                        linesToDraw.push_back(prevLineToDraw);
                     }
                 } else {
                     Logger::writeLog(ERROR_MESSAGE, "DarknessOverlay::draw(): linesToDraw is empty");
                 }
             }
             
-            for (Iterator<Line> * iterator = linesToDraw.createIterator(); !iterator->complete(); iterator->next()) {
-                GraphicsManager::drawLine(iterator->current(), Color(BLACK).setA((unsigned char)(fmin(51 * (i + i + 1), 255) * percentage)));
+            for (std::vector<Line>::iterator it = linesToDraw.begin(); it != linesToDraw.end(); it++) {
+                GraphicsManager::drawLine(*it, Color(BLACK).setA((unsigned char)(fmin(51 * (i + i + 1), 255) * percentage)));
             }
         }
     }

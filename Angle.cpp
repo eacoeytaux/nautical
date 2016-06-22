@@ -137,14 +137,26 @@ bool Angle::operator!=(const Angle & angle) const {
     return !(angleVal == angle.getValue());
 }
 
+bool Angle::operator<(const Angle & angle) const {
+    return angleVal < angle.getValue();
+}
+
+bool Angle::operator<=(const Angle & angle) const {
+    return angleVal <= angle.getValue();
+}
+
+bool Angle::operator>(const Angle & angle) const {
+    return angleVal > angle.getValue();
+}
+
+bool Angle::operator>=(const Angle & angle) const {
+    return angleVal >= angle.getValue();
+}
+
 double Angle::radiansToDegrees(double radians) {
     return radians * 180 / M_PI;
 }
 
 double Angle::degreesToRadians(double degrees) {
     return degrees * M_PI / 180;
-}
-
-double Angle::weighAngle(const Angle * p_angle) {
-    return p_angle->getValue();
 }

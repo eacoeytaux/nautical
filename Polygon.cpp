@@ -10,14 +10,14 @@
 
 using namespace nautical;
 
-Polygon::Polygon(Queue<Coordinate> * p_coors, bool checkForConcave) {
+Polygon::Polygon(std::vector<Coordinate> * p_coors, bool checkForConcave) {
     appendTag(POLYGON_TAG);
     init(p_coors, checkForConcave);
 }
 
 Polygon::~Polygon() { }
 
-void Polygon::init(Queue<Coordinate> * p_coors, bool checkForConcave) {
+void Polygon::init(std::vector<Coordinate> * p_coors, bool checkForConcave) {
     if (p_coors == nullptr) {
         Logger::writeLog(ERROR_MESSAGE, "Polygon::Polygon(): attempted to create polygon with null list of Coordinates");
         return;
@@ -29,25 +29,24 @@ void Polygon::init(Queue<Coordinate> * p_coors, bool checkForConcave) {
     }
     
     //create polygon
-    Iterator<Coordinate> * iterator = p_coors->createIterator();
-    Coordinate firstCoor = iterator->current();
+    std::vector<Coordinate>::iterator it = p_coors->begin();
+    Coordinate firstCoor = *it;
     lowerBoundX.update(firstCoor.getX());
     lowerBoundY.update(firstCoor.getY());
     upperBoundX.update(firstCoor.getX());
     upperBoundY.update(firstCoor.getY());
     Coordinate prevCoor = firstCoor;
-    vertices.insert(firstCoor);
-    for (iterator->next(); !iterator->complete(); iterator->next()) {
-        Coordinate coor = iterator->current();
-        lowerBoundX.update(coor.getX());
-        lowerBoundY.update(coor.getY());
-        upperBoundX.update(coor.getX());
-        upperBoundY.update(coor.getY());
-        vertices.insert(coor);
-        edges.insert(Line(prevCoor, coor));
-        prevCoor = coor;
+    vertices.push_back(firstCoor);
+    for (it++; it != p_coors->end(); it++) {
+        lowerBoundX.update(it->getX());
+        lowerBoundY.update(it->getY());
+        upperBoundX.update(it->getX());
+        upperBoundY.update(it->getY());
+        vertices.push_back(*it);
+        edges.push_back(Line(prevCoor, *it));
+        prevCoor = *it;
     }
-    edges.insert(Line(prevCoor, firstCoor));
+    edges.push_back(Line(prevCoor, firstCoor));
     
     if (checkForConcave) {
         //create convex outline
@@ -56,28 +55,24 @@ void Polygon::init(Queue<Coordinate> * p_coors, bool checkForConcave) {
         do {
             outlineConvex = true;
             Coordinate coorToRemove;
-            Queue<Coordinate> subtractedCoors; //to be used to remove a triangle
+            std::vector<Coordinate> subtractedCoors; //to be used to remove a triangle
             
-            Iterator<Coordinate> * iterator = convexVertices.createIterator();
-            Coordinate firstCoor = iterator->current();
-            iterator->next();
-            Coordinate prevCoor = iterator->current();
+            std::vector<Coordinate>::iterator it = convexVertices.begin();
+            Coordinate firstCoor = *it;
+            Coordinate prevCoor = *(++it);
             Line firstLine(firstCoor, prevCoor);
             Line prevLine = firstLine;
-            for (iterator->next(); !iterator->complete(); iterator->next()) {
-                Coordinate coor = iterator->current();
-                Line line(prevCoor, coor);
-                
-                if (!prevLine.isOnOrBelow(coor)) { //interior angle
+            for (it++; it != convexVertices.end(); it++) {
+                Line line(prevCoor, *it);
+                if (!prevLine.isOnOrBelow(*it)) { //interior angle
                     outlineConvex = false;
                     coorToRemove = prevCoor;
-                    subtractedCoors.insert(prevLine.getCoor1());
-                    subtractedCoors.insert(coor);
-                    subtractedCoors.insert(prevCoor);
+                    subtractedCoors.push_back(prevLine.getCoor1());
+                    subtractedCoors.push_back(*it);
+                    subtractedCoors.push_back(prevCoor);
                     break;
                 }
-                
-                prevCoor = coor;
+                prevCoor = *it;
                 prevLine = line;
             }
             
@@ -87,43 +82,42 @@ void Polygon::init(Queue<Coordinate> * p_coors, bool checkForConcave) {
                 if (!prevLine.isOnOrBelow(firstCoor)) { //interior angle
                     outlineConvex = false;
                     coorToRemove = prevCoor;
-                    subtractedCoors.insert(prevLine.getCoor1());
-                    subtractedCoors.insert(firstCoor);
-                    subtractedCoors.insert(prevCoor);
+                    subtractedCoors.push_back(prevLine.getCoor1());
+                    subtractedCoors.push_back(firstCoor);
+                    subtractedCoors.push_back(prevCoor);
                 }
                 //check angle create with last and first line
                 if (!line.isOnOrBelow(firstLine.getCoor2())) { //interior angle
                     outlineConvex = false;
                     coorToRemove = firstCoor;
-                    subtractedCoors.insert(prevCoor);
-                    subtractedCoors.insert(firstLine.getCoor2());
-                    subtractedCoors.insert(firstCoor);
+                    subtractedCoors.push_back(prevCoor);
+                    subtractedCoors.push_back(firstLine.getCoor2());
+                    subtractedCoors.push_back(firstCoor);
                 }
             }
             
             if (!outlineConvex) {
                 convex = false;
-                if (!convexVertices.remove(coorToRemove))
-                    Logger::writeLog(ERROR_MESSAGE, "Polygon::Polygon(): attempted to remove non-existant coordinate from convexVertices");
-                Triangle triangle;
-                if (subtractedCoors.pop(&triangle.coor1) && subtractedCoors.pop(&triangle.coor2) && subtractedCoors.pop(&triangle.coor3))
-                    subtractedTrianglesStruct.insert(triangle);
-                else
+                vector_helpers::removeElementByValue(convexVertices, coorToRemove);
+                if (subtractedCoors.size() >= 3) {
+                    Triangle triangle;
+                    triangle.coor1 = subtractedCoors.at(0);
+                    triangle.coor2 = subtractedCoors.at(1);
+                    triangle.coor3 = subtractedCoors.at(2);
+                } else {
                     Logger::writeLog(ERROR_MESSAGE, "Polygon::init(): subtractedCoors does not contain 3 coordinates");
-            }
+                }            }
         } while (!outlineConvex);
         
         if (!convex) {
             //fill convexEdges
-            iterator = convexVertices.createIterator();
-            firstCoor = iterator->current();
-            prevCoor = firstCoor;
-            for (iterator->next(); !iterator->complete(); iterator->next()) {
-                Coordinate coor = iterator->current();
-                convexEdges.insert(Line(prevCoor, coor));
-                prevCoor = coor;
+            it = convexVertices.begin();
+            firstCoor = prevCoor = *it;
+            for (it++; it != convexVertices.end(); it++) {
+                convexEdges.push_back(Line(prevCoor, *it));
+                prevCoor = *it;
             }
-            convexEdges.insert(Line(prevCoor, firstCoor));
+            convexEdges.push_back(Line(prevCoor, firstCoor));
         } else {
             convexEdges = edges;
         }
@@ -138,19 +132,19 @@ bool Polygon::isConvex() const {
     return convex;
 }
 
-Iterator<Polygon> * Polygon::getSubtractedTrianglesIterator() const {
+std::vector<Polygon>::iterator Polygon::getSubtractedTrianglesIterator() const {
     if (!subtractedTrianglesSet) {
-        for (Iterator<Triangle> * iterator = subtractedTrianglesStruct.createIterator(); !iterator->complete(); iterator->next()) {
-            Triangle triangle = iterator->current();
-            Queue<Coordinate> coors;
-            coors.insert(triangle.coor1);
-            coors.insert(triangle.coor2);
-            coors.insert(triangle.coor3);
-            subtractedTriangles.insert(Polygon(&coors));
+        for (std::vector<Triangle>::const_iterator it = subtractedTrianglesStruct.begin(); it != subtractedTrianglesStruct.end(); it++) {
+            Triangle triangle = *it;
+            std::vector<Coordinate> coors;
+            coors.push_back(triangle.coor1);
+            coors.push_back(triangle.coor2);
+            coors.push_back(triangle.coor3);
+            subtractedTriangles.push_back(Polygon(&coors));
         }
         subtractedTrianglesSet = true;
     }
-    return subtractedTriangles.createIterator();
+    return subtractedTriangles.begin();
 }
 
 double Polygon::getLowerBoundX() const {
@@ -170,77 +164,78 @@ double Polygon::getUpperBoundY() const {
 }
 
 bool Polygon::contains(Coordinate coor) const {
-    for (Iterator<Line> * iterator = convexEdges.createIterator(); !iterator->complete(); iterator->next()) {
-        if (!iterator->current().isOnOrBelow(coor))
+    for (std::vector<Line>::const_iterator it = convexEdges.begin(); it != convexEdges.end(); it++) {
+        if (!(it->isOnOrBelow(coor)))
             return false;
     }
     
     if (convex) {
         return true;
     } else {
-        for (Iterator<Polygon> * iterator = getSubtractedTrianglesIterator(); !iterator->complete(); iterator->next()) {
-            if (iterator->current().contains(coor))
+        for (std::vector<Polygon>::iterator it = getSubtractedTrianglesIterator(); it != subtractedTriangles.end(); it++) {
+            if (it->contains(coor))
                 return false;
         }
         return true;
     }
 }
 
-bool Polygon::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const {
-    LinkedList<Coordinate> intersections(false);
-    for (Iterator<Line> * iterator = edges.createIterator(); !iterator->complete(); iterator->next()) {
+bool Polygon::intersectsLine(Line line, std::vector<Coordinate> * p_intersections) const {
+    std::vector<Coordinate> intersections;
+    for (std::vector<Line>::const_iterator it = edges.begin(); it != edges.end(); it++) {
         Coordinate intersection;
-        if (iterator->current().intersectsLine(line, &intersection))
-            intersections.insert(intersection);
+        if (it->intersectsLine(line, &intersection))
+            intersections.push_back(intersection);
     }
     if (intersections.size() == 0)
         return false;
     
-    Coordinate origin = line.getCoor1();
-    while (intersections.size() > 0) { //TODO there HAS to be a more efficient way to do this
-        Iterator<Coordinate> * iterator = intersections.createIterator();
-        Coordinate closestCoor = iterator->current();
-        MinValue distance(findDistance(origin, closestCoor));
-        for (iterator->next(); !iterator->complete(); iterator->next()) {
-            Coordinate coor = iterator->current();
-            if (distance.update(findDistance(origin, coor)))
-                closestCoor = coor;
+    if (p_intersections) {
+        Coordinate origin = line.getCoor1();
+        while (intersections.size() > 0) { //TODO there HAS to be a more efficient way to do this
+            std::vector<Coordinate>::iterator it = intersections.begin();
+            Coordinate closestCoor = *it;
+            MinValue distance(findDistance(origin, closestCoor));
+            for (it++; it != intersections.end(); it++) {
+                if (distance.update(findDistance(origin, *it)))
+                    closestCoor = *it;
+            }
+            p_intersections->push_back(closestCoor);
+            vector_helpers::removeElementByValue(intersections, closestCoor);
         }
-        p_intersections->insert(closestCoor);
-        intersections.remove(closestCoor);
     }
     return true;
 }
 
-bool Polygon::intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections) const {
+bool Polygon::intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections) const {
     bool intersects = false;
-    for (Iterator<Line> * iterator = edges.createIterator(); !iterator->complete(); iterator->next()) {
-        intersects |= p_shape->intersectsLine(iterator->current(), p_intersections);
+    for (std::vector<Line>::const_iterator it = edges.begin(); it != edges.end(); it++) {
+        intersects |= p_shape->intersectsLine(*it, p_intersections);
     }
     return intersects;
 }
 
 Polygon & Polygon::move(Vector vector) {
-    Queue<Coordinate> newVertices;
-    for (Iterator<Coordinate> * iterator = vertices.createIterator(); !iterator->complete(); iterator->next()) {
-        newVertices.insert(iterator->current() + vector);
+    std::vector<Coordinate> newVertices;
+    for (std::vector<Coordinate>::iterator it = vertices.begin(); it != vertices.end(); it++) {
+        newVertices.push_back(*it + vector);
     }
     vertices = newVertices;
-    Queue<Line> newEdges;
-    for (Iterator<Line> * iterator = edges.createIterator(); !iterator->complete(); iterator->next()) {
-        newEdges.insert(iterator->current() + vector);
+    std::vector<Line> newEdges;
+    for (std::vector<Line>::iterator it = edges.begin(); it != edges.end(); it++) {
+        newEdges.push_back(*it + vector);
     }
     edges = newEdges;
     
     if (!convex) {
-        Queue<Coordinate> newConvexVertices;
-        for (Iterator<Coordinate> * iterator = convexVertices.createIterator(); !iterator->complete(); iterator->next()) {
-            newConvexVertices.insert(iterator->current() + vector);
+        std::vector<Coordinate> newConvexVertices;
+        for (std::vector<Coordinate>::iterator it = convexVertices.begin(); it != convexVertices.end(); it++) {
+            newConvexVertices.push_back(*it + vector);
         }
         convexVertices = newConvexVertices;
-        Queue<Line> newConvexEdges;
-        for (Iterator<Line> * iterator = convexEdges.createIterator(); !iterator->complete(); iterator->next()) {
-            newConvexEdges.insert(iterator->current() + vector);
+        std::vector<Line> newConvexEdges;
+        for (std::vector<Line>::iterator it = convexEdges.begin(); it != convexEdges.end(); it++) {
+            newConvexEdges.push_back(*it + vector);
         }
         convexEdges = newConvexEdges;
     } else {
@@ -252,26 +247,26 @@ Polygon & Polygon::move(Vector vector) {
 }
 
 Polygon & Polygon::rotateAboutCoordinate(Coordinate coor, Angle angle) {
-    Queue<Coordinate> newVertices;
-    for (Iterator<Coordinate> * iterator = vertices.createIterator(); !iterator->complete(); iterator->next()) {
-        newVertices.insert(iterator->current().rotateAboutCoordinate(coor, angle));
+    std::vector<Coordinate> newVertices;
+    for (std::vector<Coordinate>::iterator it = vertices.begin(); it != vertices.end(); it++) {
+        newVertices.push_back(it->rotateAboutCoordinate(coor, angle));
     }
     vertices = newVertices;
-    Queue<Line> newEdges;
-    for (Iterator<Line> * iterator = edges.createIterator(); !iterator->complete(); iterator->next()) {
-        newEdges.insert(iterator->current().rotateAboutCoordinate(coor, angle));
+    std::vector<Line> newEdges;
+    for (std::vector<Line>::iterator it = edges.begin(); it != edges.end(); it++) {
+        newEdges.push_back(it->rotateAboutCoordinate(coor, angle));
     }
     edges = newEdges;
     
     if (!convex) {
-        Queue<Coordinate> newConvexVertices;
-        for (Iterator<Coordinate> * iterator = convexVertices.createIterator(); !iterator->complete(); iterator->next()) {
-            newConvexVertices.insert(iterator->current().rotateAboutCoordinate(coor, angle));
+        std::vector<Coordinate> newConvexVertices;
+        for (std::vector<Coordinate>::iterator it = convexVertices.begin(); it != convexVertices.end(); it++) {
+            newConvexVertices.push_back(it->rotateAboutCoordinate(coor, angle));
         }
         convexVertices = newConvexVertices;
-        Queue<Line> newConvexEdges;
-        for (Iterator<Line> * iterator = convexEdges.createIterator(); !iterator->complete(); iterator->next()) {
-            newConvexEdges.insert(iterator->current().rotateAboutCoordinate(coor, angle));
+        std::vector<Line> newConvexEdges;
+        for (std::vector<Line>::iterator it = convexEdges.begin(); it != convexEdges.end(); it++) {
+            newConvexEdges.push_back(it->rotateAboutCoordinate(coor, angle));
         }
         convexEdges = newConvexEdges;
     } else {
@@ -283,12 +278,12 @@ Polygon & Polygon::rotateAboutCoordinate(Coordinate coor, Angle angle) {
 }
 
 void Polygon::draw() const {
-    for (Iterator<Line> * iterator = edges.createIterator(); !iterator->complete(); iterator->next()) {
-        GraphicsManager::drawLine(iterator->current(), getColor());
+    for (std::vector<Line>::const_iterator it = edges.begin(); it != edges.end(); it++) {
+        GraphicsManager::drawLine(*it, getColor());
     }
     if (DEBUG_MODE) {
-        for (Iterator<Line> * iterator = convexEdges.createIterator(); !iterator->complete(); iterator->next()) {
-            GraphicsManager::drawLine(iterator->current(), getColor().setA(127));
+        for (std::vector<Line>::const_iterator it = convexEdges.begin(); it != convexEdges.end(); it++) {
+            GraphicsManager::drawLine(*it, getColor().setA(127));
         }
     }
 }
@@ -298,15 +293,15 @@ bool Polygon::operator==(const Shape & shape) const {
         Polygon poly = (Polygon&)shape;
         if (vertices.size() != poly.vertices.size())
             return false;
-        for (Iterator<Coordinate> * iterator = vertices.createIterator(), * otherIterator = poly.vertices.createIterator(); (!iterator->complete() && !  otherIterator->complete()); iterator->next(), otherIterator->next()) {
-            if (!(iterator->current() == otherIterator->current()))
+        for (std::vector<Coordinate>::const_iterator it = vertices.begin(), otherIt = poly.vertices.begin(); it != vertices.end(); it++, otherIt++) {
+            if (!(*it == *otherIt))
                 return false;
         }
     }
     return true;
 }
 
-Polygon * Polygon::copyPtr() const {
+Polygon * Polygon::copyPtr_() const {
     return new Polygon(*this);
 }
 

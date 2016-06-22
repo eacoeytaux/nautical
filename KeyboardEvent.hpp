@@ -26,13 +26,13 @@ namespace nautical {
             UNDEFINED_KEY, SPACE, RETURN, ESCAPE, TAB, LEFTARROW, RIGHTARROW, UPARROW, DOWNARROW, MINUS, PLUS, PERIOD, COMMA, SLASH, LEFTCONTROL, RIGHTCONTROL, LEFTSHIFT, RIGHTSHIFT, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, NUM0, NUM1, NUM2, NUM3, NUM4, NUM5, NUM6, NUM7, NUM8, NUM9, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24
         };
         
-        KeyboardEvent(KeyboardAction action = UNDEFINED_KEYBOARD_ACTION, Key key = UNDEFINED_KEY);
+        KeyboardEvent(Key key, KeyboardAction action = UNDEFINED_KEYBOARD_ACTION);
         virtual ~KeyboardEvent();
         
-        KeyboardAction getAction() const;
-        KeyboardEvent & setAction(KeyboardAction action);
         Key getKey() const;
         KeyboardEvent & setKey(Key key);
+        KeyboardAction getAction() const;
+        KeyboardEvent & setAction(KeyboardAction action);
         
     private:
         KeyboardAction action;

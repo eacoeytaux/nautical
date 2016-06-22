@@ -25,14 +25,15 @@ in DEBUG_MODE:
 
 TODOs:
 
-
 - fix bugs in movement in map
 
 - edit World::generatePath() to allow for MapObject interuption between vector adjustments
 
-- various TODOs in project (search for "TODO" in project files)
+- preload all images to then be used by classes
 
 - saving feature
+
+- various TODOs in project (search for "TODO" in project files)
 
 
 

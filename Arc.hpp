@@ -9,7 +9,8 @@
 #ifndef Arc_hpp
 #define Arc_hpp
 
-#include "Queue.hpp"
+#include <vector>
+
 #include "Angle.hpp"
 #include "Coordinate.hpp"
 #include "Line.hpp"
@@ -35,8 +36,8 @@ namespace nautical {
         Coordinate getStartCoor() const;
         Coordinate getEndCoor() const;
         
-        bool intersectsArc(Arc arc, Queue<Coordinate> * p_intersections) const;
-        bool intersectsLine(Line line, Queue<Coordinate> * p_intersections) const;
+        bool intersectsArc(Arc arc, std::vector<Coordinate> * p_intersections = nullptr) const;
+        bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const;
         bool inArc(Angle angle) const;
         bool inArc(Coordinate coor) const;
         

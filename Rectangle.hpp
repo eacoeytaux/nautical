@@ -46,15 +46,15 @@ namespace nautical {
         double getUpperBoundY() const;
         
         bool contains(Coordinate coor) const;
-        bool intersectsLine(Line line, Queue<Coordinate> * p_intersections = nullptr) const;
-        bool intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections = nullptr) const;
+        bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const;
+        bool intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections = nullptr) const;
         
         Rectangle & move(Vector vector);
         Rectangle & rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         void draw() const;
         
-        Rectangle * copyPtr() const;
+        Rectangle * copyPtr_() const;
         bool operator==(const Shape & shape) const;
         
     private:

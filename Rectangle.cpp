@@ -116,7 +116,7 @@ bool Rectangle::contains(Coordinate coor) const {
     return (getTopLine().isOnOrBelow(coor) && getRightLine().isOnOrBelow(coor) && getBottomLine().isOnOrBelow(coor) && getLeftLine().isOnOrBelow(coor));
 }
 
-bool Rectangle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const {
+bool Rectangle::intersectsLine(Line line, std::vector<Coordinate> * p_intersections) const {
     Coordinate coor1, coor2;
     bool intersects = false, intersectsTwice = false;
     
@@ -129,14 +129,14 @@ bool Rectangle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) c
         if (p_intersections) {
             if (intersectsTwice) {
                 if (findDistance(line.getCoor1(), coor1) < findDistance(line.getCoor2(), coor2)) {
-                    p_intersections->insert(coor1);
-                    p_intersections->insert(coor2);
+                    p_intersections->push_back(coor1);
+                    p_intersections->push_back(coor2);
                 } else {
-                    p_intersections->insert(coor2);
-                    p_intersections->insert(coor1);
+                    p_intersections->push_back(coor2);
+                    p_intersections->push_back(coor1);
                 }
             } else {
-                p_intersections->insert(coor1);
+                p_intersections->push_back(coor1);
             }
         }
         return true;
@@ -145,7 +145,7 @@ bool Rectangle::intersectsLine(Line line, Queue<Coordinate> * p_intersections) c
     }
 }
 
-bool Rectangle::intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections) const {
+bool Rectangle::intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections) const {
     bool intersects = false;
     intersects |= p_shape->intersectsLine(getTopLine(), p_intersections);
     intersects |= p_shape->intersectsLine(getRightLine(), p_intersections);
@@ -174,7 +174,7 @@ void Rectangle::draw() const {
     GraphicsManager::drawLine(getLeftLine(), getColor());
 }
 
-Rectangle * Rectangle::copyPtr() const {
+Rectangle * Rectangle::copyPtr_() const {
     return new Rectangle(*this);
 }
 

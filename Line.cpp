@@ -68,7 +68,7 @@ void Line::init(double x1, double y1, double x2, double y2) {
         horizontal = false;
         m = 0;
         b = 0;
-        angle = flip<double>(M_PI_2, (y1 > y2));
+        angle = (y1 > y2) ? -M_PI_2 : M_PI_2;
         xAdjustment = 0;
         yAdjustment = 1;
     }

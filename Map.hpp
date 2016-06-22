@@ -12,7 +12,6 @@
 #include "Drawable.hpp"
 
 #include "MaxMinValue.hpp"
-#include "SortedList.hpp"
 #include "MapVertex.hpp"
 #include "MapEdge.hpp"
 
@@ -30,10 +29,9 @@ namespace nautical {
         virtual MapVertex * createVertex(Coordinate coor);
         virtual MapEdge * createEdge(MapVertex * p_vertexBack, MapVertex * p_vertexFront, bool sticky = false);
         
-        Iterator<MapVertex*> * getVerticesListIterator() const;
-        Iterator<MapVertex*> * getVerticesListIterator(double lowerBound, double upperBound) const;
-        Iterator<MapEdge*> * getEdgesListIterator() const;
-        Iterator<MapEdge*> * getEdgesListIterator(double lowerBound, double upperBound) const;
+        //TODO check to make sure MapElements* cannot be accessed
+        const std::vector<MapVertex*> * getVerticesList() const;
+        const std::vector<MapEdge*> * getEdgesList() const;
         
         double getAirResistanceCoefficient(double value = 1) const;
         Map & setAirResistanceCoefficient(float airResistanceCoefficient);
@@ -49,8 +47,8 @@ namespace nautical {
         
         bool verticalMap;
         
-        SortedList<MapVertex*> vertices;
-        SortedList<MapEdge*> edges;
+        std::vector<MapVertex*> vertices;
+        std::vector<MapEdge*> edges;
         
         double airResistanceCoefficient;
         static double defaultAirResistanceCoefficient;

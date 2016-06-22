@@ -9,7 +9,8 @@
 #ifndef __Nautical__Parabola__
 #define __Nautical__Parabola__
 
-#include "Queue.hpp"
+#include <vector>
+
 #include "Coordinate.hpp"
 #include "Line.hpp"
 
@@ -28,7 +29,7 @@ namespace nautical {
         
         double calculateY(double x) const;
         bool inRangeX(double x) const;
-        bool intersectsLine(Line line, Queue<Coordinate> * p_intersections = nullptr) const;
+        bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const;
         
         static double calculateArcLength(double a, double b, double c, double x1, double y1, double x2, double y2); //calculates arc length of parabola a(x^2) + bx + c between x1 and x2
         static double calculateArcLength(double b, double h); //calculates arc length from vertex to coordinate given base (dx) and height (dy)

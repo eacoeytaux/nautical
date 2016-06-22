@@ -13,7 +13,6 @@
 
 #include "MaxMinValue.hpp"
 #include "Collection.hpp"
-#include "Queue.hpp"
 #include "Coordinate.hpp"
 #include "Line.hpp"
 
@@ -22,11 +21,11 @@ namespace nautical {
     
     class Polygon : public Shape {
     public:
-        Polygon(Queue<Coordinate> * p_coors, bool checkForConcave = true); //checkForConcave should only be set to tru if polygon is definitely convex
+        Polygon(std::vector<Coordinate> * p_coors, bool checkForConcave = true); //checkForConcave should only be set to tru if polygon is definitely convex
         virtual ~Polygon();
         
         bool isConvex() const;
-        Iterator<Polygon> * getSubtractedTrianglesIterator() const;
+        std::vector<Polygon>::iterator getSubtractedTrianglesIterator() const;
         
         double getLowerBoundX() const;
         double getLowerBoundY() const;
@@ -34,26 +33,26 @@ namespace nautical {
         double getUpperBoundY() const;
         
         bool contains(Coordinate coor) const;
-        bool intersectsLine(Line line, Queue<Coordinate> * p_intersections = nullptr) const;
-        bool intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections = nullptr) const;
+        bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const;
+        bool intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections = nullptr) const;
         
         Polygon & move(Vector vector);
         Polygon & rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         void draw() const;
         
-        Polygon * copyPtr() const;
+        Polygon * copyPtr_() const;
         bool operator==(const Shape & shape) const;
         
     private:
         //stored in clockwise order
-        Queue<Coordinate> vertices;
-        Queue<Line> edges;
+        std::vector<Coordinate> vertices;
+        std::vector<Line> edges;
         
         bool convex = true;
         //following variables only needed if polygon is not convex
-        Queue<Coordinate> convexVertices; //Coordinates that create convex outline
-        Queue<Line> convexEdges; //Lines that create convex outline
+        std::vector<Coordinate> convexVertices; //Coordinates that create convex outline
+        std::vector<Line> convexEdges; //Lines that create convex outline
         
         struct Triangle {
             Coordinate coor1;
@@ -61,14 +60,14 @@ namespace nautical {
             Coordinate coor3;
             bool operator==(const Triangle & triangle);
         };;
-        Queue<Triangle> subtractedTrianglesStruct;
+        std::vector<Triangle> subtractedTrianglesStruct;
         mutable bool subtractedTrianglesSet = false;
-        mutable Queue<Polygon> subtractedTriangles; //triangles subtracted from polygon to create a convex polygon
+        mutable std::vector<Polygon> subtractedTriangles; //triangles subtracted from polygon to create a convex polygon
         
         MinValue lowerBoundX, lowerBoundY;
         MaxValue upperBoundX, upperBoundY;
         
-        void init(Queue<Coordinate> * coors, bool checkForConcave = true);
+        void init(std::vector<Coordinate> * coors, bool checkForConcave = true);
     };
 }
 

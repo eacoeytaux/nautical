@@ -10,7 +10,8 @@
 #define DarknessOverlay_hpp
 
 #include "MaxMinValue.hpp"
-#include "LinkedList.hpp"
+
+#include <vector>
 
 #define DARKNESS_LAYERS 3
 
@@ -34,7 +35,7 @@ namespace nautical {
         static bool inEffect;
         
         static float percentage;
-        static LinkedList<Shape*> subtractedShapes[DARKNESS_LAYERS];
+        static std::vector<Shape*> subtractedShapes[DARKNESS_LAYERS];
         static MinValue lowerBoundX;
         static MinValue lowerBoundY;
         static MaxValue upperBoundX;

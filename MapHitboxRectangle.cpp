@@ -8,9 +8,9 @@
 
 #include "MapHitboxRectangle.hpp"
 
+#include <algorithm>
+
 #include "Random.hpp"
-#include "Queue.hpp"
-#include "SortedList.hpp"
 
 using namespace nautical;
 
@@ -26,7 +26,7 @@ MapHitboxRectangle & MapHitboxRectangle::move(Vector vec) {
     return *this;
 }
 
-Shape * MapHitboxRectangle::getShape() const {
+Shape * MapHitboxRectangle::getShape_() const {
     return new Rectangle(rec);
 }
 
@@ -42,8 +42,7 @@ MapHitboxRectangle & MapHitboxRectangle::setRectangle(Rectangle rec) {
 
 bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, Vector * p_vector) const {
     Angle recAngle = rec.getAngle();
-    double recAngleValue = recAngle.getValue();
-    
+    double recAngleValue = rec.getAngle().getValue();
     double recDiagonalAngleValue = Angle(rec.getWidth(), rec.getHeight()).getValue();
     double angleToOriginValue = findAngle(p_vertex->getCoor(), p_vector->getOrigin()).getValue();
     
@@ -130,16 +129,16 @@ bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, Vector * p_vec
     //}
 }
 
-Rectangle * MapHitboxRectangle::createBumper(const MapVertex * p_vertex) const {
+Rectangle * MapHitboxRectangle::createBumper_(const MapVertex * p_vertex) const {
     return new Rectangle(p_vertex->getCoor(), rec.getWidth(), rec.getHeight(), rec.getAngle());
 }
 
-LinkedList<MapCatch> MapHitboxRectangle::findCatches(const MapVertex * p_vertex, const Map * p_map) const {
-    LinkedList<MapCatch> catches;
+std::vector<MapCatch> MapHitboxRectangle::findCatches(const MapVertex * p_vertex, const Map * p_map) const {
+    std::vector<MapCatch> catches;
     if (p_vertex->getEdgeFront())
-        catches.insert(getCatchBack(p_vertex->getEdgeFront()));
+        catches.push_back(getCatchBack(p_vertex->getEdgeFront()));
     if (p_vertex->getEdgeBack())
-        catches.insert(getCatchFront(p_vertex->getEdgeBack()));
+        catches.push_back(getCatchFront(p_vertex->getEdgeBack()));
     return catches;
 }
 
@@ -147,34 +146,30 @@ bool MapHitboxRectangle::adjustVector(const MapEdge * p_edge, Vector * p_vector)
     return p_vector->subtractAngle(p_edge->getNormal());
 }
 
-LineShape * MapHitboxRectangle::createBumper(const MapEdge * p_edge) const {
+LineShape * MapHitboxRectangle::createBumper_(const MapEdge * p_edge) const {
     LineShape * bumper = new LineShape(p_edge->getLine());
     bumper->move(getOffset(p_edge));
     return bumper;
 }
 
-LinkedList<MapCatch> MapHitboxRectangle::findCatches(const MapEdge * p_edge, const Map * p_map) const {
-    LinkedList<MapCatch> catches;
-    for (Iterator<MapEdge*> * iterator = p_map->getEdgesListIterator(fmin(p_edge->getVertexBack()->getCoor().getX(), p_edge->getVertexFront()->getCoor().getX()) - rec.getWidth(), fmax(p_edge->getVertexBack()->getCoor().getX(), p_edge->getVertexFront()->getCoor().getX()) + rec.getWidth()); !iterator->complete(); iterator->next()) {
-        MapEdge * p_edge2 = iterator->current();
+std::vector<MapCatch> MapHitboxRectangle::findCatches(const MapEdge * p_edge, const Map * p_map) const {
+    std::vector<MapCatch> catches;
+    const std::vector<MapEdge*> * p_edgesList = p_map->getEdgesList();
+    for (std::vector<MapEdge*>::const_iterator it = p_edgesList->begin(); it != p_edgesList->end(); it++) {//= p_map->getEdgesListIterator(fmin(p_edge->getVertexBack()->getCoor().getX(), p_edge->getVertexFront()->getCoor().getX()) - rec.getWidth(), fmax(p_edge->getVertexBack()->getCoor().getX(), p_edge->getVertexFront()->getCoor().getX()) + rec.getWidth()); !iterator->complete(); iterator->next()) { //TODO filter by lower/upper bounds
+        MapEdge * p_edge2 = *it;
         if (p_edge2 == p_edge)
             continue;
         
-        Queue<Coordinate> collisions;
-        LineShape * p_lineShape = createBumper(p_edge);
-        LineShape * p_lineShape2 = createBumper(p_edge2);
-        if (p_lineShape->intersectsShape(p_lineShape2, &collisions)) {
-            Coordinate collision;
-            if (collisions.pop(&collision))
-                catches.insert(MapCatch(collision, p_lineShape2->getLine(), (MapElement*)p_edge, (MapElement*)p_edge2));
-            else
-                Logger::writeLog(ERROR_MESSAGE, "MapHitboxRectangle::findCatches(MapEdge*): collisions is empty");
-        }
+        LineShape * p_lineShape = createBumper_(p_edge);
+        LineShape * p_lineShape2 = createBumper_(p_edge2);
+        std::vector<Coordinate> collisions;
+        if (p_lineShape->intersectsShape(p_lineShape2, &collisions))
+            catches.push_back(MapCatch(collisions.front(), p_lineShape2->getLine(), (MapElement*)p_edge, (MapElement*)p_edge2));
         delete p_lineShape;
         delete p_lineShape2;
     }
-    catches.insert(getCatchBack(p_edge));
-    catches.insert(getCatchFront(p_edge));
+    catches.push_back(getCatchBack(p_edge));
+    catches.push_back(getCatchFront(p_edge));
     return catches;
 }
 
@@ -185,22 +180,14 @@ Vector MapHitboxRectangle::getOffset(const MapEdge * p_edge) const {
     double recAngleValue = recAngle.getValue();
     double normalValue = p_edge->getNormal().getValue();
     
-    Angle angle1;
-    Angle angle2;
-    Angle angle3;
-    Angle angle4;
-    SortedList<Angle> angles(&Angle::weighAngle);
-    angles.insert(Angle(M_PI) + recAngle);
-    angles.insert(Angle(M_PI_2) + recAngle);
-    angles.insert(recAngle);
-    angles.insert(Angle(-M_PI_2) + recAngle);
-    angles.getElementByIndex(0, &angle1);
-    angles.getElementByIndex(1, &angle2);
-    angles.getElementByIndex(2, &angle3);
-    angles.getElementByIndex(3, &angle4);
+    std::vector<Angle> angles = {Angle(M_PI) + recAngle,
+        Angle(M_PI_2) + recAngle,
+        recAngle,
+        Angle(-M_PI_2) + recAngle};
+    std::sort(angles.begin(), angles.end());
     
     Vector ret;
-    if ((normalValue >= angle1.getValue()) && (normalValue < angle2.getValue())) {
+    if ((normalValue >= angles.at(0).getValue()) && (normalValue < angles.at(1).getValue())) {
         if (recAngleValue > M_PI_2) {
             ret = Vector((angleOffset * -1), -distance);
         } else if (recAngleValue > 0) {
@@ -210,7 +197,7 @@ Vector MapHitboxRectangle::getOffset(const MapEdge * p_edge) const {
         } else {
             ret = Vector(angleOffset, distance);
         }
-    } else if ((normalValue >= angle2.getValue()) && (normalValue < angle3.getValue())) {
+    } else if ((normalValue >= angles.at(1).getValue()) && (normalValue < angles.at(2).getValue())) {
         if (recAngleValue > M_PI_2) {
             ret = Vector(angleOffset, -distance);
         } else if (recAngleValue > 0) {
@@ -220,7 +207,7 @@ Vector MapHitboxRectangle::getOffset(const MapEdge * p_edge) const {
         } else {
             ret = Vector((angleOffset * -1), -distance);
         }
-    } else if ((normalValue >= angle3.getValue()) && (normalValue < angle4.getValue())) {
+    } else if ((normalValue >= angles.at(2).getValue()) && (normalValue < angles.at(3).getValue())) {
         if (recAngleValue > M_PI_2) {
             ret = Vector((angleOffset * -1), distance);
         } else if (recAngleValue > 0) {
@@ -256,6 +243,6 @@ MapCatch MapHitboxRectangle::getCatchBack(const MapEdge * p_edge) const {
     return MapCatch(center + offset, Line(center, center + (offset * 2)), (MapElement*)p_edge, (MapElement*)p_edge->getVertexBack());
 }
 
-MapHitboxRectangle * MapHitboxRectangle::copyPtr() const {
+MapHitboxRectangle * MapHitboxRectangle::copyPtr_() const {
     return new MapHitboxRectangle(*this);
 }

@@ -10,9 +10,9 @@
 #define Tagable_hpp
 
 #include <string>
+#include <vector>
 
 #include "Utility.hpp"
-#include "LinkedList.hpp"
 
 namespace nautical {
     const std::string HEADER_TAG = "nautical";
@@ -30,24 +30,21 @@ namespace nautical {
         int getID() const { return id; }
         
         std::string getTag(bool fullPath = false) const {
-            if (fullPath) {
-                std::string tag = "";
-                tags.getLastElement(&tag);
-                return tag;
-            }
+            if (!fullPath)
+                return tags.back();
             
-            Iterator<std::string> * iterator = tags.createIterator();
-            std::string tag = iterator->current();
-            for (iterator->next(); !iterator->complete(); iterator->next()) {
+            std::vector<const std::string>::iterator it = tags.begin();
+            std::string tag = *it;
+            for (it++; it != tags.end(); it++) {
                 tag.append("::");
-                tag.append(iterator->current());
+                tag.append(*it);
             }
             return tag;
         }
         
         bool hasTag(std::string tag) const {
-            for(Iterator<std::string> * iterator = tags.createIterator(); !iterator->complete(); iterator->next()) {
-                if (stringEqual(tag, iterator->current())) {
+            for(std::vector<const std::string>::iterator it = tags.begin(); it != tags.end(); it++) {
+                if (stringEqual(tag, *it)) {
                     return true;
                 }
             }
@@ -62,13 +59,13 @@ namespace nautical {
         
     protected:
         Tagable & appendTag(std::string tag) {
-            tags.insert(tag);
+            tags.push_back(tag);
             return *this;
         }
         
     private:
         int id;
-        LinkedList<std::string> tags;
+        std::vector<std::string> tags;
     };
 }
 

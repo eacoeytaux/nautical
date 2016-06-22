@@ -42,7 +42,8 @@ void Logger::writeLog(MESSAGE_TYPE type, const char * entry, ...) {
             
             fprintf(logFile, "WARNING: ");
             break;
-        } case ERROR_MESSAGE: {
+        }
+        case ERROR_MESSAGE: {
             fprintf(logErrorsFile, "ERROR: ");
             vfprintf(logErrorsFile, entry, argsError);
             fprintf(logErrorsFile, "\n");
@@ -51,9 +52,9 @@ void Logger::writeLog(MESSAGE_TYPE type, const char * entry, ...) {
             
             fprintf(logFile, "ERROR: ");
             break;
-        } default: {
-            break;
         }
+        default:
+            break;
     }
     
     vfprintf(logFile, entry, args);

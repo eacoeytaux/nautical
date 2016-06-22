@@ -8,7 +8,6 @@
 
 #include "MapEdge.hpp"
 
-#include "Queue.hpp"
 #include "LineShape.hpp"
 #include "Map.hpp"
 #include "MapVertex.hpp"

@@ -9,10 +9,9 @@
 #ifndef __Nautical__Circle__
 #define __Nautical__Circle__
 
-#include "Shape.hpp" //base class
+#define CIRCLE_PERCISION 100
 
-#include "Collection.hpp"
-#include "LinkedList.hpp"
+#include "Shape.hpp" //base class
 
 namespace nautical {
     const std::string CIRCLE_TAG = "circle";
@@ -36,17 +35,17 @@ namespace nautical {
         double getUpperBoundY() const;
         
         bool contains(Coordinate coor) const;
-        bool intersectsLine(Line line, Queue<Coordinate> * intersections) const;
-        bool intersectsShape(const Shape * p_shape, Queue<Coordinate> * intersections) const;
+        bool intersectsLine(Line line, std::vector<Coordinate> * intersections) const;
+        bool intersectsShape(const Shape * p_shape, std::vector<Coordinate> * intersections) const;
         
-        bool intersectsCircle(const Circle * p_circle, Queue<Coordinate> * p_intersections = nullptr) const;
+        bool intersectsCircle(const Circle * p_circle, std::vector<Coordinate> * p_intersections = nullptr) const;
         
         Circle & move(Vector vector);
         Circle & rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         void draw() const;
         
-        Circle * copyPtr() const;
+        Circle * copyPtr_() const;
         bool operator==(const Shape & shape) const;
         
     private:
@@ -54,7 +53,7 @@ namespace nautical {
         double radius;
         
         static bool circleVectorsCalculated;
-        static LinkedList<Vector*> circleVectors;
+        static Vector circleVectors[CIRCLE_PERCISION];
     };
 }
 

@@ -43,11 +43,13 @@ namespace nautical {
         
         bool operator==(const Angle & angle) const;
         bool operator!=(const Angle & angle) const;
+        bool operator<(const Angle & angle) const;
+        bool operator<=(const Angle & angle) const;
+        bool operator>(const Angle & angle) const;
+        bool operator>=(const Angle & angle) const;
         
         static double radiansToDegrees(double radians);
         static double degreesToRadians(double degrees);
-        
-        static double weighAngle(const Angle * p_angle);
         
     private:
         bool truncate;

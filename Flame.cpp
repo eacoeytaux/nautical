@@ -23,14 +23,14 @@ WorldObject(pos) {
 }
 
 Flame::~Flame() {
-    for (Iterator<Spark*> * iterator = orangeParticles.createIterator(); !iterator->complete(); iterator->next()) {
-        delete iterator->current();
+    for (std::vector<Spark*>::iterator it = orangeParticles.begin(); it != orangeParticles.end(); it++) {
+        delete *it;
     }
-    for (Iterator<Spark*> * iterator = yellowParticles.createIterator(); !iterator->complete(); iterator->next()) {
-        delete iterator->current();
+    for (std::vector<Spark*>::iterator it = yellowParticles.begin(); it != yellowParticles.end(); it++) {
+        delete *it;
     }
-    for (Iterator<Origin*> * iterator = origins.createIterator(); !iterator->complete(); iterator->next()) {
-        delete iterator->current();
+    for (std::vector<Origin*>::iterator it = origins.begin(); it != origins.end(); it++) {
+        delete *it;
     }
 }
 
@@ -38,13 +38,13 @@ Flame & Flame::addOrigin(double flameWidth, nautical::Vector offset) {
     Origin * p_origin = new Origin;
     p_origin->origin = getCenter() + offset;
     p_origin->flameWidth = flameWidth;
-    origins.insert(p_origin);
+    origins.push_back(p_origin);
     return *this;
 }
 
 void Flame::update() {
-    for (Iterator<Origin*> * iterator = origins.createIterator(); !iterator->complete(); iterator->next()) {
-        Origin * p_origin = iterator->current();
+    for (std::vector<Origin*>::iterator it = origins.begin(); it != origins.end(); it++) {
+        Origin * p_origin = *it;
         
         //orange particles
         if (p_origin->orangeCountdown.check()) {
@@ -52,7 +52,7 @@ void Flame::update() {
             p_spark->center = p_origin->origin;
             p_spark->width = p_origin->flameWidth * (Random::getRandDouble(0.3) + 0.7);
             p_spark->alpha = 255;
-            orangeParticles.insert(p_spark);
+            orangeParticles.push_back(p_spark);
             p_origin->orangeCountdown.reset(5 + Random::getRandInt(5));
         }
         
@@ -62,45 +62,43 @@ void Flame::update() {
             p_spark->center = p_origin->origin;
             p_spark->width = p_origin->flameWidth * (Random::getRandDouble(0.2) + 0.3);
             p_spark->alpha = 255;
-            yellowParticles.insert(p_spark);
+            yellowParticles.push_back(p_spark);
             p_origin->yellowCountdown.reset(7 + Random::getRandInt(5));
         }
     }
     
     //orange particles
-    LinkedList<Spark*> sparksToDelete;
-    for (Iterator<Spark*> * iterator = orangeParticles.createIterator(); !iterator->complete(); iterator->next()) {
-        Spark * p_spark = iterator->current();
+    std::vector<Spark*> sparksToDelete;
+    for (std::vector<Spark*>::iterator it = orangeParticles.begin(); it != orangeParticles.end(); it++) {
+        Spark * p_spark = *it;
         
         p_spark->center += (Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5));
         p_spark->width *= 0.97;
         p_spark->alpha -= FADE_SPEED;
         
         if ((p_spark->width < (1 / GraphicsManager::getZoom())) || (p_spark->alpha <= 0))
-            sparksToDelete.insert(p_spark);
+            sparksToDelete.push_back(p_spark);
     }
-    for (Iterator<Spark*> * iterator = sparksToDelete.createIterator(); !iterator->complete(); iterator->next()) {
-        Spark * p_spark = iterator->current();
-        orangeParticles.remove(p_spark);
-        delete p_spark;
+    for (std::vector<Spark*>::iterator it = sparksToDelete.begin(); it != sparksToDelete.end(); it++) {
+        vector_helpers::removeElementByValue(orangeParticles, *it);
+        delete *it;
     }
     
     //yellow particles
     sparksToDelete.clear();
-    for (Iterator<Spark*> * iterator = yellowParticles.createIterator(); !iterator->complete(); iterator->next()) {
-        Spark * p_spark = iterator->current();
+    for (std::vector<Spark*>::iterator it = yellowParticles.begin(); it != yellowParticles.end(); it++) {
+        Spark * p_spark = *it;
         
         p_spark->center += (Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5));
         p_spark->width *= 0.97;
         p_spark->alpha -= FADE_SPEED;
         
         if ((p_spark->width < (1 / GraphicsManager::getZoom())) || (p_spark->alpha <= 0))
-            sparksToDelete.insert(p_spark);
+            sparksToDelete.push_back(p_spark);
     }
-    for (Iterator<Spark*> * iterator = sparksToDelete.createIterator(); !iterator->complete(); iterator->next()) {
-        Spark * p_spark = iterator->current();
-        yellowParticles.remove(p_spark);
-        delete p_spark;
+    for (std::vector<Spark*>::iterator it = sparksToDelete.begin(); it != sparksToDelete.end(); it++) {
+        vector_helpers::removeElementByValue(yellowParticles, *it);
+        delete *it;
     }
     
     if (DarknessOverlay::isInEffect()) {
@@ -127,13 +125,13 @@ void Flame::draw() const {
     static Angle rotationAngle(M_PI_4);
     
     if (p_sheet) {
-        for (Iterator<Spark*> * iterator = orangeParticles.createIterator(); !iterator->complete(); iterator->next()) {
-            Spark * p_spark = iterator->current();
+        for (std::vector<Spark*>::const_iterator it = orangeParticles.begin(); it != orangeParticles.end(); it++) {
+            Spark * p_spark = *it;
             p_sheet->setScale((float)(p_spark->width));
             GraphicsManager::drawImageFromSpriteSheet(p_sheet, 0, p_spark->center, rotationAngle, false, false, p_spark->alpha);
         }
-        for (Iterator<Spark*> * iterator = yellowParticles.createIterator(); !iterator->complete(); iterator->next()) {
-            Spark * p_spark = iterator->current();
+        for (std::vector<Spark*>::const_iterator it = yellowParticles.begin(); it != yellowParticles.end(); it++) {
+            Spark * p_spark = *it;
             p_sheet->setScale((float)(p_spark->width));
             GraphicsManager::drawImageFromSpriteSheet(p_sheet, 1, p_spark->center, rotationAngle, false, false, p_spark->alpha);
         }

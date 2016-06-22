@@ -46,19 +46,19 @@ bool LineShape::contains(Coordinate coor) const {
     return false;
 }
 
-bool LineShape::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const {
+bool LineShape::intersectsLine(Line line, std::vector<Coordinate> * p_intersections) const {
     Coordinate intersection;
     if (this->line.intersectsLine(line, &intersection)) {
         if (p_intersections)
-            p_intersections->insert(intersection);
+            p_intersections->push_back(intersection);
         return true;
     } else {
         return false;
     }
 }
 
-bool LineShape::intersectsShape(const Shape * p_shape, Queue<Coordinate> * intersections) const {
-    return p_shape->intersectsLine(line, intersections);
+bool LineShape::intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections) const {
+    return p_shape->intersectsLine(line, p_intersections);
 }
 
 LineShape & LineShape::move(Vector vector) {
@@ -79,7 +79,7 @@ void LineShape::drawFilled() const {
     draw();
 }
 
-LineShape * LineShape::copyPtr() const {
+LineShape * LineShape::copyPtr_() const {
     return new LineShape(*this);
 }
 

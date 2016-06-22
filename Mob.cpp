@@ -66,31 +66,3 @@ Mob & Mob::heal(int health) {
 Mob & Mob::healFull() {
     return setHealth(maxHealth);
 }
-
-bool Mob::isFacingRight() const {
-    return facingRight;
-}
-
-Mob & Mob::setFacingRight(bool facingRight) {
-    this->facingRight = facingRight;
-    return *this;
-}
-
-bool Mob::isMovingRight() const {
-    return movingRight;
-    
-}
-
-Mob & Mob::setMovingRight(bool movingRight) {
-    this->movingRight = movingRight;
-    return *this;
-}
-
-bool Mob::isMovingLeft() const {
-    return movingLeft;
-}
-
-Mob & Mob::setMovingLeft(bool movingLeft) {
-    this->movingLeft = movingLeft;
-    return *this;
-}

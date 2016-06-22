@@ -23,7 +23,6 @@
 #include "GraphicsManager.hpp"
 #include "Clock.hpp"
 #include "Random.hpp"
-#include "Queue.hpp"
 #include "Angle.hpp"
 #include "Coordinate.hpp"
 #include "ControllerEvent.hpp"
@@ -32,8 +31,6 @@
 
 //TODO remove these includes
 #include "World.hpp"
-#include "Vector.hpp"
-#include "Queue.hpp"
 #include "Rope.hpp"
 #include "Player.hpp"
 #include "Polygon.hpp"
@@ -43,8 +40,9 @@
 #define FPS 60
 #define AUTO_LOCK_CURSOR false
 
-#define MAX_CONTROLLERS 4 //TODO implement this
-#define CONTROLLER_DEAD_ZONE 8000
+#define MAX_CONTROLLERS 4
+#define MAX_JOYSTICK_VALUE 32768.0
+#define JOYSTICK_DEADZONE 8192.0
 
 using namespace nautical;
 
@@ -57,7 +55,13 @@ bool fullscreen = false;
 
 SDL_Renderer * p_renderer = nullptr;
 
-SDL_Joystick * controller = nullptr;
+struct Controller {
+    SDL_Joystick * p_controller = nullptr;
+    struct Joystick {
+        bool outsideDeadzone = false;
+        int xDir, yDir;
+    } joysticks[2];
+} * controllers[MAX_CONTROLLERS];
 
 const long targetTime = 1000 / FPS;
 int totalCycles = 0;
@@ -101,13 +105,17 @@ bool GameManager::startup() {
             //    return false;
             //}
             
+            for (int i = 0; i < MAX_CONTROLLERS; i++) {
+                controllers[i] = new Controller();
+            }
+            
             //if using controller, init controller
             SDL_JoystickEventState(SDL_ENABLE);
-            controller = SDL_JoystickOpen(0);
-            if (controller == nullptr) {
-                Logger::writeLog(PLAIN_MESSAGE, "GameManager::init(): Controller not loaded");
+            controllers[0]->p_controller = SDL_JoystickOpen(0);
+            if (controllers[0]->p_controller == nullptr) {
+                Logger::writeLog(PLAIN_MESSAGE, "GameManager::init(): controller not loaded");
             } else {
-                Logger::writeLog(PLAIN_MESSAGE, "GameManager::init(): Controller loaded! Controller name: %s", SDL_JoystickName(controller));
+                Logger::writeLog(PLAIN_MESSAGE, "GameManager::init(): controller loaded! controller name: %s", SDL_JoystickName(controllers[0]->p_controller));
             }
         }
     }
@@ -125,8 +133,11 @@ bool GameManager::shutdown() {
     //Mix_Quit();
     
     //close controller
-    SDL_JoystickClose(controller);
-    controller = nullptr;
+    for (int i = 0; i < MAX_CONTROLLERS; i++) {
+        SDL_JoystickClose(controllers[i]->p_controller);
+        controllers[i]->p_controller = nullptr;
+        delete controllers[i];
+    }
     
     //close window and renderer
     SDL_DestroyRenderer(p_renderer);
@@ -149,7 +160,7 @@ void GameManager::run() {
     reset = false;
     running = true;
     
-    Queue<Event*> events;
+    std::vector<Event*> events;
     World level;
     
     Coordinate playerCoor(390, 480);
@@ -195,7 +206,7 @@ void GameManager::run() {
             usleep((useconds_t)(wait * 1000)); //convert milliseconds to microseconds
 #endif
 #ifdef _WIN32
-			Sleep(wait);
+            Sleep(wait);
 #endif
             //printf("Hit deadline with %ld ms to spare! (targetTime: %ld)\n", wait, targetTime);
         } else {
@@ -209,11 +220,11 @@ void GameManager::run() {
         shutdown();
 }
 
-void GameManager::pollEvents(Collection<Event*> & events) {
+void GameManager::pollEvents(std::vector<Event*> & events) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if ((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP)) {
-            events.insert(new KeyboardEvent(((event.type == SDL_KEYDOWN) ? KeyboardEvent::KEY_PRESSED : KeyboardEvent::KEY_RELEASED), getKeyFromSDLKey(event.key.keysym.sym)));
+            events.push_back(new KeyboardEvent(getKeyFromSDLKey(event.key.keysym.sym), ((event.type == SDL_KEYDOWN) ? KeyboardEvent::KEY_PRESSED : KeyboardEvent::KEY_RELEASED)));
         }
         
         switch (event.type) {
@@ -221,27 +232,77 @@ void GameManager::pollEvents(Collection<Event*> & events) {
                 running = false;
                 break;
             }
+            case SDL_JOYBUTTONDOWN: {
+                ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::BUTTON_PRESS);
+                p_controllerEvent->setButtonIndex(event.jbutton.button);
+                events.push_back(p_controllerEvent);
+                break;
+            }
+            case SDL_JOYBUTTONUP: {
+                ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::BUTTON_RELEASE);
+                p_controllerEvent->setButtonIndex(event.jbutton.button);
+                events.push_back(p_controllerEvent);
+                break;
+            }
+            case SDL_JOYHATMOTION: {
+                ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::HAT_VALUE_CHANGE);
+                int hatValue = event.jhat.value;
+                p_controllerEvent->setUpPressed(hatValue & 1).setRightPressed(hatValue & 2).setDownPressed(hatValue & 4).setLeftPressed(hatValue & 8);
+                events.push_back(p_controllerEvent);
+                break;
+            }
+            case SDL_JOYAXISMOTION: { //TODO this needs cleaning up...
+                if (event.jaxis.which > MAX_CONTROLLERS)
+                    break;
+                
+                Controller * p_controller = controllers[event.jaxis.which];
+                int joystickIndex = (event.jaxis.axis < 2) ? 0 : 1; //TODO only true for sixaxis controller, test for others
+                
+                if ((event.jaxis.axis == 0) || (event.jaxis.axis == 2)) {
+                    p_controller->joysticks[joystickIndex].xDir = event.jaxis.value;
+                } else if ((event.jaxis.axis == 1) || (event.jaxis.axis == 5)) {
+                    p_controller->joysticks[joystickIndex].yDir = event.jaxis.value;
+                }
+                
+                Angle joystickAngle((double)(p_controller->joysticks[joystickIndex].xDir), (double)(-p_controller->joysticks[joystickIndex].yDir));
+                
+                if (findDistance((double)(p_controller->joysticks[joystickIndex].xDir), (double)(p_controller->joysticks[joystickIndex].yDir)) > JOYSTICK_DEADZONE) {
+                    p_controller->joysticks[joystickIndex].outsideDeadzone = true;
+                    
+                    ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::JOYSTICK_MOVEMENT);
+                    p_controllerEvent->setJoystickIndex(joystickIndex).setOutsideDeadzone(true).setJoystickAngle(joystickAngle);
+                    events.push_back(p_controllerEvent);
+                } else if (p_controller->joysticks[joystickIndex].outsideDeadzone) { //joystick has gone from outside to inside deadzone
+                    p_controller->joysticks[joystickIndex].outsideDeadzone = false;
+                    
+                    ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::JOYSTICK_MOVEMENT);
+                    p_controllerEvent->setJoystickIndex(joystickIndex).setOutsideDeadzone(false).setJoystickAngle(joystickAngle);
+                    events.push_back(p_controllerEvent);
+                }
+                break;
+            }
             case SDL_MOUSEMOTION: {
-                GraphicsManager::setMouseCoor(Coordinate(event.motion.x, event.motion.y));
-                //printf("mouse at world location: %d:%d\n", (int)GraphicsManager::getMouseCoor().getX(), (int)GraphicsManager::getMouseCoor().getY());
+                Coordinate mousePos = Coordinate(event.motion.x, event.motion.y);
+                GraphicsManager::setMouseCoor(mousePos);
+                events.push_back(new MouseEvent(mousePos, MouseEvent::MOUSE_MOVEMENT));
                 break;
             }
             case SDL_MOUSEBUTTONDOWN: {
                 if (event.button.button == SDL_BUTTON_LEFT)
-                    events.insert(new MouseEvent(MouseEvent::LEFT_BUTTON_PRESS));
+                    events.push_back(new MouseEvent(GraphicsManager::getMouseCoor(), MouseEvent::LEFT_BUTTON_PRESS));
                 else if (event.button.button == SDL_BUTTON_RIGHT)
-                    events.insert(new MouseEvent(MouseEvent::RIGHT_BUTTON_PRESS));
+                    events.push_back(new MouseEvent(GraphicsManager::getMouseCoor(), MouseEvent::RIGHT_BUTTON_PRESS));
                 break;
             }
             case SDL_MOUSEBUTTONUP: {
                 if (event.button.button == SDL_BUTTON_LEFT)
-                    events.insert(new MouseEvent(MouseEvent::LEFT_BUTTON_RELEASE));
+                    events.push_back(new MouseEvent(GraphicsManager::getMouseCoor(), MouseEvent::LEFT_BUTTON_RELEASE));
                 else if (event.button.button == SDL_BUTTON_RIGHT)
-                    events.insert(new MouseEvent(MouseEvent::RIGHT_BUTTON_RELEASE));
+                    events.push_back(new MouseEvent(GraphicsManager::getMouseCoor(), MouseEvent::RIGHT_BUTTON_RELEASE));
                 break;
             }
             case SDL_KEYDOWN: {
-                switch (event.key.keysym.sym) {
+                switch (event.key.keysym.sym) { //DEBUGGING
                     case SDLK_RETURN:
                         nautical::DEBUG_MODE = !nautical::DEBUG_MODE;
                         break;
@@ -256,52 +317,6 @@ void GameManager::pollEvents(Collection<Event*> & events) {
                         reset = true;
                         break;
                 }
-                break;
-            }
-            case SDL_JOYBUTTONDOWN: {
-                ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::BUTTON_PRESS);
-                p_controllerEvent->setButtonIndex(event.jbutton.button);
-                events.insert(p_controllerEvent);
-                break;
-            }
-            case SDL_JOYBUTTONUP: {
-                ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::BUTTON_RELEASE);
-                p_controllerEvent->setButtonIndex(event.jbutton.button);
-                events.insert(p_controllerEvent);
-                break;
-            }
-            case SDL_JOYHATMOTION: {
-                ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::HAT_VALUE_CHANGE);
-                int hatValue = event.jhat.value;
-                p_controllerEvent->setUpPressed(hatValue & 1).setRightPressed(hatValue & 2).setDownPressed(hatValue & 4).setLeftPressed(hatValue & 8);
-                events.insert(p_controllerEvent);
-                break;
-            }
-            case SDL_JOYAXISMOTION: {
-                static bool outsideDeadzone = false;
-                static int xDir, yDir;
-                if (event.jaxis.axis == 0) {
-                    xDir = event.jaxis.value;
-                } else if (event.jaxis.axis == 1) {
-                    yDir = event.jaxis.value;
-                }
-                
-                double distanceFromCenter = findDistance(xDir, yDir); //TODO is this right? it might be confined to a square instead of a circle, need to double check
-                if (distanceFromCenter > CONTROLLER_DEAD_ZONE) {
-                    outsideDeadzone = true;
-                    Angle joystickAngle((double)xDir, (double)-yDir);
-                    
-                    ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::JOYSTICK_MOVEMENT);
-                    p_controllerEvent->setJoystickIndex(event.jaxis.axis).setOutsideDeadzone(true).setJoystickAngle(joystickAngle).setJoystickMagnitude(distanceFromCenter);
-                    events.insert(p_controllerEvent);
-                } else if (outsideDeadzone) { //joystick has gone from outside to inside deadzone
-                    outsideDeadzone = false;
-                    
-                    ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::JOYSTICK_MOVEMENT);
-                    p_controllerEvent->setJoystickIndex(event.jaxis.axis).setOutsideDeadzone(false);
-                    events.insert(p_controllerEvent);
-                }
-                
                 break;
             }
         }
@@ -480,16 +495,16 @@ KeyboardEvent::Key getKeyFromSDLKey(int SDL_key) {
 
 void GameManager::runTests() { //DEBUGGING
     /*Queue<Coordinate> coors;
-    coors.insert(Coordinate(150, 250));
-    coors.insert(Coordinate(220, 300));
-    coors.insert(Coordinate(220, 150));
-    coors.insert(Coordinate(200, 180));
-    coors.insert(Coordinate(150, 150));
-    coors.insert(Coordinate(100, 100));
-    static Polygon polygon(&coors);
-    
-    bool contains = polygon.contains(GraphicsManager::getMouseCoor());
-    
-    polygon.drawFilled(RED);
-    polygon.Drawable::draw(contains ? GREEN : WHITE);*/
+     coors.insert(Coordinate(150, 250));
+     coors.insert(Coordinate(220, 300));
+     coors.insert(Coordinate(220, 150));
+     coors.insert(Coordinate(200, 180));
+     coors.insert(Coordinate(150, 150));
+     coors.insert(Coordinate(100, 100));
+     static Polygon polygon(&coors);
+     
+     bool contains = polygon.contains(GraphicsManager::getMouseCoor());
+     
+     polygon.drawFilled(RED);
+     polygon.Drawable::draw(contains ? GREEN : WHITE);*/
 }

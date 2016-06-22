@@ -15,11 +15,12 @@
 
 #include "SpriteSheet.hpp"
 #include "Utility.hpp"
-#include "LinkedList.hpp"
+#include "Random.hpp"
 #include "Coordinate.hpp"
 #include "Vector.hpp"
 #include "Rectangle.hpp"
 #include "MapHitbox.hpp"
+#include "DarknessOverlay.hpp"
 #include "World.hpp"
 
 namespace nautical {
@@ -31,30 +32,31 @@ namespace nautical {
         WorldObject(const WorldObject & other);
         virtual ~WorldObject();
         
-        World * getParent() const;
-        WorldObject & setParent(World * p_parent);
-        Coordinate getCenter() const;
-        MapHitbox * getMapHitbox() const; //should delete pointer after use
-        WorldObject & setMapHitbox(MapHitbox * p_hitbox); //should delete pointer after use
-        const MapElement * getMapElement() const;
-        WorldObject & setMapElement(const MapElement * p_element);
-        Vector getForce() const;
-        WorldObject & setForce(Vector force);
-        WorldObject & addToForce(Vector force);
-        Vector getVel() const;
-        WorldObject & setVel(Vector vel);
-        WorldObject & addToVel(Vector vel);
+        virtual World * getParent() const;
+        virtual WorldObject & setParent(World * p_parent);
+        virtual Coordinate getCenter() const;
+        virtual MapHitbox * getMapHitbox_() const; //should delete pointer after use
+        virtual WorldObject & setMapHitbox(MapHitbox * p_hitbox); //should delete pointer after use
+        virtual const MapElement * getMapElement() const;
+        virtual WorldObject & setMapElement(const MapElement * p_element);
+        virtual Vector getForce() const;
+        virtual WorldObject & setForce(Vector force);
+        virtual WorldObject & addToForce(Vector force);
+        virtual Vector getVel() const;
+        virtual WorldObject & setVel(Vector vel);
+        virtual WorldObject & addToVel(Vector vel);
         
-        WorldObject & moveTo(Coordinate coor);
+        virtual WorldObject & moveTo(Coordinate coor);
         virtual WorldObject & move(Vector vec);
         
-        Iterator<WorldObject*> * getAttachedObjectsIterator() const;
-        WorldObject & attachObject(WorldObject * p_object);
-        WorldObject & removeAttachedObject(WorldObject * p_object);
+        //TODO make sure WorldObjects* cannot be accessed
+        virtual const std::vector<WorldObject*> * getAttachedObjects() const;
+        virtual WorldObject & attachObject(WorldObject * p_object);
+        virtual WorldObject & removeAttachedObject(WorldObject * p_object);
         
+        const std::vector<std::string> * getSubscribedEventTags() const;
         WorldObject & subscribeEvent(std::string eventTag);
         WorldObject & unsubscribeEvent(std::string eventTag);
-        Iterator<std::string> * getSubscribedEventTagsIterator() const;
         
         virtual bool handleEvent(Event * p_event); //returns whether or not object did something with event
         
@@ -76,9 +78,9 @@ namespace nautical {
         MapHitbox * p_hitbox = nullptr;
         Vector force, vel;
         
-        LinkedList<WorldObject*> attachedObjects;
+        std::vector<WorldObject*> attachedObjects;
         
-        LinkedList<std::string> subscribedEventTags = LinkedList<std::string>(false);
+        std::vector<std::string> subscribedEventTags;
     };
 }
 

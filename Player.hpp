@@ -11,6 +11,7 @@
 
 #include "Mob.hpp"
 
+#include "Countdown.hpp"
 #include "Rope.hpp"
 
 namespace climber {
@@ -21,8 +22,19 @@ namespace climber {
         Player(nautical::Coordinate pos);
         virtual ~Player();
         
+        Player & setMapElement(const nautical::MapElement * p_element);
+        
         Rope * getRope();
         Player & setRope(Rope * p_rope);
+        
+        bool isFacingRight() const;
+        Player & setFacingRight(bool facingRight);
+        bool isMovingRight() const;
+        Player & setMovingRight(bool movingRight);
+        bool isMovingLeft() const;
+        Player & setMovingLeft(bool movingLeft);
+        
+        
         
         Player & move(nautical::Vector vec);
         
@@ -34,6 +46,17 @@ namespace climber {
     private:
         nautical::Rectangle trap; //used to center camera on player
         
+        bool facingRight = true, //false implies facing left
+        movingRight = false,
+        movingLeft = false;
+        
+        bool jumping = false,
+        canJump = false,
+        canGhostJump = false;
+        nautical::Countdown jumpingCountdown; //countdown of how long player can hold jump button and it will still have effect
+        nautical::Countdown ghostJumpCountdown; //countdown from leaving ground where player can still jump
+        
+        nautical::Angle aimAngle;
         Rope * p_rope = nullptr;
     };
 }

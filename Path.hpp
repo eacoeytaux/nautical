@@ -21,45 +21,47 @@ namespace nautical {
         Path() { }
         
         virtual ~Path() {
-            for (Iterator<Node*> * iterator = path.createIterator(); !iterator->complete(); iterator->next()) {
-                delete iterator->current();
+            for (std::vector<Node*>::iterator it = path.begin(); it != path.end(); it++) {
+                delete *it;
             }
         }
         
         int getCount() {
-            return path.size();
+            return (int)path.size();
         }
         
-        bool addLine(Line line) {
-            return path.insert(new LineNode(line));
+        Path & addLine(Line line) {
+            path.push_back(new LineNode(line));
+            return *this;
         }
         
-        bool addArc(Arc arc) {
-            return path.insert(new ArcNode(arc));
+        Path & addArc(Arc arc) {
+            path.push_back(new ArcNode(arc));
+            return *this;
         }
         
-        bool clear() {
-            return path.clear();
+        Path & clear() {
+            path.clear();
+            return *this;
         }
         
         Coordinate getEndPoint() {
-            Node * p_node = nullptr;
-            if (path.getLastElement(&p_node)) {
-                return p_node->getEndCoor();
-            }
-            return Coordinate();
+            if (path.size() > 0)
+                return path.back()->getEndCoor();
+            else
+                return Coordinate();
         }
         
         void draw() const {
-            for (Iterator<Node*> * iterator = path.createIterator(); !iterator->complete(); iterator->next()) {
-                iterator->current()->draw();
+            for (std::vector<Node*>::const_iterator it = path.begin(); it != path.end(); it++) {
+                (*it)->draw();
             }
         }
         
     private:
         struct Node : public Tagable {
             Node() { appendTag("PathNode"); }
-            virtual bool intersectsNode(Node * p_node, Queue<Coordinate> * p_intersections) const = 0;
+            virtual bool intersectsNode(Node * p_node, std::vector<Coordinate> * p_intersections = nullptr) const = 0;
             virtual Coordinate getStartCoor() const = 0;
             virtual Coordinate getEndCoor() const = 0;
             virtual void draw() const = 0;
@@ -71,12 +73,12 @@ namespace nautical {
             LineNode(Line line) :
             line(line) { appendTag("LineNode"); }
             
-            virtual bool intersectsNode(Node * p_node, Queue<Coordinate> * p_intersections) const {
+            virtual bool intersectsNode(Node * p_node, std::vector<Coordinate> * p_intersections = nullptr) const {
                 if (p_node->hasTag("LineNode")) {
                     Coordinate intersection;
                     if (static_cast<LineNode*>(p_node)->line.intersectsLine(line, &intersection)) {
                         if (p_intersections)
-                            p_intersections->insert(intersection);
+                            p_intersections->push_back(intersection);
                         return true;
                     } else {
                         return false;
@@ -103,7 +105,7 @@ namespace nautical {
             
             ArcNode(Arc arc) :
             arc(arc) { appendTag("ArcNode"); }
-            virtual bool intersectsNode(Node * p_node, Queue<Coordinate> * p_intersections) const {
+            virtual bool intersectsNode(Node * p_node, std::vector<Coordinate> * p_intersections = nullptr) const {
                 if (p_node->hasTag("LineNode")) {
                     return arc.intersectsLine(static_cast<LineNode*>(p_node)->line, p_intersections);
                 } else if (p_node->hasTag("ArcNode")) {
@@ -123,7 +125,7 @@ namespace nautical {
             }
         };
         
-        LinkedList<Node*> path;
+        std::vector<Node*> path;
     };
 }
 

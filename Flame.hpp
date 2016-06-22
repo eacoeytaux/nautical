@@ -36,15 +36,15 @@ namespace climber {
             nautical::Countdown orangeCountdown;
             nautical::Countdown yellowCountdown;
         };
-        nautical::LinkedList<Origin*> origins;
+        std::vector<Origin*> origins;
         
         struct Spark {
             nautical::Coordinate center;
             double width;
             int alpha;
         };
-        nautical::LinkedList<Spark*> orangeParticles;
-        nautical::LinkedList<Spark*> yellowParticles;
+        std::vector<Spark*> orangeParticles;
+        std::vector<Spark*> yellowParticles;
     };
 }
 

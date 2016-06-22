@@ -110,12 +110,3 @@ ControllerEvent & ControllerEvent::setJoystickAngle(Angle angle) {
     this->joystickAngle = angle;
     return *this;
 }
-
-double ControllerEvent::getJoystickMagnitude() const {
-    return joystickMagnitude;
-}
-
-ControllerEvent & ControllerEvent::setJoystickMagnitude(double magnitude) {
-    joystickMagnitude = magnitude;
-    return *this;
-}

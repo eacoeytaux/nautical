@@ -34,17 +34,15 @@ double weighMapEdgeY(MapEdge * const * pp_edge) {
 
 Map::Map(bool verticalMap) :
 verticalMap(verticalMap),
-vertices(SortedList<MapVertex*>(verticalMap ? &weighMapVertexY : &weighMapVertexX)),
-edges((SortedList<MapEdge*>(verticalMap ? &weighMapEdgeY : &weighMapEdgeX))),
 airResistanceCoefficient(defaultAirResistanceCoefficient) { }
 
 Map::~Map() {
-    for (Iterator<MapEdge*> * iterator = edges.createIterator(); !iterator->complete(); iterator->next()) {
-        delete iterator->current();
+    for (std::vector<MapEdge*>::iterator it = edges.begin(); it != edges.end(); it++) {
+        delete *it;
     }
     
-    for (Iterator<MapVertex*> * iterator = vertices.createIterator(); !iterator->complete(); iterator->next()) {
-        delete iterator->current();
+    for (std::vector<MapVertex*>::iterator it = vertices.begin(); it != vertices.end(); it++) {
+        delete *it;
     }
 }
 
@@ -55,7 +53,7 @@ bool Map::isVertical() const {
 MapVertex * Map::createVertex(Coordinate coor) {
     MapVertex * p_vertex = new MapVertex(coor);
     p_vertex->setParent(this);
-    vertices.insert(p_vertex);
+    vertices.push_back(p_vertex);
     return p_vertex;
 }
 
@@ -63,24 +61,16 @@ MapEdge * Map::createEdge(MapVertex * p_vertexBack, MapVertex * p_vertexFront, b
     MapEdge * p_edge = new MapEdge(p_vertexBack, p_vertexFront, sticky);
     p_edge->setParent(this);
     double largestEdgeLength = fabs(verticalMap ? (p_edge->getVertexFront()->getCoor().getY() - p_edge->getVertexBack()->getCoor().getY()) : (p_edge->getVertexFront()->getCoor().getX() - p_edge->getVertexBack()->getCoor().getX())); //TODO does this need to be fabsed?
-    edges.insert(p_edge, largestEdgeLength, 0);
+    edges.push_back(p_edge);
     return p_edge;
 }
 
-Iterator<MapVertex*> * Map::getVerticesListIterator() const {
-    return vertices.createIterator();
+const std::vector<MapVertex*> * Map::getVerticesList() const {
+    return &vertices;
 }
 
-Iterator<MapVertex*> * Map::getVerticesListIterator(double lowerBound, double upperBound) const {
-    return vertices.createIterator(lowerBound, upperBound);
-}
-
-Iterator<MapEdge*> * Map::getEdgesListIterator() const {
-    return edges.createIterator();
-}
-
-Iterator<MapEdge*> * Map::getEdgesListIterator(double lowerBound, double upperBound) const {
-    return edges.createIterator(lowerBound, upperBound);
+const std::vector<MapEdge*> * Map::getEdgesList() const {
+    return &edges;
 }
 
 double Map::getAirResistanceCoefficient(double value) const {
@@ -101,36 +91,36 @@ void Map::setDefaultAirResistanceCoefficient(float airResistanceCoefficient) {
 }
 
 void Map::draw() const {
-    for (Iterator<MapEdge*> * iterator = edges.createIterator(); !iterator->complete(); iterator->next()) {
-        iterator->current()->draw();
+    for (std::vector<MapEdge*>::const_iterator it = edges.begin(); it != edges.end(); it++) {
+        (*it)->draw();
     }
     if (DEBUG_MODE) {
-        for (Iterator<MapVertex*> * iterator = vertices.createIterator(); !iterator->complete(); iterator->next()) {
-            iterator->current()->draw();
+        for (std::vector<MapVertex*>::const_iterator it = vertices.begin(); it != vertices.end(); it++) {
+            (*it)->draw();
         }
     }
 }
 
 void Map::drawBumpers(MapHitbox * p_hitbox, bool drawCatches) const {
-    for (Iterator<MapEdge*> * iterator = edges.createIterator(); !iterator->complete(); iterator->next()) {
-        Shape * p_bumper = p_hitbox->createBumper(iterator->current());
+    for (std::vector<MapEdge*>::const_iterator it = edges.begin(); it != edges.end(); it++) {
+        Shape * p_bumper = p_hitbox->createBumper_(*it);
         p_bumper->Drawable::draw(Color(CYAN).setA(127));
         delete p_bumper;
         if (drawCatches) {
-            LinkedList<MapCatch> catches = p_hitbox->findCatches(iterator->current(), this);
-            for (Iterator<MapCatch> * subIterator = catches.createIterator(); !subIterator->complete(); subIterator->next()) {
-                GraphicsManager::drawLine(subIterator->current().getLine(), Color(YELLOW).setA(64));
+            std::vector<MapCatch> catches = p_hitbox->findCatches(*it, this);
+            for (std::vector<MapCatch>::iterator subIt = catches.begin(); subIt != catches.end(); subIt++) {
+                GraphicsManager::drawLine(subIt->getLine(), Color(YELLOW).setA(64));
             }
         }
     }
-    for (Iterator<MapVertex*> * iterator = vertices.createIterator(); !iterator->complete(); iterator->next()) {
-        Shape * p_bumper = p_hitbox->createBumper(iterator->current());
+    for (std::vector<MapVertex*>::const_iterator it = vertices.begin(); it != vertices.end(); it++) {
+        Shape * p_bumper = p_hitbox->createBumper_(*it);
         p_bumper->Drawable::draw(Color(CYAN).setA(127));
         delete p_bumper;
         if (drawCatches) {
-            LinkedList<MapCatch> catches = p_hitbox->findCatches(iterator->current(), this);
-            for (Iterator<MapCatch> * subIterator = catches.createIterator(); !subIterator->complete(); subIterator->next()) {
-                GraphicsManager::drawLine(subIterator->current().getLine(), Color(YELLOW).setA(64));
+            std::vector<MapCatch> catches = p_hitbox->findCatches(*it, this);
+            for (std::vector<MapCatch>::iterator subIt = catches.begin(); subIt != catches.end(); subIt++) {
+                GraphicsManager::drawLine(subIt->getLine(), Color(YELLOW).setA(64));
             }
         }
     }

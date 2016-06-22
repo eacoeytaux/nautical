@@ -18,19 +18,24 @@ namespace nautical {
     public:
         enum MouseAction {
             UNDEFINED_MOUSE_ACTION,
+            MOUSE_MOVEMENT,
             LEFT_BUTTON_PRESS,
             LEFT_BUTTON_RELEASE,
             RIGHT_BUTTON_PRESS,
             RIGHT_BUTTON_RELEASE
         };
         
-        MouseEvent(MouseAction action = UNDEFINED_MOUSE_ACTION);
+        MouseEvent(Coordinate mousePosScreen, MouseAction action = UNDEFINED_MOUSE_ACTION);
         virtual ~MouseEvent();
+        
+        Coordinate getMousePos() const;
+        MouseEvent & setMousePosScreen(Coordinate mousePosScreen);
         
         MouseAction getAction() const;
         MouseEvent & setAction(MouseAction action);
         
     private:
+        Coordinate mousePosScreen;
         MouseAction action;
     };
 }

@@ -11,10 +11,6 @@
 
 #include "MapElement.hpp" //base class
 
-//included so compiler knows Rectangle and Circle extend Shape
-#include "Rectangle.hpp"
-#include "Circle.hpp"
-
 namespace nautical {
     class MapEdge; //forward declaration to avoid circular inclusion
     

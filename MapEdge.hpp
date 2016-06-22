@@ -11,8 +11,6 @@
 
 #include "MapElement.hpp" //base class
 
-#include "LineShape.hpp" //this has to be included so the compiler knows LineShape extends Shape
-
 namespace nautical {
     class MapVertex;
     

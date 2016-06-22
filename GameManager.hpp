@@ -9,6 +9,8 @@
 #ifndef GameManager_hpp
 #define GameManager_hpp
 
+#include <vector>
+
 #include "Collection.hpp"
 #include "Event.hpp"
 
@@ -26,7 +28,7 @@ namespace nautical {
         static bool init, //prevents game from re-initialized unnecessarily
         running; //whether or not game is running
         
-        static void pollEvents(Collection<Event*> & events);
+        static void pollEvents(std::vector<Event*> & events);
         
         static void runTests(); //this function for debugging only, put test code in here so it can be easily removed later
     };

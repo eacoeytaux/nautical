@@ -8,6 +8,8 @@
 
 #include "Arc.hpp"
 
+#include <algorithm>
+
 #include "Utility.hpp"
 #include "Vector.hpp"
 #include "Circle.hpp"
@@ -74,7 +76,7 @@ double Arc::getArcLength() const {
     Angle startAngle = this->startAngle;
     Angle endAngle = this->endAngle;
     if (clockwise)
-        swap<Angle>(startAngle, endAngle);
+        std::swap(startAngle, endAngle);
     
     return dAngle.getValue() * originDistance;
 }
@@ -96,76 +98,76 @@ Coordinate Arc::getEndCoor() const {
     return origin + Vector(endAngle, originDistance);
 }
 
-bool Arc::intersectsArc(Arc arc, Queue<Coordinate> * p_intersections) const {
-    Queue<Coordinate> intersections;
+bool Arc::intersectsArc(Arc arc, std::vector<Coordinate> * p_intersections) const {
+    std::vector<Coordinate> intersections;
     Circle tempCircle(origin, originDistance);
     Circle(arc.origin, arc.originDistance).intersectsCircle(&tempCircle, &intersections);
     
     bool intersects = false;
-    Coordinate intersection1;
-    if (intersections.pop(&intersection1)) {
+    if (intersections.size() > 0) {
+        Coordinate intersection1 = intersections.at(0);
         if (inArc(findAngle(origin, intersection1)))
             intersects = true;
         
-        Coordinate intersection2;
-        if (intersections.pop(&intersection2)) {
+        if (intersections.size() > 1) {
+            Coordinate intersection2 = intersections.at(1);
             if (inArc(findAngle(origin, intersection1))) {
                 if (p_intersections) {
                     if (intersects) {
                         Angle startAngle = (clockwise ? startAngle : endAngle);
                         if ((startAngle - findAngle(origin, intersection1)).getValue() <= (startAngle - findAngle(origin, intersection2)).getValue()) {
-                            p_intersections->insert(intersection1);
-                            p_intersections->insert(intersection2);
+                            p_intersections->push_back(intersection1);
+                            p_intersections->push_back(intersection2);
                         } else {
-                            p_intersections->insert(intersection2);
-                            p_intersections->insert(intersection1);
+                            p_intersections->push_back(intersection2);
+                            p_intersections->push_back(intersection1);
                         }
                     } else {
-                        p_intersections->insert(intersection2);
+                        p_intersections->push_back(intersection2);
                     }
                 }
                 intersects = true;
             }
         } else if (intersects) {
             if (p_intersections)
-                p_intersections->insert(intersection1);
+                p_intersections->push_back(intersection1);
         }
     }
     return intersects;
 }
 
-bool Arc::intersectsLine(Line line, Queue<Coordinate> * p_intersections) const {
-    Queue<Coordinate> intersections;
+bool Arc::intersectsLine(Line line, std::vector<Coordinate> * p_intersections) const {
+    std::vector<Coordinate> intersections;
     Circle(origin, originDistance).intersectsLine(line, &intersections);
     
     bool intersects = false;
-    Coordinate intersection1;
-    if (intersections.pop(&intersection1)) {
+    if (intersections.size() > 0) {
+        Coordinate intersection1 = intersections.at(0);
         if (inArc(findAngle(origin, intersection1)))
             intersects = true;
         
-        Coordinate intersection2;
-        if (intersections.pop(&intersection2)) {
+        if (intersections.size() > 1) {
+            Coordinate intersection2 = intersections.at(1);
             if (inArc(findAngle(origin, intersection1))) {
                 if (p_intersections) {
                     if (intersects) {
                         Angle startAngle = (clockwise ? startAngle : endAngle);
                         if ((startAngle - findAngle(origin, intersection1)).getValue() <= (startAngle - findAngle(origin, intersection2)).getValue()) {
-                            p_intersections->insert(intersection1);
-                            p_intersections->insert(intersection2);
+                            p_intersections->push_back(intersection1);
+                            p_intersections->push_back(intersection2);
                         } else {
-                            p_intersections->insert(intersection2);
-                            p_intersections->insert(intersection1);
+                            p_intersections->push_back(intersection2);
+                            p_intersections->push_back(intersection1);
                         }
                     } else {
-                        p_intersections->insert(intersection2);
+                        p_intersections->push_back(intersection2);
                     }
                 }
                 intersects = true;
             }
         } else if (intersects) {
             if (p_intersections)
-                p_intersections->insert(intersection1);
+                p_intersections->push_back(intersection1);
         }
     }
     return intersects;

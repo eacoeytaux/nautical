@@ -56,8 +56,6 @@ namespace nautical {
         ControllerEvent & setOutsideDeadzone(bool b);
         Angle getJoystickAngle() const;
         ControllerEvent & setJoystickAngle(Angle angle);
-        double getJoystickMagnitude() const;
-        ControllerEvent & setJoystickMagnitude(double magnitude);
         
     private:
         int controllerIndex; //which controller is creating event
@@ -65,6 +63,16 @@ namespace nautical {
         
         //for buttons
         int buttonIndex = -1;
+        
+        //for ps4 controller:
+        //  0: square
+        //  1: x
+        //  2: circle
+        //  3: triangle
+        //  4: l1
+        //  5: r1
+        //  6: l2
+        //  7: r2
         
         //for hat
         bool upPressed = false;
@@ -76,7 +84,6 @@ namespace nautical {
         int joystickIndex = -1;
         bool outsideDeadzone = false;
         Angle joystickAngle;
-        double joystickMagnitude;
     };
 }
 

@@ -23,7 +23,7 @@ spectral(other.spectral),
 priority(other.priority),
 altitude(other.altitude),
 center(other.center),
-p_hitbox(other.p_hitbox->copyPtr()),
+p_hitbox(other.p_hitbox->copyPtr_()),
 force(other.force),
 vel(other.vel),
 attachedObjects(other.attachedObjects),
@@ -46,12 +46,14 @@ Coordinate WorldObject::getCenter() const {
     return center;
 }
 
-MapHitbox * WorldObject::getMapHitbox() const {
-    return p_hitbox->copyPtr();
+MapHitbox * WorldObject::getMapHitbox_() const {
+    return p_hitbox->copyPtr_();
 }
 
 WorldObject & WorldObject::setMapHitbox(MapHitbox * p_hitbox) {
-    this->p_hitbox = p_hitbox->copyPtr();
+    if (this->p_hitbox)
+        delete this->p_hitbox;
+    this->p_hitbox = p_hitbox->copyPtr_();
     return *this;
 }
 
@@ -103,44 +105,44 @@ WorldObject & WorldObject::move(Vector vec) {
     center += vec;
     force.setOrigin(center);
     vel.setOrigin(center);
-    for (Iterator<WorldObject*> * iterator = attachedObjects.createIterator(); !iterator->complete(); iterator->next()) {
-        iterator->current()->move(vec);
+    for (std::vector<WorldObject*>::iterator it = attachedObjects.begin(); it != attachedObjects.end(); it++) {
+        (*it)->move(vec);
     }
     return *this;
 }
 
-Iterator<WorldObject*> * WorldObject::getAttachedObjectsIterator() const {
-    return attachedObjects.createIterator();
+const std::vector<WorldObject*> * WorldObject::getAttachedObjects() const {
+    return &attachedObjects;
 }
 
 WorldObject & WorldObject::attachObject(WorldObject * p_object) {
-    attachedObjects.insert(p_object);
+    attachedObjects.push_back(p_object);
     return *this;
 }
 
 WorldObject & WorldObject::removeAttachedObject(WorldObject * p_object) {
-    attachedObjects.remove(p_object);
+    vector_helpers::removeElementByValue(attachedObjects, p_object);
     return *this;
 }
 
+const std::vector<std::string> * WorldObject::getSubscribedEventTags() const {
+    return &subscribedEventTags;
+}
+
 WorldObject & WorldObject::subscribeEvent(std::string eventTag) {
-    subscribedEventTags.insert(eventTag);
+    subscribedEventTags.push_back(eventTag);
     return *this;
 }
 
 WorldObject & WorldObject::unsubscribeEvent(std::string eventTag) {
     if (p_parent)
         p_parent->unsubscribeObject(eventTag, this);
-    subscribedEventTags.remove(eventTag);
+    vector_helpers::removeElementByValue(subscribedEventTags, eventTag);
     return *this;
 }
 
 bool WorldObject::handleEvent(Event * p_event) {
     return true;
-}
-
-Iterator<std::string> * WorldObject::getSubscribedEventTagsIterator() const {
-    return subscribedEventTags.createIterator();
 }
 
 bool WorldObject::isSpectral() const {

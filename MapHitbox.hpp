@@ -9,7 +9,6 @@
 #ifndef MapHitbox_hpp
 #define MapHitbox_hpp
 
-#include "LinkedList.hpp"
 #include "Vector.hpp"
 #include "Map.hpp"
 #include "MapVertex.hpp"
@@ -29,7 +28,7 @@ namespace nautical {
             return *this;
         }
         
-        virtual Shape * getShape() const = 0; //pointer needs to be deleted after use
+        virtual Shape * getShape_() const = 0; //pointer needs to be deleted after use
         
         const MapElement * getElement() const { return p_element; } //pointer should NOT be deleted
         MapHitbox & setElement(const MapElement * p_element) {
@@ -51,43 +50,43 @@ namespace nautical {
             return false;
         }
         
-        Shape * createBumper() const {
-            return createBumper(p_element);
+        Shape * createBumper_() const {
+            return createBumper_(p_element);
         }
         
-        virtual Shape * createBumper(const MapElement * p_element) const {
+        virtual Shape * createBumper_(const MapElement * p_element) const {
             if (p_element) {
                 if (p_element->hasTag(MAP_VERTEX_TAG))
-                    return createBumper(static_cast<const MapVertex*>(p_element));
+                    return createBumper_(static_cast<const MapVertex*>(p_element));
                 else if (p_element->hasTag(MAP_EDGE_TAG))
-                    return createBumper(static_cast<const MapEdge*>(p_element));
+                    return createBumper_(static_cast<const MapEdge*>(p_element));
             }
             return nullptr;
         }
         
-        LinkedList<MapCatch> findCatches(const Map * p_map) const {
+        std::vector<MapCatch> findCatches(const Map * p_map) const {
             return findCatches(p_element, p_map);
         }
         
-        virtual LinkedList<MapCatch> findCatches(const MapElement * p_element, const Map * p_map) const {
+        virtual std::vector<MapCatch> findCatches(const MapElement * p_element, const Map * p_map) const {
             if (p_element) {
                 if (p_element->hasTag(MAP_VERTEX_TAG))
                     return findCatches(static_cast<const MapVertex*>(p_element), p_map);
                 else if (p_element->hasTag(MAP_EDGE_TAG))
                     return findCatches(static_cast<const MapEdge*>(p_element), p_map);
             }
-            return LinkedList<MapCatch>();
+            return std::vector<MapCatch>();
         }
         
         virtual bool adjustVector(const MapVertex * p_vertex, Vector * p_vector) const = 0;
-        virtual Shape * createBumper(const MapVertex * p_vertex) const = 0;
-        virtual LinkedList<MapCatch> findCatches(const MapVertex * p_vertex, const Map * p_map) const = 0;
+        virtual Shape * createBumper_(const MapVertex * p_vertex) const = 0;
+        virtual std::vector<MapCatch> findCatches(const MapVertex * p_vertex, const Map * p_map) const = 0;
         
         virtual bool adjustVector(const MapEdge * p_edge, Vector * p_vector) const = 0;
-        virtual Shape * createBumper(const MapEdge * p_edge) const = 0;
-        virtual LinkedList<MapCatch> findCatches(const MapEdge * p_edge, const Map * p_map) const = 0;
+        virtual Shape * createBumper_(const MapEdge * p_edge) const = 0;
+        virtual std::vector<MapCatch> findCatches(const MapEdge * p_edge, const Map * p_map) const = 0;
         
-        virtual MapHitbox * copyPtr() const = 0;
+        virtual MapHitbox * copyPtr_() const = 0;
         
     protected:
         Coordinate center;

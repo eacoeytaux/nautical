@@ -28,8 +28,8 @@ namespace nautical {
         double getUpperBoundY() const;
         
         bool contains(Coordinate coor) const;
-        bool intersectsLine(Line line, Queue<Coordinate> * p_intersections = nullptr) const;
-        bool intersectsShape(const Shape * p_shape, Queue<Coordinate> * p_intersections = nullptr) const;
+        bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const;
+        bool intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections = nullptr) const;
         
         LineShape & move(Vector vector);
         LineShape & rotateAboutCoordinate(Coordinate coor, Angle angle);
@@ -37,7 +37,7 @@ namespace nautical {
         void draw() const;
         void drawFilled() const;
         
-        LineShape * copyPtr() const;
+        LineShape * copyPtr_() const;
         bool operator==(const Shape & shape) const;
         
     private:
