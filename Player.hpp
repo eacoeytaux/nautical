@@ -34,7 +34,12 @@ namespace climber {
         bool isMovingLeft() const;
         Player & setMovingLeft(bool movingLeft);
         
-        
+        bool isJumping() const;
+        Player & setJumping(bool b);
+        bool canJump() const;
+        Player & setCanJump(bool b);
+        bool canGhostJump() const;
+        Player &
         
         Player & move(nautical::Vector vec);
         
@@ -51,8 +56,8 @@ namespace climber {
         movingLeft = false;
         
         bool jumping = false,
-        canJump = false,
-        canGhostJump = false;
+        jumpCapable = false,
+        ghostJumpCapable = false;
         nautical::Countdown jumpingCountdown; //countdown of how long player can hold jump button and it will still have effect
         nautical::Countdown ghostJumpCountdown; //countdown from leaving ground where player can still jump
         

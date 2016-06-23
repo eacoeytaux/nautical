@@ -19,7 +19,7 @@ radius(radius) {
     appendTag(CIRCLE_TAG);
     
     if (!circleVectorsCalculated) {
-        for (int i = 0; i < CIRCLE_PERCISION - 2; i++) {
+        for (int i = 0; i < CIRCLE_PERCISION - 1; i++) {
             circleVectors[i] = Vector(cos((M_PI * 2) * ((float)i / (float)(CIRCLE_PERCISION - 1))), sin((M_PI * 2) * ((float)i / (float)(CIRCLE_PERCISION - 1))));
         }
         circleVectors[CIRCLE_PERCISION - 1] = circleVectors[0];
