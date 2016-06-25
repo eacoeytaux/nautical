@@ -56,9 +56,10 @@ namespace climber {
         movingLeft = false;
         
         bool jumping = false,
-        jumpCapable = false,
-        ghostJumpCapable = false;
-        nautical::Countdown jumpingCountdown; //countdown of how long player can hold jump button and it will still have effect
+        jumpCapable = false;
+        int jumpValueIndex = 0;
+        std::vector<double> jumpValues = {4, 3.5, 3, 2.5}; //array of jump values
+        bool ghostJumpCapable = false;
         nautical::Countdown ghostJumpCountdown; //countdown from leaving ground where player can still jump
         
         nautical::Angle aimAngle = nautical::Angle(M_PI_2);

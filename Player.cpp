@@ -22,7 +22,7 @@ Player::Player(Coordinate pos) : Mob(pos) {
     subscribeEvent(KEYBOARD_EVENT_TAG);
     subscribeEvent(MOUSE_EVENT_TAG);
     
-    MapHitboxRectangle * p_hitbox = new MapHitboxRectangle(Rectangle(pos, 60, 80));
+    MapHitboxRectangle * p_hitbox = new MapHitboxRectangle(Rectangle(pos, 60, 80)); //TODO does this need to be 3 lines?
     setMapHitbox(p_hitbox);
     delete p_hitbox;
     
@@ -35,11 +35,9 @@ Player::~Player() { }
 void Player::setMapElement(const nautical::MapElement * p_element) {
     WorldObject::setMapElement(p_element);
     if (p_element) {
-        jumpCapable = true;
+        setCanJump(true);
     } else {
-        jumpCapable = false;
-        ghostJumpCapable = true;
-        ghostJumpCountdown.reset(5);
+        setCanJump(false);
     }
 }
 
@@ -78,6 +76,41 @@ void Player::setMovingLeft(bool movingLeft) {
     Logger::writeLog(PLAIN_MESSAGE, "Player::setMovingRight(): movingLeft set to %s", movingLeft ? "true" : "false");
     this->movingLeft = movingLeft;
 }
+
+bool Player::isJumping() const {
+    return jumping;
+}
+
+void Player::setJumping(bool b) {
+    if (b) {
+        if (!jumping)
+            jumpValueIndex = 0;
+        setCanJump(false);
+        setCanGhostJump(false);
+    }
+    jumping = b;
+}
+
+bool Player::canJump() const {
+    return jumpCapable;
+}
+
+void Player::setCanJump(bool b) {
+    if (jumpCapable && !b) {
+        ghostJumpCapable = true;
+        ghostJumpCountdown.reset(15);
+    }
+    jumpCapable = b;
+}
+
+bool Player::canGhostJump() const {
+    return ghostJumpCapable;
+}
+
+void Player::setCanGhostJump(bool b) {
+    ghostJumpCapable = b;
+}
+
 
 void Player::move(Vector vec) {
     // move camera using trap
@@ -157,6 +190,13 @@ bool Player::handleEvent(Event * p_event) {
             }
             case ControllerEvent::BUTTON_PRESS: {
                 switch (p_controllerEvent->getButtonIndex()) {
+                    case 5: {
+                        if (jumpCapable || ghostJumpCapable) {
+                            setJumping(true);
+                            return true;
+                        }
+                        break;
+                    }
                     case 7: {
                         if (!p_rope) {
                             p_rope = new Rope(this, getCenter(), 250, aimAngle, 10, 20); //TODO add current velocity of player to rope's velocity
@@ -166,12 +206,15 @@ bool Player::handleEvent(Event * p_event) {
                         }
                         return true;
                     }
-                    default:
-                        break;
                 }
+                break;
             }
             case ControllerEvent::BUTTON_RELEASE: {
                 switch (p_controllerEvent->getButtonIndex()) {
+                    case 5: {
+                        setJumping(false);
+                        break;
+                    }
                     case 7: {
                         if (p_rope) {
                             p_rope->setState(Rope::RETRACTING);
@@ -179,9 +222,8 @@ bool Player::handleEvent(Event * p_event) {
                             return true;
                         }
                     }
-                    default:
-                        break;
                 }
+                break;
             }
             default:
                 break;
@@ -200,6 +242,7 @@ bool Player::handleEvent(Event * p_event) {
                         setMovingLeft(false);
                         return true;
                 }
+                break;
             }
             case KeyboardEvent::D:
             case KeyboardEvent::RIGHTARROW: {
@@ -209,6 +252,20 @@ bool Player::handleEvent(Event * p_event) {
                         return true;
                     default:
                         setMovingRight(false);
+                        return true;
+                }
+                break;
+            }
+            case KeyboardEvent::SPACE: {
+                switch (p_keyboardEvent->getAction()) {
+                    case KeyboardEvent::KEY_PRESSED:
+                        if (jumpCapable || ghostJumpCapable) {
+                            setJumping(true);
+                            return true;
+                        }
+                        break;
+                    default:
+                        setJumping(false);
                         return true;
                 }
             }
@@ -249,21 +306,27 @@ bool Player::handleEvent(Event * p_event) {
 void Player::update() {
     //update countdowns
     if (ghostJumpCountdown.check())
-        ghostJumpCapable = false;
+        setCanGhostJump(false);
     
     //add force to object
     std::shared_ptr<MapHitbox> p_hitbox = getMapHitbox();
     const MapElement * p_element = p_hitbox->getElement();
     
     if (!p_element || (p_element && !(p_element->isSticky())))
-        setForce(Vector(0, -0.3));
-    else
-        setForce(Vector(0, 0));
+        addToForce(Vector(0, -0.3));
     
     if (isMovingLeft())
         addToForce(Vector(-0.3, 0));
     if (isMovingRight())
         addToForce(Vector(0.3, 0));
+    
+    if (jumping) {
+        if (jumpValueIndex >= jumpValues.size()) {
+            setJumping(false);
+        } else {
+            addToForce(Vector(0, jumpValues.at((unsigned long)jumpValueIndex++)));
+        }
+    }
     
     /*if (p_rope) { //TODO
      if (p_rope->isTaught() && (p_rope->getState() == Rope::SET)) {
@@ -313,6 +376,8 @@ void Player::update() {
         setVel(vel);
     } while (percentageUsed > 0);
     
+    setForce(Vector(0, 0));
+    
     if (p_rope)
         p_rope->setOrigin(getCenter());
     
@@ -341,7 +406,7 @@ void Player::draw() const {
     if (DEBUG_MODE) {
         trap.draw();
         Vector(aimAngle, 20, getCenter()).Drawable::draw(MAGENTA);
-        getVel().draw(5);
+        getVel().setColor((canJump() || canGhostJump()) ? WHITE : Color(255, 191, 191)).draw(5);
     }
-    getMapHitbox()->getShape()->draw();
+    getMapHitbox()->getShape()->Drawable::draw(CYAN);
 }
