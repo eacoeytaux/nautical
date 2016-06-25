@@ -23,84 +23,73 @@ spectral(other.spectral),
 priority(other.priority),
 altitude(other.altitude),
 center(other.center),
-p_hitbox(other.p_hitbox->copyPtr_()),
+p_hitbox(other.p_hitbox->deepCopy()),
 force(other.force),
 vel(other.vel),
 attachedObjects(other.attachedObjects),
 subscribedEventTags(other.subscribedEventTags) { }
 
-WorldObject::~WorldObject() {
-    delete p_hitbox;
-}
+WorldObject::~WorldObject() { }
 
 World * WorldObject::getParent() const {
     return p_parent;
 }
 
-WorldObject & WorldObject::setParent(World * p_parent) {
+void WorldObject::setParent(World * p_parent) {
     this->p_parent = p_parent;
-    return *this;
 }
 
 Coordinate WorldObject::getCenter() const {
     return center;
 }
 
-MapHitbox * WorldObject::getMapHitbox_() const {
-    return p_hitbox->copyPtr_();
+std::shared_ptr<MapHitbox> WorldObject::getMapHitbox() const {
+    return std::shared_ptr<MapHitbox>(p_hitbox->deepCopy());
 }
 
-WorldObject & WorldObject::setMapHitbox(MapHitbox * p_hitbox) {
-    if (this->p_hitbox)
-        delete this->p_hitbox;
-    this->p_hitbox = p_hitbox->copyPtr_();
-    return *this;
+void WorldObject::setMapHitbox(MapHitbox * p_hitbox) {
+    this->p_hitbox.reset(p_hitbox->deepCopy());
 }
 
 const MapElement * WorldObject::getMapElement() const {
     return p_hitbox->getElement();
 }
 
-WorldObject & WorldObject::setMapElement(const MapElement * p_element) {
+void WorldObject::setMapElement(const MapElement * p_element) {
     p_hitbox->setElement(p_element);
-    return *this;
 }
 
 Vector WorldObject::getForce() const {
     return force;
 }
 
-WorldObject & WorldObject::setForce(Vector force) {
+void WorldObject::setForce(Vector force) {
     this->force = force;
-    return *this;
 }
 
-WorldObject & WorldObject::addToForce(Vector force) {
+void WorldObject::addToForce(Vector force) {
     this->force += force;
     this->force.setOrigin(center);
-    return *this;
 }
 
 Vector WorldObject::getVel() const {
     return vel;
 }
 
-WorldObject & WorldObject::setVel(Vector vel) {
+void WorldObject::setVel(Vector vel) {
     this->vel = vel;
     this->vel.setOrigin(center);
-    return *this;
 }
 
-WorldObject & WorldObject::addToVel(Vector vel) {
+void WorldObject::addToVel(Vector vel) {
     this->vel += vel;
-    return *this;
 }
 
-WorldObject & WorldObject::moveTo(Coordinate coor) {
-    return move(Vector(center, coor));
+void WorldObject::moveTo(Coordinate coor) {
+    move(Vector(center, coor));
 }
 
-WorldObject & WorldObject::move(Vector vec) {
+void WorldObject::move(Vector vec) {
     p_hitbox->move(vec);
     center += vec;
     force.setOrigin(center);
@@ -108,37 +97,32 @@ WorldObject & WorldObject::move(Vector vec) {
     for (std::vector<WorldObject*>::iterator it = attachedObjects.begin(); it != attachedObjects.end(); it++) {
         (*it)->move(vec);
     }
-    return *this;
 }
 
 const std::vector<WorldObject*> * WorldObject::getAttachedObjects() const {
     return &attachedObjects;
 }
 
-WorldObject & WorldObject::attachObject(WorldObject * p_object) {
+void WorldObject::attachObject(WorldObject * p_object) {
     attachedObjects.push_back(p_object);
-    return *this;
 }
 
-WorldObject & WorldObject::removeAttachedObject(WorldObject * p_object) {
+void WorldObject::removeAttachedObject(WorldObject * p_object) {
     vector_helpers::removeElementByValue(attachedObjects, p_object);
-    return *this;
 }
 
 const std::vector<std::string> * WorldObject::getSubscribedEventTags() const {
     return &subscribedEventTags;
 }
 
-WorldObject & WorldObject::subscribeEvent(std::string eventTag) {
+void WorldObject::subscribeEvent(std::string eventTag) {
     subscribedEventTags.push_back(eventTag);
-    return *this;
 }
 
-WorldObject & WorldObject::unsubscribeEvent(std::string eventTag) {
+void WorldObject::unsubscribeEvent(std::string eventTag) {
     if (p_parent)
         p_parent->unsubscribeObject(eventTag, this);
     vector_helpers::removeElementByValue(subscribedEventTags, eventTag);
-    return *this;
 }
 
 bool WorldObject::handleEvent(Event * p_event) {
@@ -149,16 +133,15 @@ bool WorldObject::isSpectral() const {
     return spectral;
 }
 
-WorldObject & WorldObject::setSpectral(bool spectral) {
+void WorldObject::setSpectral(bool spectral) {
     this->spectral = spectral;
-    return *this;
 }
 
 int WorldObject::getPriority() const {
     return priority;
 }
 
-WorldObject & WorldObject::setPriority(int priority) {
+void WorldObject::setPriority(int priority) {
     if (priority < 0) {
         Logger::writeLog(WARNING_MESSAGE, "WorldObject::setPriority(): attempted to set priority to below 0");
         priority = 0;
@@ -167,14 +150,13 @@ WorldObject & WorldObject::setPriority(int priority) {
         priority = MAX_PRIORITY;
     }
     this->priority = priority;
-    return *this;
 }
 
 int WorldObject::getAltitude() const {
     return altitude;
 }
 
-WorldObject & WorldObject::setAltitude(int altitude) {
+void WorldObject::setAltitude(int altitude) {
     if (altitude < -MAX_BELOW_ALTITUDE) {
         Logger::writeLog(WARNING_MESSAGE, "WorldObject::setAltitude(): attempted to set priority below min altitude");
         altitude = -MAX_BELOW_ALTITUDE;
@@ -183,5 +165,4 @@ WorldObject & WorldObject::setAltitude(int altitude) {
         altitude = MAX_PRIORITY;
     }
     this->altitude = altitude;
-    return *this;
 }

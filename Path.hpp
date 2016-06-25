@@ -30,19 +30,16 @@ namespace nautical {
             return (int)path.size();
         }
         
-        Path & addLine(Line line) {
+        void addLine(Line line) {
             path.push_back(new LineNode(line));
-            return *this;
         }
         
-        Path & addArc(Arc arc) {
+        void addArc(Arc arc) {
             path.push_back(new ArcNode(arc));
-            return *this;
         }
         
-        Path & clear() {
+        void clear() {
             path.clear();
-            return *this;
         }
         
         Coordinate getEndPoint() {
@@ -75,14 +72,7 @@ namespace nautical {
             
             virtual bool intersectsNode(Node * p_node, std::vector<Coordinate> * p_intersections = nullptr) const {
                 if (p_node->hasTag("LineNode")) {
-                    Coordinate intersection;
-                    if (static_cast<LineNode*>(p_node)->line.intersectsLine(line, &intersection)) {
-                        if (p_intersections)
-                            p_intersections->push_back(intersection);
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return static_cast<LineNode*>(p_node)->line.intersectsLine(line, p_intersections);
                 } else if (p_node->hasTag("ArcNode")) {
                     return static_cast<ArcNode*>(p_node)->arc.intersectsLine(line, p_intersections);
                 } else {

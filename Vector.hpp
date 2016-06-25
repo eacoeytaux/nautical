@@ -20,20 +20,21 @@ namespace nautical {
         Vector(double dx = 0, double dy = 0, Coordinate origin = Coordinate());
         Vector(Angle angle, double magnitude, Coordinate origin = Coordinate());
         Vector(Coordinate coor1, Coordinate coor2);
+        
         double getDx() const;
-        Vector & setDx(double dx);
+        void setDx(double dx);
         bool isDxPositive();
         double getDy() const;
-        Vector & setDy(double dy);
+        void setDy(double dy);
         bool isDyPositive();
-        Vector & setDxDy(Vector vec);
+        void setDxDy(Vector vec);
         Coordinate getOrigin() const;
-        Vector & setOrigin(Coordinate origin);
+        void setOrigin(Coordinate origin);
         Coordinate getDestination() const;
-        Vector & setDestination(Coordinate destination);
+        void setDestination(Coordinate destination);
         double getMagnitude() const;
-        Vector & setMagnitude(double magnitude);
-        Vector & extend(double length);
+        void setMagnitude(double magnitude);
+        void extend(double length);
         
         Angle getAngle() const;
         Vector & rotateToAngle(Angle angle);

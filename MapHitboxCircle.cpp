@@ -8,6 +8,8 @@
 
 #include "MapHitboxCircle.hpp"
 
+#include "LineShape.hpp"
+
 using namespace nautical;
 
 MapHitboxCircle::MapHitboxCircle(Circle circle) : circle(circle) {
@@ -16,32 +18,30 @@ MapHitboxCircle::MapHitboxCircle(Circle circle) : circle(circle) {
 
 MapHitboxCircle::~MapHitboxCircle() { }
 
-MapHitboxCircle & MapHitboxCircle::move(Vector vec) {
+void MapHitboxCircle::move(Vector vec) {
     MapHitbox::move(vec);
     circle.move(vec);
-    return *this;
 }
 
-Shape * MapHitboxCircle::getShape_() const {
-    return new Circle(circle);
+std::shared_ptr<Shape> MapHitboxCircle::getShape() const {
+    return std::shared_ptr<Shape>(new Circle(circle));
 }
 
 Circle MapHitboxCircle::getCircle() const {
     return circle;
 }
 
-MapHitboxCircle & MapHitboxCircle::setCircle(Circle circle) {
+void MapHitboxCircle::setCircle(Circle circle) {
     this->circle = circle;
     center = circle.getCenter();
-    return *this;
 }
 
 bool MapHitboxCircle::adjustVector(const MapVertex * p_vertex, Vector * p_vector) const {
     return false; //TODO
 }
 
-Circle * MapHitboxCircle::createBumper_(const MapVertex * p_vertex) const {
-    return new Circle(p_vertex->getCoor(), circle.getRadius());
+std::shared_ptr<Shape> MapHitboxCircle::createBumper(const MapVertex * p_vertex) const {
+    return std::shared_ptr<Shape>(new Circle(p_vertex->getCoor(), circle.getRadius()));
 }
 
 std::vector<MapCatch> MapHitboxCircle::findCatches(const MapVertex * p_vertex, const Map * p_map) const {
@@ -52,8 +52,8 @@ bool MapHitboxCircle::adjustVector(const MapEdge * p_edge, Vector * p_vector) co
     return false; //TODO
 }
 
-LineShape * MapHitboxCircle::createBumper_(const MapEdge * p_edge) const {
-    LineShape * bumper = new LineShape(p_edge->getLine());
+std::shared_ptr<Shape> MapHitboxCircle::createBumper(const MapEdge * p_edge) const {
+    std::shared_ptr<Shape> bumper(new LineShape(p_edge->getLine()));
     Vector bumperOffset(p_edge->getNormal(), circle.getRadius());
     bumper->move(bumperOffset);
     return bumper;
@@ -79,6 +79,6 @@ MapCatch MapHitboxCircle::getCatchBack(const MapEdge * p_edge) const {
     return MapCatch(center + offset, Line(center, center + (offset * 2)), (MapElement*)p_edge, (MapElement*)p_edge->getVertexBack());
 }
 
-MapHitboxCircle * MapHitboxCircle::copyPtr_() const {
+MapHitboxCircle * MapHitboxCircle::deepCopy() const {
     return new MapHitboxCircle(*this);
 }

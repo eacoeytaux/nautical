@@ -22,26 +22,26 @@ namespace climber {
         Player(nautical::Coordinate pos);
         virtual ~Player();
         
-        Player & setMapElement(const nautical::MapElement * p_element);
+        void setMapElement(const nautical::MapElement * p_element);
         
         Rope * getRope();
-        Player & setRope(Rope * p_rope);
+        void setRope(Rope * p_rope);
         
         bool isFacingRight() const;
-        Player & setFacingRight(bool facingRight);
+        void setFacingRight(bool facingRight);
         bool isMovingRight() const;
-        Player & setMovingRight(bool movingRight);
+        void setMovingRight(bool movingRight);
         bool isMovingLeft() const;
-        Player & setMovingLeft(bool movingLeft);
+        void setMovingLeft(bool movingLeft);
         
         bool isJumping() const;
-        Player & setJumping(bool b);
+        void setJumping(bool b);
         bool canJump() const;
-        Player & setCanJump(bool b);
+        void setCanJump(bool b);
         bool canGhostJump() const;
-        Player &
+        void setCanGhostJump(bool b);
         
-        Player & move(nautical::Vector vec);
+        void move(nautical::Vector vec);
         
         bool handleEvent(nautical::Event * p_event);
         
@@ -61,7 +61,7 @@ namespace climber {
         nautical::Countdown jumpingCountdown; //countdown of how long player can hold jump button and it will still have effect
         nautical::Countdown ghostJumpCountdown; //countdown from leaving ground where player can still jump
         
-        nautical::Angle aimAngle;
+        nautical::Angle aimAngle = nautical::Angle(M_PI_2);
         Rope * p_rope = nullptr;
     };
 }

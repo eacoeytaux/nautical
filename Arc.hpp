@@ -22,17 +22,17 @@ namespace nautical {
         virtual ~Arc();
         
         Coordinate getOrigin() const;
-        Arc & setOrigin(Coordinate origin);
+        void setOrigin(Coordinate origin);
         double getOriginDistance() const;
-        Arc & setOriginDistance(double distance);
+        void setOriginDistance(double distance);
         Angle getStartAngle() const;
-        Arc & setStartAngle(Angle angle);
+        void setStartAngle(Angle angle);
         Angle getEndAngle() const;
-        Arc & setEndAngle(Angle angle);
+        void setEndAngle(Angle angle);
         Angle getDAngle() const;
         double getArcLength() const;
         bool isClockwise() const;
-        Arc & setClockwise(bool clockwise);
+        void setClockwise(bool clockwise);
         Coordinate getStartCoor() const;
         Coordinate getEndCoor() const;
         
@@ -41,7 +41,7 @@ namespace nautical {
         bool inArc(Angle angle) const;
         bool inArc(Coordinate coor) const;
         
-        Arc & rotateAboutCoordinate(Coordinate coor, Angle angle);
+        void rotateAboutCoordinate(Coordinate coor, Angle angle);
         
     private:
         Coordinate origin;
@@ -51,7 +51,7 @@ namespace nautical {
         dAngle;
         bool clockwise;
         
-        Arc & setDAngle();
+        void setDAngle();
     };
 }
 

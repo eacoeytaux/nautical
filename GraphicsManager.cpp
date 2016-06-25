@@ -12,15 +12,21 @@
 #include "Utility.hpp"
 #include "Vector.hpp"
 
+#define AUTO_LOCK_CURSOR false
+
 #define CENTER_OFFSET_MINIMUM 1
 #define ZOOM_OFFSET_MINIMUM 0.00001
 
 using namespace nautical;
 
+bool GraphicsManager::init = false;
+
+SDL_Renderer * p_renderer = nullptr;
+SDL_Texture * p_texture = nullptr;
+
 int GraphicsManager::screenWidth = 960;
 int GraphicsManager::screenHeight = 640;
-
-SDL_Renderer * GraphicsManager::p_renderer = nullptr;
+int GraphicsManager::pixelScale = 1;
 
 Coordinate GraphicsManager::mouseCoor = Coordinate(0, 0);
 bool GraphicsManager::mouseTrapped = false;
@@ -39,6 +45,67 @@ void setRenderColor(SDL_Renderer * p_renderer, Color color) {
     SDL_SetRenderDrawColor(p_renderer, color.getR(), color.getG(), color.getB(), color.getA());
 }
 
+bool GraphicsManager::startup(SDL_Window * p_window) {
+    if (init)
+        return init;
+    
+    if (AUTO_LOCK_CURSOR)
+        GraphicsManager::setMouseTrapped(SDL_SetRelativeMouseMode(SDL_TRUE) == 0);
+    
+    if (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0") == SDL_FALSE)
+        Logger::writeLog(ERROR_MESSAGE, "GraphicsManager::startup(): could not set hint SDL_HINT_RENDER_SCALE_QUALITY to \"0\"");
+    
+    p_renderer = SDL_CreateRenderer(p_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); //init renderer
+    if (!p_renderer) {
+        Logger::writeLog(ERROR_MESSAGE, "GraphicsManager::startup(): %s", SDL_GetError());
+        return false;
+    } else {
+        SDL_SetRenderDrawBlendMode(p_renderer, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(p_renderer, 0, 0, 0, 255);
+        SDL_RenderClear(p_renderer);
+        
+        p_texture = SDL_CreateTexture(p_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, screenWidth, screenHeight);
+        if (!p_texture) {
+            Logger::writeLog(ERROR_MESSAGE, "GraphicsManager::startup(): %s", SDL_GetError());
+            return false;
+        } else {
+            SDL_SetRenderTarget(p_renderer, p_texture);
+        }
+    }
+    
+    return (init = true);
+}
+
+bool GraphicsManager::shutdown() {
+    if (!init)
+        return !init;
+    
+    //destroy renderer and texture
+    SDL_DestroyRenderer(p_renderer);
+    p_renderer = nullptr;
+    SDL_DestroyTexture(p_texture);
+    p_texture = nullptr;
+    
+    return !(init = false);
+}
+
+bool GraphicsManager::draw() {
+    if (!init) {
+        Logger::writeLog(ERROR_MESSAGE, "GraphicsManager::draw(): GraphicsManager not init");
+        return false;
+    }
+    
+    SDL_SetRenderTarget(p_renderer, nullptr);
+    SDL_Rect srcRect = {0, 0, GraphicsManager::screenWidth, GraphicsManager::screenHeight};
+    SDL_Rect dstRect = {0, 0, GraphicsManager::screenWidth * pixelScale, GraphicsManager::screenHeight * pixelScale};
+    SDL_RenderCopyEx(p_renderer, p_texture, &srcRect, &dstRect, 0, nullptr, SDL_FLIP_NONE);
+    SDL_RenderPresent(p_renderer);
+    SDL_SetRenderTarget(p_renderer, p_texture);
+    SDL_SetRenderDrawColor(p_renderer, 0, 0, 0, 255);
+    SDL_RenderClear(p_renderer);
+    return true;
+}
+
 int GraphicsManager::getScreenWidth() {
     return screenWidth;
 }
@@ -47,9 +114,22 @@ int GraphicsManager::getScreenHeight() {
     return screenHeight;
 }
 
+int GraphicsManager::getPixelScale() {
+    return GraphicsManager::pixelScale;
+}
+
+void GraphicsManager::setPixelScale(int scale) {
+    float ratio = pixelScale / (float)scale;
+    mouseCoor.setX(mouseCoor.getX() * ratio);
+    mouseCoor.setY(mouseCoor.getY() * ratio);
+    zoomSet *= ratio;
+    zoom *= ratio;
+    pixelScale = scale;
+}
+
 void GraphicsManager::setOffsets() {
-    xOffset = (center.getX() * -zoom) + (screenWidth / 2);
-    yOffset = (center.getY() * zoom) + (screenHeight / 2);
+    xOffset = (center.getX() * -zoom) + (screenWidth / (2 * pixelScale));
+    yOffset = (center.getY() * zoom) + (screenHeight / (2 * pixelScale));
 }
 
 Coordinate GraphicsManager::worldToScreen(Coordinate coor) {

@@ -35,13 +35,13 @@ namespace nautical {
         const Map * getMap() const;
         Map * getMap();
         
-        World & addObject(WorldObject * p_object, bool shouldUpdate = true, bool shouldDraw = true);
-        World & markObjectForRemoval(WorldObject * p_object); //TODO when should object be deleted?
+        void addObject(WorldObject * p_object, bool shouldUpdate = true, bool shouldDraw = true);
+        void markObjectForRemoval(WorldObject * p_object); //TODO when should object be deleted?
         
-        World & subscribeObject(std::string eventTag, WorldObject * p_object);
-        World & unsubscribeObject(std::string eventTag, WorldObject * p_object);
+        void subscribeObject(std::string eventTag, WorldObject * p_object);
+        void unsubscribeObject(std::string eventTag, WorldObject * p_object);
         
-        World & handleEvent(Event * p_event);
+        void handleEvent(Event * p_event);
         
         Vector generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement); //TODO rename function
         
@@ -51,7 +51,7 @@ namespace nautical {
         static bool DRAW_BUMPERS; //DEBUGGING
         
     protected:
-        World & removeObject(WorldObject * p_object);
+        void removeObject(WorldObject * p_object);
         
         virtual void updateObject(WorldObject * p_object);
         

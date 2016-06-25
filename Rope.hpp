@@ -35,9 +35,9 @@ namespace climber {
         virtual ~Rope();
         
         nautical::Coordinate getOrigin() const;
-        Rope & setOrigin(nautical::Coordinate origin);
+        void setOrigin(nautical::Coordinate origin);
         nautical::Coordinate getHead() const;
-        Rope & setHead(nautical::Coordinate head);
+        void setHead(nautical::Coordinate head);
         double getLength() const;
         void setLength(double length);
         bool isTaught() const;

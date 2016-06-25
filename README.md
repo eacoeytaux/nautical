@@ -15,6 +15,8 @@ CONTROLS:
 
 - turn on darkness with 'O'
 
+- change pixel resolution with '1', '2', '3', and '4'
+
 - to switch between DEBUG_MODE, press enter
 
 in DEBUG_MODE:

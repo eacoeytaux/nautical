@@ -72,7 +72,7 @@ void DarknessOverlay::draw() { //TODO optimize (only needs to check between yLow
         int screenUpperBoundX = (int)fmax(GraphicsManager::worldToScreenX(upperBoundX.getValue()), screenWidth);
         for (int y = 0; y <= screenHeight; y++) {
             double yWorld = GraphicsManager::screenToWorldY(y);
-            Line screenLine(GraphicsManager::screenToWorld(Coordinate(screenLowerBoundX, y)).moveX(-1), GraphicsManager::screenToWorld(Coordinate(screenUpperBoundX, y)));
+            Line screenLine(GraphicsManager::screenToWorld(Coordinate(screenLowerBoundX, y)), GraphicsManager::screenToWorld(Coordinate(screenUpperBoundX, y)));
             
             std::vector<Shape::IntersectionLine> lineIntersections;
             for (std::vector<Shape*>::iterator it = subtractedShapes[i].begin(); it != subtractedShapes[i].end(); it++) {
@@ -93,13 +93,15 @@ void DarknessOverlay::draw() { //TODO optimize (only needs to check between yLow
                 }
             }
             
-            std::sort(lineIntersections.begin(), lineIntersections.end(), Shape::IntersectionLine::IntersectionLineComp());
+            std::sort(lineIntersections.begin(), lineIntersections.end(), Shape::IntersectionLine::Comp());
             
             std::vector<Line> linesToDraw;
             linesToDraw.push_back(screenLine);
             for (std::vector<Shape::IntersectionLine>::iterator it = lineIntersections.begin(); it != lineIntersections.end(); it++) {
                 Line prevLineToDraw;
                 if (linesToDraw.size() > 0) {
+                    prevLineToDraw = linesToDraw.back();
+                    vector_helpers::removeElementByValue(linesToDraw, prevLineToDraw);
                     if (it->xIn > prevLineToDraw.getCoor1().getX()) {
                         linesToDraw.push_back(Line(prevLineToDraw.getCoor1(), Coordinate(it->xIn, yWorld)));
                         linesToDraw.push_back(Line(Coordinate(it->xOut, yWorld), prevLineToDraw.getCoor2()));

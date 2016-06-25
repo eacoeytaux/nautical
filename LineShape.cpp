@@ -21,9 +21,8 @@ Line LineShape::getLine() const {
     return line;
 }
 
-LineShape & LineShape::setLine(Line line) {
+void LineShape::setLine(Line line) {
     this->line = line;
-    return *this;
 }
 
 double LineShape::getLowerBoundX() const {
@@ -47,28 +46,19 @@ bool LineShape::contains(Coordinate coor) const {
 }
 
 bool LineShape::intersectsLine(Line line, std::vector<Coordinate> * p_intersections) const {
-    Coordinate intersection;
-    if (this->line.intersectsLine(line, &intersection)) {
-        if (p_intersections)
-            p_intersections->push_back(intersection);
-        return true;
-    } else {
-        return false;
-    }
+    return this->line.intersectsLine(line, p_intersections);
 }
 
 bool LineShape::intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections) const {
     return p_shape->intersectsLine(line, p_intersections);
 }
 
-LineShape & LineShape::move(Vector vector) {
+void LineShape::move(Vector vector) {
     line = Line(line.getCoor1() + vector, line.getCoor2() + vector);
-    return *this;
 }
 
-LineShape & LineShape::rotateAboutCoordinate(Coordinate coor, Angle angle) {
+void LineShape::rotateAboutCoordinate(Coordinate coor, Angle angle) {
     line.rotateAboutCoordinate(coor, angle);
-    return *this;
 }
 
 void LineShape::draw() const {
@@ -79,8 +69,8 @@ void LineShape::drawFilled() const {
     draw();
 }
 
-LineShape * LineShape::copyPtr_() const {
-    return new LineShape(*this);
+std::shared_ptr<Shape> LineShape::deepCopy() const {
+    return std::shared_ptr<Shape>(new LineShape(*this));
 }
 
 bool LineShape::operator==(const Shape & shape) const {

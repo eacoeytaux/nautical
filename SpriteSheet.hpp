@@ -29,7 +29,7 @@ namespace nautical {
         void setScale(float scale) const;
         
     private:
-        SDL_Texture * texture;
+        SDL_Texture * p_texture = nullptr;
         
         int imageWidth = 0;
         int imageHeight = 0;
@@ -37,7 +37,7 @@ namespace nautical {
         int heightCount = 0;
         mutable float scale = 1;
         
-        SpriteSheet(bool * failureFlag, SDL_Renderer * renderer, std::string filePath, int widthCount, int heightCount, float scale = 1);
+        SpriteSheet(bool * failureFlag, SDL_Renderer * p_renderer, std::string filePath, int widthCount, int heightCount, float scale = 1);
         
         SDL_Texture * getTexture() const;
     };

@@ -23,13 +23,13 @@ namespace nautical {
         virtual void kill(bool passively = false); //passively is bool used to kill mob without death triggers
         
         virtual int getMaxHealth() const;
-        virtual Mob & setMaxHealth(int health);
-        virtual Mob & raiseMaxHealth(int health);
+        virtual void setMaxHealth(int health);
+        virtual void raiseMaxHealth(int health);
         virtual int getHealth() const;
-        virtual Mob & setHealth(int health);
-        virtual Mob & damage(int health);
-        virtual Mob & heal(int health);
-        virtual Mob & healFull();
+        virtual void setHealth(int health);
+        virtual void damage(int health);
+        virtual void heal(int health);
+        virtual void healFull();
         
     private:
         bool alive = true;

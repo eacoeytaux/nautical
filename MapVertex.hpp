@@ -23,9 +23,9 @@ namespace nautical {
         
         Coordinate getCoor() const;
         MapEdge * getEdgeFront() const;
-        MapVertex & setEdgeFront(MapEdge * p_edge);
+        void setEdgeFront(MapEdge * p_edge);
         MapEdge * getEdgeBack() const;
-        MapVertex & setEdgeBack(MapEdge * p_edge);
+        void setEdgeBack(MapEdge * p_edge);
         
         virtual void draw() const;
         

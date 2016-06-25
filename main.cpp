@@ -6,16 +6,11 @@
 //  Copyright © 2015 EthanCo. All rights reserved.
 //
 
-#ifdef __APPLE__
-#include "SDL2/SDL.h"
-#endif
-#ifdef _WIN32
-#include <SDL.h>
-#endif
-
+#include "Logger.hpp"
 #include "GameManager.hpp"
 
 int main(int argc, char * argv[]) {
+    nautical::Logger::startup();
     nautical::GameManager::run();
     return 0;
 }

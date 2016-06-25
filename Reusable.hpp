@@ -16,17 +16,21 @@ namespace nautical {
         Reusable(T value, bool set) : value(value), set(set) { }
         virtual ~Reusable() { }
         
-        T getValue() { return value; }
-        Reusable & setValue(T value) {
-            this->value = value;
-            set = true;
-            return *this;
+        T getValue() {
+            return value;
         }
         
-        bool isSet() { return set; }
-        Reusable & setSet(bool set = false) {
+        void setValue(T value) {
+            this->value = value;
+            set = true;
+        }
+        
+        bool isSet() {
+            return set;
+        }
+        
+        void setSet(bool set = false) {
             this->set = set;
-            return *this;
         }
         
     private:

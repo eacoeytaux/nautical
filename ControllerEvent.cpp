@@ -22,18 +22,16 @@ int ControllerEvent::getControllerIndex() const {
     return controllerIndex;
 }
 
-ControllerEvent & ControllerEvent::setControllerIndex(int index) {
+void ControllerEvent::setControllerIndex(int index) {
     controllerIndex = index;
-    return *this;
 }
 
 ControllerEvent::ControllerAction ControllerEvent::getAction() const {
     return action;
 }
 
-ControllerEvent & ControllerEvent::setAction(ControllerAction action) {
+void ControllerEvent::setAction(ControllerAction action) {
     this->action = action;
-    return *this;
 }
 
 //for buttons
@@ -41,9 +39,8 @@ int ControllerEvent::getButtonIndex() const {
     return buttonIndex;
 }
 
-ControllerEvent & ControllerEvent::setButtonIndex(int index) {
+void ControllerEvent::setButtonIndex(int index) {
     buttonIndex = index;
-    return *this;
 }
 
 //for hat
@@ -63,24 +60,20 @@ bool ControllerEvent::isLeftPressed() const {
     return leftPressed;
 }
 
-ControllerEvent & ControllerEvent::setUpPressed(bool b) {
+void ControllerEvent::setUpPressed(bool b) {
     upPressed = b;
-    return *this;
 }
 
-ControllerEvent & ControllerEvent::setRightPressed(bool b) {
+void ControllerEvent::setRightPressed(bool b) {
     rightPressed = b;
-    return *this;
 }
 
-ControllerEvent & ControllerEvent::setDownPressed(bool b) {
+void ControllerEvent::setDownPressed(bool b) {
     downPressed = b;
-    return *this;
 }
 
-ControllerEvent & ControllerEvent::setLeftPressed(bool b) {
+void ControllerEvent::setLeftPressed(bool b) {
     leftPressed = b;
-    return *this;
 }
 
 //for joystick
@@ -88,25 +81,22 @@ int ControllerEvent::getJoystickIndex() const {
     return joystickIndex;
 }
 
-ControllerEvent & ControllerEvent::setJoystickIndex(int index) {
+void ControllerEvent::setJoystickIndex(int index) {
     joystickIndex = index;
-    return *this;
 }
 
 bool ControllerEvent::isOutsideDeadzone() const {
     return outsideDeadzone;
 }
 
-ControllerEvent & ControllerEvent::setOutsideDeadzone(bool b) {
+void ControllerEvent::setOutsideDeadzone(bool b) {
     outsideDeadzone = b;
-    return *this;
 }
 
 Angle ControllerEvent::getJoystickAngle() const {
     return joystickAngle;
 }
 
-ControllerEvent & ControllerEvent::setJoystickAngle(Angle angle) {
+void ControllerEvent::setJoystickAngle(Angle angle) {
     this->joystickAngle = angle;
-    return *this;
 }

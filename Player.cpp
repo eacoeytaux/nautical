@@ -1,4 +1,3 @@
-
 //
 //  Player.cpp
 //  Nautical
@@ -33,60 +32,55 @@ Player::Player(Coordinate pos) : Mob(pos) {
 
 Player::~Player() { }
 
-Player & Player::setMapElement(const nautical::MapElement * p_element) {
+void Player::setMapElement(const nautical::MapElement * p_element) {
     WorldObject::setMapElement(p_element);
     if (p_element) {
-        canJump = true;
+        jumpCapable = true;
     } else {
-        canJump = false;
-        canGhostJump = true;
+        jumpCapable = false;
+        ghostJumpCapable = true;
         ghostJumpCountdown.reset(5);
     }
-    return *this;
 }
 
 Rope * Player::getRope() {
     return p_rope;
 }
 
-Player & Player::setRope(Rope * p_rope) {
+void Player::setRope(Rope * p_rope) {
     if (p_rope)
         delete p_rope;
     this->p_rope = p_rope;
-    return *this;
 }
 
 bool Player::isFacingRight() const {
     return facingRight;
 }
 
-Player & Player::setFacingRight(bool facingRight) {
+void Player::setFacingRight(bool facingRight) {
     this->facingRight = facingRight;
-    return *this;
 }
 
 bool Player::isMovingRight() const {
     return movingRight;
 }
 
-Player & Player::setMovingRight(bool movingRight) {
+void Player::setMovingRight(bool movingRight) {
     Logger::writeLog(PLAIN_MESSAGE, "Player::setMovingRight(): movingRight set to %s", movingRight ? "true" : "false");
     this->movingRight = movingRight;
-    return *this;
 }
 
 bool Player::isMovingLeft() const {
     return movingLeft;
 }
 
-Player & Player::setMovingLeft(bool movingLeft) {
+void Player::setMovingLeft(bool movingLeft) {
     Logger::writeLog(PLAIN_MESSAGE, "Player::setMovingRight(): movingLeft set to %s", movingLeft ? "true" : "false");
     this->movingLeft = movingLeft;
-    return *this;
 }
 
-Player & Player::move(Vector vec) {
-    /* move camera using trap */
+void Player::move(Vector vec) {
+    // move camera using trap
     Vector vecHorizontal = Vector(vec);
     vecHorizontal.subtractAngle(M_PI_2);
     vecHorizontal.subtractAngle(M_PI_2);
@@ -106,10 +100,9 @@ Player & Player::move(Vector vec) {
         GraphicsManager::setCenter(GraphicsManager::getCenterSet() + vecVertical);
         trap.move(vecVertical);
     }
-    /* end trap code */
+    // end trap code
     
     WorldObject::move(vec);
-    return *this;
 }
 
 bool Player::handleEvent(Event * p_event) {
@@ -256,10 +249,10 @@ bool Player::handleEvent(Event * p_event) {
 void Player::update() {
     //update countdowns
     if (ghostJumpCountdown.check())
-        canGhostJump = false;
+        ghostJumpCapable = false;
     
     //add force to object
-    MapHitbox * p_hitbox = getMapHitbox_();
+    std::shared_ptr<MapHitbox> p_hitbox = getMapHitbox();
     const MapElement * p_element = p_hitbox->getElement();
     
     if (!p_element || (p_element && !(p_element->isSticky())))
@@ -297,9 +290,7 @@ void Player::update() {
     float percentageUsed = 1.f;
     do {
         Vector vel = getVel();
-        MapHitbox * p_hitbox = getMapHitbox_();
-        Vector movement = p_parent->generatePath(&percentageUsed, &vel, p_hitbox, &p_element);
-        delete p_hitbox;
+        Vector movement = p_parent->generatePath(&percentageUsed, &vel, getMapHitbox().get(), &p_element);
         
         //check movement here
         if (p_rope) {
@@ -321,7 +312,6 @@ void Player::update() {
         move(movement);
         setVel(vel);
     } while (percentageUsed > 0);
-    delete p_hitbox;
     
     if (p_rope)
         p_rope->setOrigin(getCenter());
@@ -353,9 +343,5 @@ void Player::draw() const {
         Vector(aimAngle, 20, getCenter()).Drawable::draw(MAGENTA);
         getVel().draw(5);
     }
-    MapHitbox * p_hitbox = getMapHitbox_();
-    Shape * p_hitboxShape = p_hitbox->getShape_();
-    p_hitboxShape->draw();
-    delete p_hitboxShape;
-    delete p_hitbox;
+    getMapHitbox()->getShape()->draw();
 }

@@ -100,7 +100,7 @@ namespace nautical {
         
         template<typename T>
         inline int getIndexOfElement(std::vector<T> & vector, T value) { //returns -1 if not found
-            int index = std::find(vector.begin(), vector.end(), value) - vector.begin();
+            int index = (int)(std::find(vector.begin(), vector.end(), value) - vector.begin());
             return (index >= vector.size()) ? -1 : index;
         }
         

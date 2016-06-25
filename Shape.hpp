@@ -39,15 +39,15 @@ namespace nautical {
         virtual bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const = 0;
         virtual bool intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections = nullptr) const = 0;
         
-        virtual Shape & move(Vector vector) = 0;
-        virtual Shape & rotateAboutCoordinate(Coordinate coor, Angle angle) = 0;
+        virtual void move(Vector vector) = 0;
+        virtual void rotateAboutCoordinate(Coordinate coor, Angle angle) = 0;
         
         virtual void draw() const = 0;
         
         struct IntersectionLine {
             double xIn, xOut;
             
-            struct IntersectionLineComp {
+            struct Comp {
                 inline bool operator()(IntersectionLine line1, IntersectionLine line2) { return (line1.xIn < line2.xIn); }
             };
         };
@@ -64,7 +64,7 @@ namespace nautical {
             int screenUpperBoundY = (int)GraphicsManager::worldToScreenY(getUpperBoundY()) - 1;
             for (int y = screenUpperBoundY; y <= screenLowerBoundY; y++) { //TODO optimize (does not need to check 0 to screenHeight)
                 double yWorld = GraphicsManager::screenToWorldY(y);
-                Line screenLine(GraphicsManager::screenToWorld(Coordinate(screenLowerBoundX, y)).moveX(-1), GraphicsManager::screenToWorld(Coordinate(screenUpperBoundX, y).moveX(1)));
+                Line screenLine(GraphicsManager::screenToWorld(Coordinate(screenLowerBoundX, y)), GraphicsManager::screenToWorld(Coordinate(screenUpperBoundX, y)));
                 
                 std::vector<IntersectionLine> lineIntersections;
                 std::vector<Coordinate> intersections;
@@ -108,7 +108,7 @@ namespace nautical {
             }
         }
         
-        virtual Shape * copyPtr_() const = 0;
+        virtual std::shared_ptr<Shape> deepCopy() const = 0;
         virtual bool operator==(const Shape & shape) const = 0;
         virtual bool operator!=(const Shape & shape) const { return !((*this) == shape); }
     };

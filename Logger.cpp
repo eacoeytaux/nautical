@@ -14,16 +14,43 @@
 
 using namespace nautical;
 
+bool Logger::init = false;
+
 bool Logger::flush = true;
+
+FILE * logFile;
+FILE * logWarningsFile;
+FILE * logErrorsFile;
+
+bool Logger::startup() {
+    if (init)
+        return init;
+    
+    logFile = fopen("nautical.log", "w+");
+    logWarningsFile = fopen("nautical-warnings.log", "w+");
+    logErrorsFile = fopen("nautical-errors.log", "w+");
+    
+    return (init = true);
+}
+
+bool Logger::shutdown() {
+    if (!init)
+        return !init;
+    
+    fclose(logFile);
+    fclose(logWarningsFile);
+    fclose(logErrorsFile);
+    
+    return !(init = false);
+}
 
 void Logger::setFlush(bool flush) {
     Logger::flush = flush;
 }
 
 void Logger::writeLog(MESSAGE_TYPE type, const char * entry, ...) {
-    static FILE * logFile = fopen("nautical.log", "w+");
-    static FILE * logWarningsFile = fopen("nautical-warnings.log", "w+");
-    static FILE * logErrorsFile = fopen("nautical-errors.log", "w+");
+    if (!init)
+        return;
     
     va_list args;
     va_list argsWarning;
@@ -65,5 +92,4 @@ void Logger::writeLog(MESSAGE_TYPE type, const char * entry, ...) {
     va_end(args);
     va_end(argsWarning);
     va_end(argsError);
-
 }

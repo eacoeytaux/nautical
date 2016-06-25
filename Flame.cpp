@@ -34,12 +34,11 @@ Flame::~Flame() {
     }
 }
 
-Flame & Flame::addOrigin(double flameWidth, nautical::Vector offset) {
+void Flame::addOrigin(double flameWidth, nautical::Vector offset) {
     Origin * p_origin = new Origin;
     p_origin->origin = getCenter() + offset;
     p_origin->flameWidth = flameWidth;
     origins.push_back(p_origin);
-    return *this;
 }
 
 void Flame::update() {

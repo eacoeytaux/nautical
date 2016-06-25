@@ -20,15 +20,15 @@ namespace nautical {
         virtual ~MapCatch();
         
         Coordinate getCollision() const;
-        MapCatch & setCollision(Coordinate collision);
+        void setCollision(Coordinate collision);
         Line getLine() const;
-        MapCatch & setLine(Line line);
+        void setLine(Line line);
         bool containsElement(const MapElement * p_element) const;
         const MapElement * getElement(const MapElement * p_other) const;
         const MapElement * getElement1() const;
-        MapCatch & setElement1(const MapElement * p_element);
+        void setElement1(const MapElement * p_element);
         const MapElement * getElement2() const;
-        MapCatch & setElement2(const MapElement * p_element);
+        void setElement2(const MapElement * p_element);
         
         bool operator==(const MapCatch & mapCatch) const;
         

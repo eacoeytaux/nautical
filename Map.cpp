@@ -77,9 +77,8 @@ double Map::getAirResistanceCoefficient(double value) const {
     return airResistanceCoefficient * value;
 }
 
-Map & Map::setAirResistanceCoefficient(float airResistanceCoefficient) {
+void Map::setAirResistanceCoefficient(float airResistanceCoefficient) {
     this->airResistanceCoefficient = airResistanceCoefficient;
-    return *this;
 }
 
 double Map::getDefaultAirResistanceCoefficient(double value) {
@@ -103,9 +102,7 @@ void Map::draw() const {
 
 void Map::drawBumpers(MapHitbox * p_hitbox, bool drawCatches) const {
     for (std::vector<MapEdge*>::const_iterator it = edges.begin(); it != edges.end(); it++) {
-        Shape * p_bumper = p_hitbox->createBumper_(*it);
-        p_bumper->Drawable::draw(Color(CYAN).setA(127));
-        delete p_bumper;
+        p_hitbox->createBumper(*it)->Drawable::draw(Color(CYAN).setA(127));
         if (drawCatches) {
             std::vector<MapCatch> catches = p_hitbox->findCatches(*it, this);
             for (std::vector<MapCatch>::iterator subIt = catches.begin(); subIt != catches.end(); subIt++) {
@@ -114,9 +111,7 @@ void Map::drawBumpers(MapHitbox * p_hitbox, bool drawCatches) const {
         }
     }
     for (std::vector<MapVertex*>::const_iterator it = vertices.begin(); it != vertices.end(); it++) {
-        Shape * p_bumper = p_hitbox->createBumper_(*it);
-        p_bumper->Drawable::draw(Color(CYAN).setA(127));
-        delete p_bumper;
+        p_hitbox->createBumper(*it)->Drawable::draw(Color(CYAN).setA(127));
         if (drawCatches) {
             std::vector<MapCatch> catches = p_hitbox->findCatches(*it, this);
             for (std::vector<MapCatch>::iterator subIt = catches.begin(); subIt != catches.end(); subIt++) {

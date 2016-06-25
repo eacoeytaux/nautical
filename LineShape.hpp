@@ -20,7 +20,7 @@ namespace nautical {
         virtual ~LineShape();
         
         Line getLine() const;
-        LineShape & setLine(Line line);
+        void setLine(Line line);
         
         double getLowerBoundX() const;
         double getLowerBoundY() const;
@@ -31,13 +31,13 @@ namespace nautical {
         bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const;
         bool intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections = nullptr) const;
         
-        LineShape & move(Vector vector);
-        LineShape & rotateAboutCoordinate(Coordinate coor, Angle angle);
+        void move(Vector vector);
+        void rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         void draw() const;
         void drawFilled() const;
         
-        LineShape * copyPtr_() const;
+        std::shared_ptr<Shape> deepCopy() const;
         bool operator==(const Shape & shape) const;
         
     private:

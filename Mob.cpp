@@ -36,33 +36,31 @@ int Mob::getMaxHealth() const {
     return maxHealth;
 }
 
-Mob & Mob::setMaxHealth(int health) {
+void Mob::setMaxHealth(int health) {
     maxHealth = health;
-    return *this;
 }
 
-Mob & Mob::raiseMaxHealth(int health) {
-    return setMaxHealth(health);
+void Mob::raiseMaxHealth(int health) {
+    setMaxHealth(health);
 }
 
-Mob & Mob::setHealth(int health) {
+void Mob::setHealth(int health) {
     if (health <= 0)
         kill(false);
     else if (health > maxHealth)
         this->health = maxHealth;
     else
         this->health = health;
-    return *this;
 }
 
-Mob & Mob::damage(int health) {
-    return setHealth(this->health -= health);
+void Mob::damage(int health) {
+    setHealth(this->health -= health);
 }
 
-Mob & Mob::heal(int health) {
-    return setHealth(this->health += health);
+void Mob::heal(int health) {
+    setHealth(this->health += health);
 }
 
-Mob & Mob::healFull() {
-    return setHealth(maxHealth);
+void Mob::healFull() {
+    setHealth(maxHealth);
 }

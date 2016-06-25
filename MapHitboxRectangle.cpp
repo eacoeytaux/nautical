@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include "Random.hpp"
+#include "LineShape.hpp"
 
 using namespace nautical;
 
@@ -20,24 +21,22 @@ MapHitboxRectangle::MapHitboxRectangle(Rectangle rec) : rec(rec) {
 
 MapHitboxRectangle::~MapHitboxRectangle() { }
 
-MapHitboxRectangle & MapHitboxRectangle::move(Vector vec) {
+void MapHitboxRectangle::move(Vector vec) {
     MapHitbox::move(vec);
     rec.move(vec);
-    return *this;
 }
 
-Shape * MapHitboxRectangle::getShape_() const {
-    return new Rectangle(rec);
+std::shared_ptr<Shape> MapHitboxRectangle::getShape() const {
+    return std::shared_ptr<Shape>(new Rectangle(rec));
 }
 
 Rectangle MapHitboxRectangle::getRectangle() const {
     return rec;
 }
 
-MapHitboxRectangle & MapHitboxRectangle::setRectangle(Rectangle rec) {
+void MapHitboxRectangle::setRectangle(Rectangle rec) {
     this->rec = rec;
     center = rec.getCenter();
-    return *this;
 }
 
 bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, Vector * p_vector) const {
@@ -129,8 +128,8 @@ bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, Vector * p_vec
     //}
 }
 
-Rectangle * MapHitboxRectangle::createBumper_(const MapVertex * p_vertex) const {
-    return new Rectangle(p_vertex->getCoor(), rec.getWidth(), rec.getHeight(), rec.getAngle());
+std::shared_ptr<Shape> MapHitboxRectangle::createBumper(const MapVertex * p_vertex) const {
+    return std::shared_ptr<Shape>(new Rectangle(p_vertex->getCoor(), rec.getWidth(), rec.getHeight(), rec.getAngle()));
 }
 
 std::vector<MapCatch> MapHitboxRectangle::findCatches(const MapVertex * p_vertex, const Map * p_map) const {
@@ -146,8 +145,8 @@ bool MapHitboxRectangle::adjustVector(const MapEdge * p_edge, Vector * p_vector)
     return p_vector->subtractAngle(p_edge->getNormal());
 }
 
-LineShape * MapHitboxRectangle::createBumper_(const MapEdge * p_edge) const {
-    LineShape * bumper = new LineShape(p_edge->getLine());
+std::shared_ptr<Shape> MapHitboxRectangle::createBumper(const MapEdge * p_edge) const {
+    std::shared_ptr<Shape> bumper(new LineShape(p_edge->getLine()));
     bumper->move(getOffset(p_edge));
     return bumper;
 }
@@ -160,13 +159,11 @@ std::vector<MapCatch> MapHitboxRectangle::findCatches(const MapEdge * p_edge, co
         if (p_edge2 == p_edge)
             continue;
         
-        LineShape * p_lineShape = createBumper_(p_edge);
-        LineShape * p_lineShape2 = createBumper_(p_edge2);
+        std::shared_ptr<Shape> p_lineShape = createBumper(p_edge);
+        std::shared_ptr<Shape> p_lineShape2 = createBumper(p_edge2);
         std::vector<Coordinate> collisions;
-        if (p_lineShape->intersectsShape(p_lineShape2, &collisions))
-            catches.push_back(MapCatch(collisions.front(), p_lineShape2->getLine(), (MapElement*)p_edge, (MapElement*)p_edge2));
-        delete p_lineShape;
-        delete p_lineShape2;
+        if (p_lineShape->intersectsShape(p_lineShape2.get(), &collisions))
+            catches.push_back(MapCatch(collisions.front(), std::dynamic_pointer_cast<LineShape>(p_lineShape2)->getLine(), (MapElement*)p_edge, (MapElement*)p_edge2));
     }
     catches.push_back(getCatchBack(p_edge));
     catches.push_back(getCatchFront(p_edge));
@@ -243,6 +240,6 @@ MapCatch MapHitboxRectangle::getCatchBack(const MapEdge * p_edge) const {
     return MapCatch(center + offset, Line(center, center + (offset * 2)), (MapElement*)p_edge, (MapElement*)p_edge->getVertexBack());
 }
 
-MapHitboxRectangle * MapHitboxRectangle::copyPtr_() const {
+MapHitboxRectangle * MapHitboxRectangle::deepCopy() const {
     return new MapHitboxRectangle(*this);
 }

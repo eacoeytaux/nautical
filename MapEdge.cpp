@@ -56,18 +56,16 @@ MapVertex * MapEdge::getVertexFront() const {
     return p_vertexFront;
 }
 
-MapEdge & MapEdge::setVertexFront(MapVertex * p_vertex) {
+void MapEdge::setVertexFront(MapVertex * p_vertex) {
     this->p_vertexFront = p_vertex;
-    return *this;
 }
 
 MapVertex * MapEdge::getVertexBack() const {
     return p_vertexBack;
 }
 
-MapEdge & MapEdge::setVertexBack(MapVertex * p_vertex) {
+void MapEdge::setVertexBack(MapVertex * p_vertex) {
     this->p_vertexBack = p_vertex;
-    return *this;
 }
 
 void MapEdge::draw() const {
@@ -75,6 +73,6 @@ void MapEdge::draw() const {
     
     if (DRAW_NORMALS && DEBUG_MODE) {
         Coordinate origin = p_vertexBack->getCoor() + (Vector(p_vertexBack->getCoor(), p_vertexFront->getCoor()) / 2);
-        Vector(normal, 5).setOrigin(origin).Drawable::draw(getColor().setA(127));
+        Vector(normal, 5, origin).Drawable::draw(getColor().setA(127));
     }
 }

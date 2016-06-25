@@ -33,39 +33,39 @@ namespace nautical {
         virtual ~WorldObject();
         
         virtual World * getParent() const;
-        virtual WorldObject & setParent(World * p_parent);
+        virtual void setParent(World * p_parent);
         virtual Coordinate getCenter() const;
-        virtual MapHitbox * getMapHitbox_() const; //should delete pointer after use
-        virtual WorldObject & setMapHitbox(MapHitbox * p_hitbox); //should delete pointer after use
+        virtual std::shared_ptr<MapHitbox> getMapHitbox() const; //should delete pointer after use
+        virtual void setMapHitbox(MapHitbox * p_hitbox); //should delete pointer after use
         virtual const MapElement * getMapElement() const;
-        virtual WorldObject & setMapElement(const MapElement * p_element);
+        virtual void setMapElement(const MapElement * p_element);
         virtual Vector getForce() const;
-        virtual WorldObject & setForce(Vector force);
-        virtual WorldObject & addToForce(Vector force);
+        virtual void setForce(Vector force);
+        virtual void addToForce(Vector force);
         virtual Vector getVel() const;
-        virtual WorldObject & setVel(Vector vel);
-        virtual WorldObject & addToVel(Vector vel);
+        virtual void setVel(Vector vel);
+        virtual void addToVel(Vector vel);
         
-        virtual WorldObject & moveTo(Coordinate coor);
-        virtual WorldObject & move(Vector vec);
+        virtual void moveTo(Coordinate coor);
+        virtual void move(Vector vec);
         
         //TODO make sure WorldObjects* cannot be accessed
         virtual const std::vector<WorldObject*> * getAttachedObjects() const;
-        virtual WorldObject & attachObject(WorldObject * p_object);
-        virtual WorldObject & removeAttachedObject(WorldObject * p_object);
+        virtual void attachObject(WorldObject * p_object);
+        virtual void removeAttachedObject(WorldObject * p_object);
         
         const std::vector<std::string> * getSubscribedEventTags() const;
-        WorldObject & subscribeEvent(std::string eventTag);
-        WorldObject & unsubscribeEvent(std::string eventTag);
+        void subscribeEvent(std::string eventTag);
+        void unsubscribeEvent(std::string eventTag);
         
         virtual bool handleEvent(Event * p_event); //returns whether or not object did something with event
         
         bool isSpectral() const;
-        WorldObject & setSpectral(bool spectral);
+        void setSpectral(bool spectral);
         int getPriority() const;
-        WorldObject & setPriority(int priority);
+        void setPriority(int priority);
         int getAltitude() const;
-        WorldObject & setAltitude(int altitude);
+        void setAltitude(int altitude);
         
     private:
         World * p_parent = nullptr;
@@ -75,7 +75,7 @@ namespace nautical {
         int altitude = -MAX_BELOW_ALTITUDE;
         
         Coordinate center;
-        MapHitbox * p_hitbox = nullptr;
+        std::unique_ptr<MapHitbox> p_hitbox;
         Vector force, vel;
         
         std::vector<WorldObject*> attachedObjects;

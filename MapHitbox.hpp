@@ -9,6 +9,8 @@
 #ifndef MapHitbox_hpp
 #define MapHitbox_hpp
 
+#include <memory>
+
 #include "Vector.hpp"
 #include "Map.hpp"
 #include "MapVertex.hpp"
@@ -23,12 +25,11 @@ namespace nautical {
             return center;
         }
         
-        virtual MapHitbox & move(Vector vec) {
+        virtual void move(Vector vec) {
             center += vec;
-            return *this;
         }
         
-        virtual Shape * getShape_() const = 0; //pointer needs to be deleted after use
+        virtual std::shared_ptr<Shape> getShape() const = 0; //pointer needs to be deleted after use
         
         const MapElement * getElement() const { return p_element; } //pointer should NOT be deleted
         MapHitbox & setElement(const MapElement * p_element) {
@@ -50,16 +51,16 @@ namespace nautical {
             return false;
         }
         
-        Shape * createBumper_() const {
-            return createBumper_(p_element);
+        std::shared_ptr<Shape> createBumper() const {
+            return createBumper(p_element);
         }
         
-        virtual Shape * createBumper_(const MapElement * p_element) const {
+        virtual std::shared_ptr<Shape> createBumper(const MapElement * p_element) const {
             if (p_element) {
                 if (p_element->hasTag(MAP_VERTEX_TAG))
-                    return createBumper_(static_cast<const MapVertex*>(p_element));
+                    return createBumper(static_cast<const MapVertex*>(p_element));
                 else if (p_element->hasTag(MAP_EDGE_TAG))
-                    return createBumper_(static_cast<const MapEdge*>(p_element));
+                    return createBumper(static_cast<const MapEdge*>(p_element));
             }
             return nullptr;
         }
@@ -79,14 +80,14 @@ namespace nautical {
         }
         
         virtual bool adjustVector(const MapVertex * p_vertex, Vector * p_vector) const = 0;
-        virtual Shape * createBumper_(const MapVertex * p_vertex) const = 0;
+        virtual std::shared_ptr<Shape> createBumper(const MapVertex * p_vertex) const = 0;
         virtual std::vector<MapCatch> findCatches(const MapVertex * p_vertex, const Map * p_map) const = 0;
         
         virtual bool adjustVector(const MapEdge * p_edge, Vector * p_vector) const = 0;
-        virtual Shape * createBumper_(const MapEdge * p_edge) const = 0;
+        virtual std::shared_ptr<Shape> createBumper(const MapEdge * p_edge) const = 0;
         virtual std::vector<MapCatch> findCatches(const MapEdge * p_edge, const Map * p_map) const = 0;
         
-        virtual MapHitbox * copyPtr_() const = 0;
+        virtual MapHitbox * deepCopy() const = 0;
         
     protected:
         Coordinate center;

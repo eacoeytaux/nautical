@@ -18,11 +18,15 @@ namespace nautical { //TODO close logs
     
     class Logger {
     public:
+        static bool startup();
+        static bool shutdown();
+        
         static void setFlush(bool flush = true);
         static void writeLog(MESSAGE_TYPE type, const char * entry, ...);
         
     private:
-        static bool flush; //whether or not log is flushed to file after each log
+        static bool init,
+        flush; //whether or not log is flushed to file after each log
     };
 }
 

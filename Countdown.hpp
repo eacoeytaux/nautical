@@ -15,10 +15,10 @@ namespace nautical {
         Countdown(int set = 0, int loops = -1);
         
         bool check(int checks = 1);
-        Countdown & reset();
-        Countdown & reset(int set);
+        void reset();
+        void reset(int set);
         int getLoopCount() const;
-        Countdown & addLoops(int loops);
+        void addLoops(int loops);
         
     private:
         int count,

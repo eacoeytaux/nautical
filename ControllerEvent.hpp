@@ -30,32 +30,32 @@ namespace nautical {
         virtual ~ControllerEvent();
         
         int getControllerIndex() const;
-        ControllerEvent & setControllerIndex(int index);
+        void setControllerIndex(int index);
         
         ControllerAction getAction() const;
-        ControllerEvent & setAction(ControllerAction action);
+        void setAction(ControllerAction action);
         
         //for buttons
         int getButtonIndex() const;
-        ControllerEvent & setButtonIndex(int index);
+        void setButtonIndex(int index);
         
         //for hat
         bool isUpPressed() const;
         bool isRightPressed() const;
         bool isDownPressed() const;
         bool isLeftPressed() const;
-        ControllerEvent & setUpPressed(bool b);
-        ControllerEvent & setRightPressed(bool b);
-        ControllerEvent & setDownPressed(bool b);
-        ControllerEvent & setLeftPressed(bool b);
+        void setUpPressed(bool b);
+        void setRightPressed(bool b);
+        void setDownPressed(bool b);
+        void setLeftPressed(bool b);
         
         //for joystick
         int getJoystickIndex() const;
-        ControllerEvent & setJoystickIndex(int index);
+        void setJoystickIndex(int index);
         bool isOutsideDeadzone() const;
-        ControllerEvent & setOutsideDeadzone(bool b);
+        void setOutsideDeadzone(bool b);
         Angle getJoystickAngle() const;
-        ControllerEvent & setJoystickAngle(Angle angle);
+        void setJoystickAngle(Angle angle);
         
     private:
         int controllerIndex; //which controller is creating event

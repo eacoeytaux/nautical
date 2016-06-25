@@ -11,7 +11,6 @@
 
 #include <vector>
 
-#include "Collection.hpp"
 #include "Event.hpp"
 
 namespace nautical {

@@ -90,18 +90,16 @@ Coordinate Line::getCoor1() const {
     return Coordinate(x1, y1);
 }
 
-Line & Line::setCoor1(Coordinate coor) {
+void Line::setCoor1(Coordinate coor) {
     init(coor.getX(), coor.getY(), x2, y2);
-    return *this;
 }
 
 Coordinate Line::getCoor2() const {
     return Coordinate(x2, y2);
 }
 
-Line & Line::setCoor2(Coordinate coor) {
+void Line::setCoor2(Coordinate coor) {
     init(x1, y1, coor.getX(), coor.getY());
-    return *this;
 }
 
 Coordinate Line::getCoorLow() const {
@@ -156,26 +154,26 @@ bool Line::isOnOrBelow(Coordinate coor) const {
     return ((((x2 - x1) * (coor.getY() - y1)) - ((y2 - y1) * (coor.getX() - x1))) <= 0);
 }
 
-bool Line::intersectsLine(Line line, Coordinate * p_intersection) const {
+bool Line::intersectsLine(Line line, std::vector<Coordinate> * p_intersections) const {
     if (vertical && line.vertical) {
         if (x1 == line.x1) {
-            if (p_intersection)
-                p_intersection->setX(x1).setY(y1);
+            if (p_intersections)
+                p_intersections->push_back(Coordinate(x1, y1));
             return true;
         } else {
             return false;
         }
     } else if (horizontal && line.horizontal) {
         if (y1 == line.y1) {
-            if (p_intersection)
-                p_intersection->setX(x1).setY(y1);
+            if (p_intersections)
+                p_intersections->push_back(Coordinate(x1, y1));
             return true;
         } else {
             return false;
         }
     } else if ((m == line.m) && (b == line.b)) {
-        if (p_intersection)
-            p_intersection->setX(x1).setY(y1);
+        if (p_intersections)
+            p_intersections->push_back(Coordinate(x1, y1));
         return true;
     }
     
@@ -200,8 +198,8 @@ bool Line::intersectsLine(Line line, Coordinate * p_intersection) const {
     }
     
     if (inBox(xIntersect, yIntersect) && line.inBox(xIntersect, yIntersect)) {
-        if (p_intersection)
-            p_intersection->setX(xIntersect).setY(yIntersect);
+        if (p_intersections)
+            p_intersections->push_back(Coordinate(xIntersect, yIntersect));
         return true;
     } else {
         return false;
@@ -246,11 +244,12 @@ Coordinate Line::closestCoordinate(Coordinate coor) const {
     }
 }
 
-Line & Line::rotateAboutCoordinate(Coordinate coor, Angle angle) {
-    Coordinate coor1 = getCoor1().rotateAboutCoordinate(coor, angle);
-    Coordinate coor2 = getCoor2().rotateAboutCoordinate(coor, angle);
+void Line::rotateAboutCoordinate(Coordinate coor, Angle angle) {
+    Coordinate coor1 = getCoor1();
+    coor1.rotateAboutCoordinate(coor, angle);
+    Coordinate coor2 = getCoor2();
+    coor2.rotateAboutCoordinate(coor, angle);
     init(coor1.getX(), coor1.getY(), coor2.getX(), coor2.getY());
-    return *this;
 }
 
 bool Line::operator==(const Line & line) const {

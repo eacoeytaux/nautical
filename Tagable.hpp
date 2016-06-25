@@ -27,7 +27,9 @@ namespace nautical {
         
         virtual ~Tagable() { }
         
-        int getID() const { return id; }
+        int getID() const {
+            return id;
+        }
         
         std::string getTag(bool fullPath = false) const {
             if (!fullPath)
@@ -58,9 +60,8 @@ namespace nautical {
         }
         
     protected:
-        Tagable & appendTag(std::string tag) {
+        void appendTag(std::string tag) {
             tags.push_back(tag);
-            return *this;
         }
         
     private:

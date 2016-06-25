@@ -97,7 +97,7 @@ Map * World::getMap() {
     return &map;
 }
 
-World & World::addObject(WorldObject * p_object, bool shouldUpdate, bool shouldDraw) {
+void World::addObject(WorldObject * p_object, bool shouldUpdate, bool shouldDraw) {
     if (p_object) {
         p_object->setParent(this);
         
@@ -115,16 +115,13 @@ World & World::addObject(WorldObject * p_object, bool shouldUpdate, bool shouldD
     } else {
         Logger::writeLog(WARNING_MESSAGE, "World::addObject(): attempted to add nullptr");
     }
-    
-    return *this;
 }
 
-World & World::markObjectForRemoval(WorldObject * p_object) {
+void World::markObjectForRemoval(WorldObject * p_object) {
     objectsToDelete.push_back(p_object);
-    return *this;
 }
 
-World & World::removeObject(WorldObject * p_object) {
+void World::removeObject(WorldObject * p_object) {
     if (p_object) {
         if (vector_helpers::containsElement(allObjects, p_object)) {
             vector_helpers::removeElementByValue(allObjects, p_object);
@@ -143,14 +140,13 @@ World & World::removeObject(WorldObject * p_object) {
     } else {
         Logger::writeLog(WARNING_MESSAGE, "World::removeObject(): attempted to remove nullptr");
     }
-    return *this;
 }
 
-World & World::subscribeObject(std::string eventTag, WorldObject * p_object) {
+void World::subscribeObject(std::string eventTag, WorldObject * p_object) {
     for (std::vector<EventPairing>::iterator it = subscribedObjects.begin(); it != subscribedObjects.end(); it++) {
         if (it->eventTag == eventTag) {
             it->subscribedObjects.push_back(p_object);
-            return *this;
+            return;
         }
     }
     
@@ -159,23 +155,21 @@ World & World::subscribeObject(std::string eventTag, WorldObject * p_object) {
     newPair.eventTag = eventTag;
     newPair.subscribedObjects.push_back(p_object);
     subscribedObjects.push_back(newPair);
-    return *this;
 }
 
-World & World::unsubscribeObject(std::string eventTag, WorldObject * p_object) {
+void World::unsubscribeObject(std::string eventTag, WorldObject * p_object) {
     for (std::vector<EventPairing>::iterator it = subscribedObjects.begin(); it != subscribedObjects.end(); it++) {
         if (it->eventTag == eventTag) {
             vector_helpers::removeElementByValue(it->subscribedObjects, p_object);
             if (it->subscribedObjects.size() == 0) //if no objects are subscribed to event, remove event
                 vector_helpers::removeElementByValue(subscribedObjects, *it);
-            return *this;
+            return;
         }
     }
     Logger::writeLog(WARNING_MESSAGE, "World::unregisterObjects(): attempted to unregister objects from non-existant event");
-    return *this;
 }
 
-World & World::handleEvent(Event * p_event) {
+void World::handleEvent(Event * p_event) {
     for (std::vector<EventPairing>::iterator it = subscribedObjects.begin(); it != subscribedObjects.end(); it++) {
         EventPairing pair = *it;
         if (p_event->hasTag(pair.eventTag)) {
@@ -185,7 +179,6 @@ World & World::handleEvent(Event * p_event) {
         }
     }
     delete p_event;
-    return *this;
 }
 
 /*void World::generatePath(WorldObject * p_object) {
@@ -343,7 +336,7 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
     //if (vel.getMagnitude() < 0)
     //    return 0;
     
-    Shape * p_shape = p_hitbox->getShape_();
+    std::shared_ptr<Shape> p_shape = p_hitbox->getShape();
     Coordinate center = p_hitbox->getCenter();
     const MapElement * p_element = p_hitbox->getElement();
     const MapElement * p_prevElement = p_element;
@@ -398,7 +391,7 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
             
             std::vector<Coordinate> collisions;
             Line adjustedVelLine = Line(center, center + vel);
-            Shape * p_bumper = p_hitbox->createBumper_(p_vertex);
+            std::shared_ptr<Shape> p_bumper = p_hitbox->createBumper(p_vertex);
             if (p_bumper->intersectsLine(adjustedVelLine, &collisions)) {
                 Coordinate collision = collisions.front();
                 Vector tempVector = *p_vel;
@@ -412,7 +405,6 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
                     }
                 }
             }
-            delete p_bumper;
         }
         
         //check all edges for collision
@@ -424,7 +416,7 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
             
             std::vector<Coordinate> collisions;
             Line adjustedVelLine(center, center + vel);
-            Shape * p_bumper = p_hitbox->createBumper_(p_edge);
+            std::shared_ptr<Shape> p_bumper = p_hitbox->createBumper(p_edge);
             if (p_bumper->intersectsLine(adjustedVelLine, &collisions)) {
                 Coordinate collision = collisions.front();
                 Vector tempVector = *p_vel;
@@ -438,10 +430,8 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
                     }
                 }
             }
-            delete p_bumper;
         }
     }
-    delete p_shape;
     
     //finished checking collisions
     
@@ -503,7 +493,7 @@ void World::draw() {
         if (i == MAX_BELOW_ALTITUDE) {
             map.draw();
             if (DRAW_BUMPERS && DEBUG_MODE)
-                map.drawBumpers(climber::Player(Coordinate(0, 0)).getMapHitbox_());
+                map.drawBumpers(climber::Player(Coordinate(0, 0)).getMapHitbox().get());
         }
         
         for (std::vector<WorldObject*>::iterator it = objectsToDraw[i].begin(); it != objectsToDraw[i].end(); it++) {

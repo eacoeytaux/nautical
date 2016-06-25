@@ -18,11 +18,11 @@ namespace nautical {
         Angle(double dx, double dy, bool truncate = true);
         
         bool truncating() const;
-        Angle & setTruncating(bool truncate);
+        void setTruncating(bool truncate);
         
         double getValue() const;
-        Angle & setValue(double angleVal);
-        Angle & setValue(double dx, double dy);
+        void setValue(double angleVal);
+        void setValue(double dx, double dy);
         double getSin(double scale = 1) const;
         double getCos(double scale = 1) const;
         

@@ -9,6 +9,8 @@
 #ifndef __Nautical__Line__
 #define __Nautical__Line__
 
+#include <vector>
+
 #include "Angle.hpp"
 #include "Coordinate.hpp"
 
@@ -22,9 +24,9 @@ namespace nautical {
         bool isHorizontal() const;
         Angle getAngle() const;
         Coordinate getCoor1() const;
-        Line & setCoor1(Coordinate coor);
+        void setCoor1(Coordinate coor);
         Coordinate getCoor2() const;
-        Line & setCoor2(Coordinate coor);
+        void setCoor2(Coordinate coor);
         Coordinate getCoorLow() const;
         Coordinate getCoorHigh() const;
         double getLength();
@@ -38,10 +40,10 @@ namespace nautical {
         bool inBox(double x, double y) const;
         bool inBox(Coordinate coor) const;
         bool isOnOrBelow(Coordinate coor) const;
-        bool intersectsLine(Line line, Coordinate * p_intersection = nullptr) const;
+        bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const;
         Coordinate closestCoordinate(Coordinate coor) const;
         
-        Line & rotateAboutCoordinate(Coordinate coor, Angle angle);
+        void rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         bool operator==(const Line & line) const;
         bool operator!=(const Line & line) const;

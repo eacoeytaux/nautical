@@ -11,26 +11,24 @@
 
 #include "MapHitbox.hpp"
 
-#include "LineShape.hpp"
-
 namespace nautical {
     class MapHitboxRectangle : public MapHitbox {
     public:
         MapHitboxRectangle(Rectangle rec);
         virtual ~MapHitboxRectangle();
         
-        MapHitboxRectangle & move(Vector vec);
+        void move(Vector vec);
         
-        Shape * getShape_() const;
+        std::shared_ptr<Shape> getShape() const;
         Rectangle getRectangle() const;
-        MapHitboxRectangle & setRectangle(Rectangle rec);
+        void setRectangle(Rectangle rec);
         
         bool adjustVector(const MapVertex * p_vertex, Vector * p_vector) const;
-        Rectangle * createBumper_(const MapVertex * p_vertex) const;
+        std::shared_ptr<Shape> createBumper(const MapVertex * p_vertex) const; //always returns LineShape
         std::vector<MapCatch> findCatches(const MapVertex * p_vertex, const Map * p_map) const;
         
         bool adjustVector(const MapEdge * p_edge, Vector * p_vector) const;
-        LineShape * createBumper_(const MapEdge * p_edge) const;
+        std::shared_ptr<Shape> createBumper(const MapEdge * p_edge) const; //always return Rectangle
         std::vector<MapCatch> findCatches(const MapEdge * p_edge, const Map * p_map) const;
         
         //helper functions for edges
@@ -38,7 +36,7 @@ namespace nautical {
         MapCatch getCatchFront(const MapEdge * p_edge) const;
         MapCatch getCatchBack(const MapEdge * p_edge) const;
         
-        MapHitboxRectangle * copyPtr_() const;
+        MapHitboxRectangle * deepCopy() const;
         
     private:
         Rectangle rec;

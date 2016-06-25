@@ -38,7 +38,6 @@
 #include "Tentacle.hpp"
 
 #define FPS 60
-#define AUTO_LOCK_CURSOR false
 
 #define MAX_CONTROLLERS 4
 #define MAX_JOYSTICK_VALUE 32768.0
@@ -52,8 +51,6 @@ bool GameManager::init = false;
 
 SDL_Window * p_window = nullptr;
 bool fullscreen = false;
-
-SDL_Renderer * p_renderer = nullptr;
 
 struct Controller {
     SDL_Joystick * p_controller = nullptr;
@@ -79,25 +76,12 @@ bool GameManager::startup() {
         Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s", SDL_GetError());
         return false;
     } else {
-        p_window = SDL_CreateWindow("Climber", 0, 0, GraphicsManager::screenWidth, GraphicsManager::screenHeight, SDL_WINDOW_SHOWN); //create window
+        p_window = SDL_CreateWindow("Climber", 0, 0, GraphicsManager::getScreenWidth(), GraphicsManager::getScreenHeight(), SDL_WINDOW_SHOWN); //create window
         if (p_window == nullptr) {
             Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s", SDL_GetError());
             return false;
-        } else {
-            if (AUTO_LOCK_CURSOR)
-                GraphicsManager::setMouseTrapped(SDL_SetRelativeMouseMode(SDL_TRUE) == 0);
-            
-            p_renderer = SDL_CreateRenderer(p_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); //init renderer
-            if (p_renderer == nullptr) {
-                Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s", SDL_GetError());
-                return false;
-            } else {
-                SDL_SetRenderDrawBlendMode(p_renderer, SDL_BLENDMODE_BLEND);
-                SDL_SetRenderDrawColor(p_renderer, 0, 0, 0, 255);
-                SDL_RenderClear(p_renderer);
-                
-                GraphicsManager::p_renderer = p_renderer;
-            }
+        } else if (GraphicsManager::startup(p_window)) {
+            GraphicsManager::setPixelScale(2);
             
             //init SDL2_mixer for audio
             //if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
@@ -139,9 +123,9 @@ bool GameManager::shutdown() {
         delete controllers[i];
     }
     
-    //close window and renderer
-    SDL_DestroyRenderer(p_renderer);
-    p_renderer = nullptr;
+    GraphicsManager::shutdown();
+    
+    //close window
     SDL_DestroyWindow(p_window);
     p_window = nullptr;
     SDL_Quit();
@@ -195,9 +179,7 @@ void GameManager::run() {
         level.draw();
         GraphicsManager::drawCoordinate(GraphicsManager::screenToWorld(GraphicsManager::getMouseCoor()));
         
-        SDL_RenderPresent(p_renderer);
-        SDL_SetRenderDrawColor(p_renderer, 0, 0, 0, 255);
-        SDL_RenderClear(p_renderer);
+        GraphicsManager::draw();
         
         long elapsed = timer.split();
         long wait = (targetTime - elapsed);
@@ -223,16 +205,28 @@ void GameManager::run() {
 void GameManager::pollEvents(std::vector<Event*> & events) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-        if ((event.type == SDL_KEYDOWN) || (event.type == SDL_KEYUP)) {
-            events.push_back(new KeyboardEvent(getKeyFromSDLKey(event.key.keysym.sym), ((event.type == SDL_KEYDOWN) ? KeyboardEvent::KEY_PRESSED : KeyboardEvent::KEY_RELEASED)));
-        }
-        
         switch (event.type) {
             case SDL_QUIT: {
                 running = false;
                 break;
             }
             case SDL_JOYBUTTONDOWN: {
+                switch (event.jbutton.button) { //DEBUGGING
+                    case 8: {
+                        DEBUG_MODE = !DEBUG_MODE;
+                        break;
+                    }
+                    case 9: {
+                        paused = !paused;
+                        break;
+                    }
+                    case 13: {
+                        running = false;
+                        reset = true;
+                        break;
+                    }
+                }
+                
                 ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::BUTTON_PRESS);
                 p_controllerEvent->setButtonIndex(event.jbutton.button);
                 events.push_back(p_controllerEvent);
@@ -247,7 +241,10 @@ void GameManager::pollEvents(std::vector<Event*> & events) {
             case SDL_JOYHATMOTION: {
                 ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::HAT_VALUE_CHANGE);
                 int hatValue = event.jhat.value;
-                p_controllerEvent->setUpPressed(hatValue & 1).setRightPressed(hatValue & 2).setDownPressed(hatValue & 4).setLeftPressed(hatValue & 8);
+                p_controllerEvent->setUpPressed(hatValue & 1);
+                p_controllerEvent->setRightPressed(hatValue & 2);
+                p_controllerEvent->setDownPressed(hatValue & 4);
+                p_controllerEvent->setLeftPressed(hatValue & 8);
                 events.push_back(p_controllerEvent);
                 break;
             }
@@ -270,19 +267,25 @@ void GameManager::pollEvents(std::vector<Event*> & events) {
                     p_controller->joysticks[joystickIndex].outsideDeadzone = true;
                     
                     ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::JOYSTICK_MOVEMENT);
-                    p_controllerEvent->setJoystickIndex(joystickIndex).setOutsideDeadzone(true).setJoystickAngle(joystickAngle);
+                    p_controllerEvent->setJoystickIndex(joystickIndex);
+                    p_controllerEvent->setOutsideDeadzone(true);
+                    p_controllerEvent->setJoystickAngle(joystickAngle);
                     events.push_back(p_controllerEvent);
                 } else if (p_controller->joysticks[joystickIndex].outsideDeadzone) { //joystick has gone from outside to inside deadzone
                     p_controller->joysticks[joystickIndex].outsideDeadzone = false;
                     
                     ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::JOYSTICK_MOVEMENT);
-                    p_controllerEvent->setJoystickIndex(joystickIndex).setOutsideDeadzone(false).setJoystickAngle(joystickAngle);
+                    p_controllerEvent->setJoystickIndex(joystickIndex);
+                    p_controllerEvent->setOutsideDeadzone(false);
+                    p_controllerEvent->setJoystickAngle(joystickAngle);
                     events.push_back(p_controllerEvent);
                 }
                 break;
             }
             case SDL_MOUSEMOTION: {
                 Coordinate mousePos = Coordinate(event.motion.x, event.motion.y);
+                mousePos.setX(mousePos.getX() / GraphicsManager::getPixelScale());
+                mousePos.setY(mousePos.getY() / GraphicsManager::getPixelScale());
                 GraphicsManager::setMouseCoor(mousePos);
                 events.push_back(new MouseEvent(mousePos, MouseEvent::MOUSE_MOVEMENT));
                 break;
@@ -303,8 +306,11 @@ void GameManager::pollEvents(std::vector<Event*> & events) {
             }
             case SDL_KEYDOWN: {
                 switch (event.key.keysym.sym) { //DEBUGGING
+                    case SDLK_p:
+                        paused = !paused;
+                        break;
                     case SDLK_RETURN:
-                        nautical::DEBUG_MODE = !nautical::DEBUG_MODE;
+                        DEBUG_MODE = !DEBUG_MODE;
                         break;
                     case SDLK_PERIOD:
                         GraphicsManager::setZoom(GraphicsManager::getZoom() * (4.f / 3.f));
@@ -316,7 +322,24 @@ void GameManager::pollEvents(std::vector<Event*> & events) {
                         running = false;
                         reset = true;
                         break;
+                    case SDLK_1:
+                        GraphicsManager::setPixelScale(1);
+                        break;
+                    case SDLK_2:
+                        GraphicsManager::setPixelScale(2);
+                        break;
+                    case SDLK_3:
+                        GraphicsManager::setPixelScale(3);
+                        break;
+                    case SDLK_4:
+                        GraphicsManager::setPixelScale(4);
+                        break;
                 }
+                events.push_back(new KeyboardEvent(getKeyFromSDLKey(event.key.keysym.sym), KeyboardEvent::KEY_PRESSED));
+                break;
+            }
+            case SDL_KEYUP: {
+                events.push_back(new KeyboardEvent(getKeyFromSDLKey(event.key.keysym.sym), KeyboardEvent::KEY_RELEASED));
                 break;
             }
         }

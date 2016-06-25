@@ -20,13 +20,13 @@ namespace nautical {
         virtual ~Rectangle();
         
         Coordinate getCenter() const;
-        Rectangle & setCenter(Coordinate center);
+        void setCenter(Coordinate center);
         double getWidth() const;
-        Rectangle & setWidth(double width);
+        void setWidth(double width);
         double getHeight() const;
-        Rectangle & setHeight(double height);
+        void setHeight(double height);
         Angle getAngle() const;
-        Rectangle & setAngle(Angle angle);
+        void setAngle(Angle angle);
         
         Coordinate getTopRightCoor() const;
         Coordinate getBottomRightCoor() const;
@@ -49,12 +49,12 @@ namespace nautical {
         bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const;
         bool intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections = nullptr) const;
         
-        Rectangle & move(Vector vector);
-        Rectangle & rotateAboutCoordinate(Coordinate coor, Angle angle);
+        void move(Vector vector);
+        void rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         void draw() const;
         
-        Rectangle * copyPtr_() const;
+        std::shared_ptr<Shape> deepCopy() const;
         bool operator==(const Shape & shape) const;
         
     private:

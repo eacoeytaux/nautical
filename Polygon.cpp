@@ -181,30 +181,32 @@ bool Polygon::contains(Coordinate coor) const {
 }
 
 bool Polygon::intersectsLine(Line line, std::vector<Coordinate> * p_intersections) const {
-    std::vector<Coordinate> intersections;
-    for (std::vector<Line>::const_iterator it = edges.begin(); it != edges.end(); it++) {
-        Coordinate intersection;
-        if (it->intersectsLine(line, &intersection))
-            intersections.push_back(intersection);
-    }
-    if (intersections.size() == 0)
-        return false;
+    struct Comp {
+        Coordinate origin;
+        inline bool operator()(Coordinate coor1, Coordinate coor2) {
+            return (findDistance(origin, coor1) < findDistance(origin, coor2));
+        }
+    };
     
     if (p_intersections) {
-        Coordinate origin = line.getCoor1();
-        while (intersections.size() > 0) { //TODO there HAS to be a more efficient way to do this
-            std::vector<Coordinate>::iterator it = intersections.begin();
-            Coordinate closestCoor = *it;
-            MinValue distance(findDistance(origin, closestCoor));
-            for (it++; it != intersections.end(); it++) {
-                if (distance.update(findDistance(origin, *it)))
-                    closestCoor = *it;
-            }
-            p_intersections->push_back(closestCoor);
-            vector_helpers::removeElementByValue(intersections, closestCoor);
+        for (std::vector<Line>::const_iterator it = edges.begin(); it != edges.end(); it++) {
+            it->intersectsLine(line, p_intersections);
         }
+        if (p_intersections->size() == 0)
+            return false;
+        
+        Comp comp;
+        comp.origin = line.getCoor1();
+        std::sort(p_intersections->begin(), p_intersections->end(), comp);
+        
+        return true;
+    } else {
+        for (std::vector<Line>::const_iterator it = edges.begin(); it != edges.end(); it++) {
+            if (it->intersectsLine(line))
+                return true;
+        }
+        return false;
     }
-    return true;
 }
 
 bool Polygon::intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections) const {
@@ -215,7 +217,7 @@ bool Polygon::intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p
     return intersects;
 }
 
-Polygon & Polygon::move(Vector vector) {
+void Polygon::move(Vector vector) {
     std::vector<Coordinate> newVertices;
     for (std::vector<Coordinate>::iterator it = vertices.begin(); it != vertices.end(); it++) {
         newVertices.push_back(*it + vector);
@@ -242,39 +244,43 @@ Polygon & Polygon::move(Vector vector) {
         convexVertices = vertices;
         convexEdges = edges;
     }
-    
-    return *this;
 }
 
-Polygon & Polygon::rotateAboutCoordinate(Coordinate coor, Angle angle) {
+void Polygon::rotateAboutCoordinate(Coordinate coor, Angle angle) {
     std::vector<Coordinate> newVertices;
     for (std::vector<Coordinate>::iterator it = vertices.begin(); it != vertices.end(); it++) {
-        newVertices.push_back(it->rotateAboutCoordinate(coor, angle));
+        Coordinate vertexCoor = *it;
+        vertexCoor.rotateAboutCoordinate(coor, angle);
+        newVertices.push_back(vertexCoor);
     }
     vertices = newVertices;
     std::vector<Line> newEdges;
     for (std::vector<Line>::iterator it = edges.begin(); it != edges.end(); it++) {
-        newEdges.push_back(it->rotateAboutCoordinate(coor, angle));
+        Line edgeLine = *it;
+        edgeLine.rotateAboutCoordinate(coor, angle);
+        newEdges.push_back(edgeLine);
     }
     edges = newEdges;
     
     if (!convex) {
         std::vector<Coordinate> newConvexVertices;
         for (std::vector<Coordinate>::iterator it = convexVertices.begin(); it != convexVertices.end(); it++) {
-            newConvexVertices.push_back(it->rotateAboutCoordinate(coor, angle));
+            Coordinate vertexCoor = *it;
+            vertexCoor.rotateAboutCoordinate(coor, angle);
+            newVertices.push_back(vertexCoor);
         }
         convexVertices = newConvexVertices;
         std::vector<Line> newConvexEdges;
         for (std::vector<Line>::iterator it = convexEdges.begin(); it != convexEdges.end(); it++) {
-            newConvexEdges.push_back(it->rotateAboutCoordinate(coor, angle));
+            Line edgeLine = *it;
+            edgeLine.rotateAboutCoordinate(coor, angle);
+            newEdges.push_back(edgeLine);
         }
         convexEdges = newConvexEdges;
     } else {
         convexVertices = vertices;
         convexEdges = edges;
     }
-    
-    return *this;
 }
 
 void Polygon::draw() const {
@@ -301,8 +307,8 @@ bool Polygon::operator==(const Shape & shape) const {
     return true;
 }
 
-Polygon * Polygon::copyPtr_() const {
-    return new Polygon(*this);
+std::shared_ptr<Shape> Polygon::deepCopy() const {
+    return std::shared_ptr<Shape>(new Polygon(*this));
 }
 
 bool Polygon::Triangle::operator==(const Triangle & triangle) {

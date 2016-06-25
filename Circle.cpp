@@ -33,18 +33,16 @@ Coordinate Circle::getCenter() const {
     return center;
 }
 
-Circle & Circle::setCenter(Coordinate center) {
+void Circle::setCenter(Coordinate center) {
     this->center = center;
-    return *this;
 }
 
 double Circle::getRadius() const {
     return radius;
 }
 
-Circle & Circle::setRadius(double radius) {
+void Circle::setRadius(double radius) {
     this->radius = radius;
-    return *this;
 }
 
 double Circle::convertToRadians(double distance) const {
@@ -154,14 +152,12 @@ bool Circle::intersectsCircle(const Circle * p_circle, std::vector<Coordinate> *
     return true;
 }
 
-Circle & Circle::move(Vector vector) {
+void Circle::move(Vector vector) {
     setCenter(center += vector);
-    return *this;
 }
 
-Circle & Circle::rotateAboutCoordinate(Coordinate coor, Angle angle) {
+void Circle::rotateAboutCoordinate(Coordinate coor, Angle angle) {
     center.rotateAboutCoordinate(coor, angle);
-    return *this;
 }
 
 void Circle::draw() const {
@@ -173,8 +169,8 @@ void Circle::draw() const {
     }
 }
 
-Circle * Circle::copyPtr_() const {
-    return new Circle(*this);
+std::shared_ptr<Shape> Circle::deepCopy() const {
+    return std::shared_ptr<Shape>(new Circle(*this));
 }
 
 bool Circle::operator==(const Shape & shape) const {

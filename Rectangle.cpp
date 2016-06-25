@@ -8,6 +8,8 @@
 
 #include "Rectangle.hpp"
 
+#include "MaxMinValue.hpp"
+
 using namespace nautical;
 
 Rectangle::Rectangle(Coordinate center, double width, double height, Angle angle) :
@@ -26,38 +28,34 @@ Coordinate Rectangle::getCenter() const {
     return center;
 }
 
-Rectangle & Rectangle::setCenter(Coordinate center) {
+void Rectangle::setCenter(Coordinate center) {
     this->center = center;
-    return *this;
 }
 
 double Rectangle::getWidth() const {
     return width;
 }
 
-Rectangle & Rectangle::setWidth(double width) {
+void Rectangle::setWidth(double width) {
     this->width = width;
     halfWidth = width / 2;
-    return *this;
 }
 
 double Rectangle::getHeight() const {
     return height;
 }
 
-Rectangle & Rectangle::setHeight(double height) {
+void Rectangle::setHeight(double height) {
     this->height = height;
     halfHeight = height / 2;
-    return *this;
 }
 
 Angle Rectangle::getAngle() const {
     return angle;
 }
 
-Rectangle & Rectangle::setAngle(Angle angle) {
+void Rectangle::setAngle(Angle angle) {
     this->angle = angle;
-    return *this;
 }
 
 Coordinate Rectangle::getTopRightCoor() const {
@@ -117,32 +115,30 @@ bool Rectangle::contains(Coordinate coor) const {
 }
 
 bool Rectangle::intersectsLine(Line line, std::vector<Coordinate> * p_intersections) const {
-    Coordinate coor1, coor2;
-    bool intersects = false, intersectsTwice = false;
-    
-    (intersects ? intersectsTwice : intersects) |= line.intersectsLine(getTopLine(), intersects ? &coor2 : &coor1);
-    (intersects ? intersectsTwice : intersects) |= line.intersectsLine(getRightLine(), intersects ? &coor2 : &coor1);
-    (intersects ? intersectsTwice : intersects) |= line.intersectsLine(getBottomLine(), intersects ? &coor2 : &coor1);
-    (intersects ? intersectsTwice : intersects) |= line.intersectsLine(getLeftLine(), intersects ? &coor2 : &coor1);
-    
-    if (intersects) {
-        if (p_intersections) {
-            if (intersectsTwice) {
-                if (findDistance(line.getCoor1(), coor1) < findDistance(line.getCoor2(), coor2)) {
-                    p_intersections->push_back(coor1);
-                    p_intersections->push_back(coor2);
-                } else {
-                    p_intersections->push_back(coor2);
-                    p_intersections->push_back(coor1);
-                }
-            } else {
-                p_intersections->push_back(coor1);
-            }
+    struct Comp {
+        Coordinate origin;
+        inline bool operator()(Coordinate coor1, Coordinate coor2) {
+            return (findDistance(origin, coor1) < findDistance(origin, coor2));
         }
-        return true;
-    } else {
+    };
+    
+    if (p_intersections) {
+        if (line.intersectsLine(getTopLine(), p_intersections) ||
+            line.intersectsLine(getRightLine(), p_intersections) ||
+            line.intersectsLine(getBottomLine(), p_intersections) ||
+            line.intersectsLine(getLeftLine(), p_intersections)) {
+            
+            Comp comp;
+            comp.origin = line.getCoor1();
+            std::sort(p_intersections->begin(), p_intersections->end(), comp);
+            
+            return true;
+        }
         return false;
     }
+    
+    return (line.intersectsLine(getTopLine()) || line.intersectsLine(getRightLine()) ||
+            line.intersectsLine(getBottomLine()) || line.intersectsLine(getLeftLine()));
 }
 
 bool Rectangle::intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections) const {
@@ -155,16 +151,13 @@ bool Rectangle::intersectsShape(const Shape * p_shape, std::vector<Coordinate> *
     return intersects;
 }
 
-
-Rectangle & Rectangle::move(Vector vector) {
+void Rectangle::move(Vector vector) {
     setCenter(center += vector);
-    return *this;
 }
 
-Rectangle & Rectangle::rotateAboutCoordinate(Coordinate coor, Angle angle) {
+void Rectangle::rotateAboutCoordinate(Coordinate coor, Angle angle) {
     center.rotateAboutCoordinate(coor, angle);
     this->angle += angle;
-    return *this;
 }
 
 void Rectangle::draw() const {
@@ -174,8 +167,8 @@ void Rectangle::draw() const {
     GraphicsManager::drawLine(getLeftLine(), getColor());
 }
 
-Rectangle * Rectangle::copyPtr_() const {
-    return new Rectangle(*this);
+std::shared_ptr<Shape> Rectangle::deepCopy() const {
+    return std::shared_ptr<Shape>(new Rectangle(*this));
 }
 
 bool Rectangle::operator==(const Shape & shape) const {

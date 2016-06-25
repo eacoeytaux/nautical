@@ -31,45 +31,42 @@ Coordinate Arc::getOrigin() const {
     return origin;
 }
 
-Arc & Arc::setOrigin(Coordinate origin) {
+void Arc::setOrigin(Coordinate origin) {
     this->origin = origin;
-    return *this;
 }
 
 double Arc::getOriginDistance() const {
     return originDistance;
 }
 
-Arc & Arc::setOriginDistance(double distance) {
+void Arc::setOriginDistance(double distance) {
     originDistance = distance;
-    return *this;
 }
 
 Angle Arc::getStartAngle() const {
     return startAngle;
 }
 
-Arc & Arc::setStartAngle(Angle angle) {
+void Arc::setStartAngle(Angle angle) {
     startAngle = angle;
-    return setDAngle();
+    setDAngle();
 }
 
 Angle Arc::getEndAngle() const {
     return endAngle;
 }
 
-Arc & Arc::setEndAngle(Angle angle) {
+void Arc::setEndAngle(Angle angle) {
     endAngle = angle;
-    return setDAngle();
+    setDAngle();
 }
 
 Angle Arc::getDAngle() const {
     return dAngle;
 }
 
-Arc & Arc::setDAngle() {
+void Arc::setDAngle() {
     dAngle = (clockwise ? (startAngle - endAngle) : (endAngle - startAngle));
-    return *this;
 }
 
 double Arc::getArcLength() const {
@@ -85,9 +82,8 @@ bool Arc::isClockwise() const {
     return clockwise;
 }
 
-Arc & Arc::setClockwise(bool clockwise) {
+void Arc::setClockwise(bool clockwise) {
     this->clockwise = clockwise;
-    return *this;
 }
 
 Coordinate Arc::getStartCoor() const {

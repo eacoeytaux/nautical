@@ -29,10 +29,10 @@ namespace nautical {
         virtual ~MouseEvent();
         
         Coordinate getMousePos() const;
-        MouseEvent & setMousePosScreen(Coordinate mousePosScreen);
+        void setMousePosScreen(Coordinate mousePosScreen);
         
         MouseAction getAction() const;
-        MouseEvent & setAction(MouseAction action);
+        void setAction(MouseAction action);
         
     private:
         Coordinate mousePosScreen;

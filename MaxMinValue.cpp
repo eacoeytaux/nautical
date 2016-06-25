@@ -26,9 +26,8 @@ bool MaxValue::update(double value) {
     }
 }
 
-MaxValue & MaxValue::reset() {
+void MaxValue::reset() {
     value = -INFINITY;
-    return *this;
 }
 
 MinValue::MinValue(double initial) :
@@ -47,7 +46,6 @@ bool MinValue::update(double value) {
     }
 }
 
-MinValue & MinValue::reset() {
+void MinValue::reset() {
     value = INFINITY;
-    return *this;
 }

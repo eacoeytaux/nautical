@@ -27,11 +27,16 @@
 
 namespace nautical {
     class GraphicsManager {
-        friend class GameManager;
-        
     public:
+        static bool startup(SDL_Window * p_window); //TODO combine .cpp file with GameManager.cpp to avoid dependencies on SDL?
+        static bool shutdown();
+        static bool draw();
+        
         static int getScreenWidth();
         static int getScreenHeight();
+        
+        static int getPixelScale();
+        static void setPixelScale(int scale);
         
         static Coordinate worldToScreen(Coordinate coor);
         static double worldToScreenX(double x);
@@ -67,15 +72,17 @@ namespace nautical {
         static void drawImageFromSpriteSheet(const SpriteSheet * p_sheet, int frame, Coordinate coor, Angle angle, bool flipHorizontal, bool flipVertical, int alpha = 255, bool adjust = true);
         
     private:
-        static SDL_Renderer * p_renderer;
+        static bool init;
         
         static int screenWidth,
-        screenHeight;
+        screenHeight,
+        pixelScale;
         
         static Coordinate mouseCoor; //stored in screen coordinates
         static bool mouseTrapped;
         
         static double xOffset, yOffset;
+        
         static Coordinate center, centerSet;
         static float centerSpeedRatio;
         
