@@ -31,11 +31,10 @@
 
 //TODO remove these includes
 #include "World.hpp"
-#include "Rope.hpp"
 #include "Player.hpp"
-#include "Polygon.hpp"
+#include "Rope.hpp"
+#include "Slimeball.hpp"
 #include "Flame.hpp"
-#include "Tentacle.hpp"
 
 #define FPS 60
 
@@ -157,6 +156,8 @@ void GameManager::run() {
     //flame->addOrigin(20, Vector(15, 0));
     level.addObject(flame);
     
+    //level.addObject(new climber::Slimeball(Coordinate(600, 600)));
+    
     Clock timer;
     while (running) {
         timer.delta();
@@ -167,14 +168,14 @@ void GameManager::run() {
         if (!running)
             break;
         
-        if (!paused)
+        if (!paused) {
             level.update(events);
-        
-        if (DEBUG_MODE)
-            runTests();
-        
-        GraphicsManager::updateCenter();
-        GraphicsManager::updateZoom();
+            GraphicsManager::updateCenter();
+            GraphicsManager::updateZoom();
+            
+            if (DEBUG_MODE)
+                runTests();
+        }
         
         level.draw();
         GraphicsManager::drawCoordinate(GraphicsManager::screenToWorld(GraphicsManager::getMouseCoor()));
@@ -196,10 +197,12 @@ void GameManager::run() {
         }
     }
     
-    if (reset)
+    if (reset) {
+        GraphicsManager::setZoom(1);
         run();
-    else
+    } else {
         shutdown();
+    }
 }
 
 void GameManager::pollEvents(std::vector<Event*> & events) {

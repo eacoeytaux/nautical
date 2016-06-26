@@ -199,7 +199,7 @@ bool Player::handleEvent(Event * p_event) {
                     }
                     case 7: {
                         if (!p_rope) {
-                            p_rope = new Rope(this, getCenter(), 250, aimAngle, 10, 20); //TODO add current velocity of player to rope's velocity
+                            p_rope = new Rope(this, getCenter(), 250, getVel() + Vector(aimAngle, 10), 20); //TODO add current velocity of player to rope's velocity
                             getParent()->addObject(p_rope);
                             Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): p_rope set to EXTENDING at angle %f degrees", Angle::radiansToDegrees(aimAngle.getValue()));
                             return true;
@@ -283,7 +283,7 @@ bool Player::handleEvent(Event * p_event) {
             }
             case MouseEvent::LEFT_BUTTON_PRESS: {
                 if (!p_rope) {
-                    p_rope = new Rope(this, getCenter(), 250, aimAngle, 10, 20); //TODO add current velocity of player to rope's velocity
+                    p_rope = new Rope(this, getCenter(), 250, getVel() + Vector(aimAngle, 10), 20); //TODO add current velocity of player to rope's velocity
                     getParent()->addObject(p_rope);
                     Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): p_rope set to EXTENDING at angle %f degrees", Angle::radiansToDegrees(aimAngle.getValue()));
                     return true;
@@ -375,7 +375,6 @@ void Player::update() {
         move(movement);
         setVel(vel);
     } while (percentageUsed > 0);
-    
     setForce(Vector(0, 0));
     
     if (p_rope)

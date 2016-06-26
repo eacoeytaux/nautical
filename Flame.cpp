@@ -19,7 +19,8 @@ using namespace climber;
 Flame::Flame(nautical::Coordinate pos) :
 WorldObject(pos) {
     appendTag(FLAME_TAG);
-    p_sheet = GraphicsManager::loadSpriteSheet("spritesheets/fire-particles.png", 2, 1, 10);
+    
+    p_spriteSheet = GraphicsManager::loadSpriteSheet("spritesheets/fire-particles.png", 2, 1, 10);
 }
 
 Flame::~Flame() {
@@ -32,6 +33,8 @@ Flame::~Flame() {
     for (std::vector<Origin*>::iterator it = origins.begin(); it != origins.end(); it++) {
         delete *it;
     }
+    
+    delete p_spriteSheet;
 }
 
 void Flame::addOrigin(double flameWidth, nautical::Vector offset) {
@@ -123,16 +126,16 @@ void Flame::update() {
 void Flame::draw() const {
     static Angle rotationAngle(M_PI_4);
     
-    if (p_sheet) {
+    if (p_spriteSheet) {
         for (std::vector<Spark*>::const_iterator it = orangeParticles.begin(); it != orangeParticles.end(); it++) {
             Spark * p_spark = *it;
-            p_sheet->setScale((float)(p_spark->width));
-            GraphicsManager::drawImageFromSpriteSheet(p_sheet, 0, p_spark->center, rotationAngle, false, false, p_spark->alpha);
+            p_spriteSheet->setScale((float)(p_spark->width));
+            GraphicsManager::drawImageFromSpriteSheet(p_spriteSheet, 0, p_spark->center, rotationAngle, false, false, p_spark->alpha);
         }
         for (std::vector<Spark*>::const_iterator it = yellowParticles.begin(); it != yellowParticles.end(); it++) {
             Spark * p_spark = *it;
-            p_sheet->setScale((float)(p_spark->width));
-            GraphicsManager::drawImageFromSpriteSheet(p_sheet, 1, p_spark->center, rotationAngle, false, false, p_spark->alpha);
+            p_spriteSheet->setScale((float)(p_spark->width));
+            GraphicsManager::drawImageFromSpriteSheet(p_spriteSheet, 1, p_spark->center, rotationAngle, false, false, p_spark->alpha);
         }
     }
 }

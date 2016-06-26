@@ -214,14 +214,15 @@ void GraphicsManager::updateZoom() {
 }
 
 float GraphicsManager::getZoom() {
-    return zoom;
+    return zoom * pixelScale;
 }
 
 float GraphicsManager::getZoomSet() {
-    return zoomSet;
+    return zoomSet * pixelScale;
 }
 
 void GraphicsManager::setZoom(float zoom, bool hardSet) {
+    zoom /= pixelScale;
     if (hardSet) {
         GraphicsManager::zoom = zoom;
         setOffsets();

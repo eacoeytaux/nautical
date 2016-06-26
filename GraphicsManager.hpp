@@ -69,7 +69,7 @@ namespace nautical {
         static void drawParabola(Parabola parabola, Color color = DEFAULT_COLOR, bool adjust = true);
         
         static SpriteSheet * loadSpriteSheet(std::string filePath, int widthCount, int heightCount, int scale = 1);
-        static void drawImageFromSpriteSheet(const SpriteSheet * p_sheet, int frame, Coordinate coor, Angle angle, bool flipHorizontal, bool flipVertical, int alpha = 255, bool adjust = true);
+        static void drawImageFromSpriteSheet(const SpriteSheet * p_sheet, int frame, Coordinate coor, Angle angle = Angle(0), bool flipHorizontal = false, bool flipVertical = false, int alpha = 255, bool adjust = true);
         
     private:
         static bool init;

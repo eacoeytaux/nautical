@@ -44,7 +44,10 @@ Coordinate WorldObject::getCenter() const {
 }
 
 std::shared_ptr<MapHitbox> WorldObject::getMapHitbox() const {
-    return std::shared_ptr<MapHitbox>(p_hitbox->deepCopy());
+    if (p_hitbox)
+        return std::shared_ptr<MapHitbox>(p_hitbox->deepCopy());
+    else
+        return std::shared_ptr<MapHitbox>(nullptr);
 }
 
 void WorldObject::setMapHitbox(MapHitbox * p_hitbox) {

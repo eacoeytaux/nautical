@@ -23,7 +23,7 @@
 #include "DarknessOverlay.hpp"
 #include "World.hpp"
 
-namespace nautical {
+namespace nautical { //TODO add spritesheet?
     const std::string WORLD_OBJECT_TAG = "world_object";
     
     class WorldObject : public Updatable, public Drawable, public Tagable {

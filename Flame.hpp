@@ -24,11 +24,10 @@ namespace climber {
         void addOrigin(double flameWidth, nautical::Vector offset = nautical::Vector(0, 0));
         
         void update();
-        
         void draw() const;
         
     private:
-        nautical::SpriteSheet * p_sheet = nullptr;
+        nautical::SpriteSheet * p_spriteSheet = nullptr;
         
         struct Origin {
             nautical::Coordinate origin;

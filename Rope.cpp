@@ -15,17 +15,16 @@
 using namespace nautical;
 using namespace climber;
 
-Rope::Rope(Player * p_parent, nautical::Coordinate origin, double length, nautical::Angle extendAngle, double extendSpeed, double retractSpeed) :
+Rope::Rope(Player * p_parent, nautical::Coordinate origin, double length, nautical::Vector extendVector, double retractSpeed) :
 WorldObject(origin),
 StateMachine(EXTENDING),
 p_parent(p_parent),
 origin(origin),
 head(origin),
 length(length),
-extendAngle(extendAngle),
-hookAngle(extendAngle),
-extendSpeed(extendSpeed),
-retractSpeed(retractSpeed) { }
+extendVector(extendVector),
+retractSpeed(retractSpeed),
+hookAngle(extendVector.getAngle()) { }
 
 Rope::~Rope() { }
 
@@ -82,7 +81,7 @@ bool Rope::openState(int state) {
 void Rope::update() {
     switch (getState()) {
         case EXTENDING: {
-            head += Vector(extendAngle, extendSpeed);
+            head += extendVector;
             if (findDistance(origin, head) > (length - 0.0001)) {
                 setState((overrideRetract = shouldRetract) ? RETRACTING : SET);
             }
