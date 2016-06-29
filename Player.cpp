@@ -32,56 +32,61 @@ Player::Player(Coordinate pos) : Mob(pos) {
 
 Player::~Player() { }
 
-void Player::setMapElement(const nautical::MapElement * p_element) {
+Player & Player::setMapElement(const nautical::MapElement * p_element) {
     WorldObject::setMapElement(p_element);
     if (p_element) {
         setCanJump(true);
     } else {
         setCanJump(false);
     }
+    return *this;
 }
 
 Rope * Player::getRope() {
     return p_rope;
 }
 
-void Player::setRope(Rope * p_rope) {
+Player & Player::setRope(Rope * p_rope) {
     if (p_rope)
         delete p_rope;
     this->p_rope = p_rope;
+    return *this;
 }
 
 bool Player::isFacingRight() const {
     return facingRight;
 }
 
-void Player::setFacingRight(bool facingRight) {
+Player & Player::setFacingRight(bool facingRight) {
     this->facingRight = facingRight;
+    return *this;
 }
 
 bool Player::isMovingRight() const {
     return movingRight;
 }
 
-void Player::setMovingRight(bool movingRight) {
+Player & Player::setMovingRight(bool movingRight) {
     Logger::writeLog(PLAIN_MESSAGE, "Player::setMovingRight(): movingRight set to %s", movingRight ? "true" : "false");
     this->movingRight = movingRight;
+    return *this;
 }
 
 bool Player::isMovingLeft() const {
     return movingLeft;
 }
 
-void Player::setMovingLeft(bool movingLeft) {
+Player & Player::setMovingLeft(bool movingLeft) {
     Logger::writeLog(PLAIN_MESSAGE, "Player::setMovingRight(): movingLeft set to %s", movingLeft ? "true" : "false");
     this->movingLeft = movingLeft;
+    return *this;
 }
 
 bool Player::isJumping() const {
     return jumping;
 }
 
-void Player::setJumping(bool b) {
+Player & Player::setJumping(bool b) {
     if (b) {
         if (!jumping)
             jumpValueIndex = 0;
@@ -89,34 +94,37 @@ void Player::setJumping(bool b) {
         setCanGhostJump(false);
     }
     jumping = b;
+    return *this;
 }
 
 bool Player::canJump() const {
     return jumpCapable;
 }
 
-void Player::setCanJump(bool b) {
+Player & Player::setCanJump(bool b) {
     if (jumpCapable && !b) {
         ghostJumpCapable = true;
         ghostJumpCountdown.reset(15);
     }
     jumpCapable = b;
+    return *this;
 }
 
 bool Player::canGhostJump() const {
     return ghostJumpCapable;
 }
 
-void Player::setCanGhostJump(bool b) {
+Player & Player::setCanGhostJump(bool b) {
     ghostJumpCapable = b;
+    return *this;
 }
 
 
-void Player::move(Vector vec) {
+Player & Player::move(Vector vec) {
     // move camera using trap
     Vector vecHorizontal = Vector(vec);
     vecHorizontal.subtractAngle(M_PI_2);
-    vecHorizontal.subtractAngle(M_PI_2);
+    vecHorizontal.subtractAngle(-M_PI_2);
     
     Vector vecVertical = Vector(vec);
     vecVertical.subtractAngle(0);
@@ -125,17 +133,19 @@ void Player::move(Vector vec) {
     Coordinate newCenterHorizontal = getCenter() + vecHorizontal;
     Coordinate newCenterVertical = getCenter() + vecVertical;
     
-    if (!trap.contains(newCenterHorizontal)) {
+    if (!trap.getRightLine().isOnOrBelow(newCenterHorizontal) || !trap.getLeftLine().isOnOrBelow(newCenterHorizontal)) {
         GraphicsManager::setCenter(GraphicsManager::getCenterSet() + vecHorizontal);
         trap.move(vecHorizontal);
     }
-    if (!trap.contains(newCenterVertical)) {
+    if (!trap.getTopLine().isOnOrBelow(newCenterVertical) || !trap.getBottomLine().isOnOrBelow(newCenterVertical)) {
         GraphicsManager::setCenter(GraphicsManager::getCenterSet() + vecVertical);
         trap.move(vecVertical);
     }
     // end trap code
     
     WorldObject::move(vec);
+    
+    return *this;
 }
 
 bool Player::handleEvent(Event * p_event) {

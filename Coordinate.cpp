@@ -20,28 +20,32 @@ double Coordinate::getX() const {
     return x;
 }
 
-void Coordinate::setX(double x) {
+Coordinate & Coordinate::setX(double x) {
     this->x = x;
+    return *this;
 }
 
-void Coordinate::moveX(double dx) {
+Coordinate & Coordinate::moveX(double dx) {
     x += dx;
+    return *this;
 }
 
 double Coordinate::getY() const {
     return y;
 }
 
-void Coordinate::setY(double y) {
+Coordinate & Coordinate::setY(double y) {
     this->y = y;
+    return *this;
 }
 
-void Coordinate::moveY(double dy) {
+Coordinate & Coordinate::moveY(double dy) {
     y += dy;
+    return *this;
 }
 
-void Coordinate::rotateAboutCoordinate(Coordinate coor, Angle angle) {
-    *this = Vector(coor, *this).rotate(angle).getDestination();
+Coordinate & Coordinate::rotateAboutCoordinate(const Coordinate & coor, const Angle & angle) {
+    return *this = Vector(coor, *this).rotate(angle).getDestination();
 }
 
 bool Coordinate::operator==(const Coordinate & coor) const {

@@ -16,7 +16,7 @@ Line::Line(double x1, double y1, double x2, double y2) {
     init(x1, y1, x2, y2);
 }
 
-Line::Line(Coordinate coor1, Coordinate coor2) {
+Line::Line(const Coordinate & coor1, const Coordinate & coor2) {
     init(coor1.getX(), coor1.getY(), coor2.getX(), coor2.getY());
 }
 
@@ -90,16 +90,18 @@ Coordinate Line::getCoor1() const {
     return Coordinate(x1, y1);
 }
 
-void Line::setCoor1(Coordinate coor) {
+Line & Line::setCoor1(const Coordinate & coor) {
     init(coor.getX(), coor.getY(), x2, y2);
+    return *this;
 }
 
 Coordinate Line::getCoor2() const {
     return Coordinate(x2, y2);
 }
 
-void Line::setCoor2(Coordinate coor) {
+Line & Line::setCoor2(const Coordinate & coor) {
     init(x1, y1, coor.getX(), coor.getY());
+    return *this;
 }
 
 Coordinate Line::getCoorLow() const {
@@ -146,15 +148,15 @@ bool Line::inBox(double x, double y) const {
     return inBoxX(x) && inBoxY(y);
 }
 
-bool Line::inBox(Coordinate coor) const {
+bool Line::inBox(const Coordinate & coor) const {
     return inBoxX(coor.getX()) && inBoxY(coor.getY());
 }
 
-bool Line::isOnOrBelow(Coordinate coor) const {
+bool Line::isOnOrBelow(const Coordinate & coor) const {
     return ((((x2 - x1) * (coor.getY() - y1)) - ((y2 - y1) * (coor.getX() - x1))) <= 0);
 }
 
-bool Line::intersectsLine(Line line, std::vector<Coordinate> * p_intersections) const {
+bool Line::intersectsLine(const Line & line, std::vector<Coordinate> * p_intersections) const {
     if (vertical && line.vertical) {
         if (x1 == line.x1) {
             if (p_intersections)
@@ -219,7 +221,7 @@ bool Line::intersectsLine(Line line, std::vector<Coordinate> * p_intersections) 
  }
  }*/
 
-Coordinate Line::closestCoordinate(Coordinate coor) const {
+Coordinate Line::closestCoordinate(const Coordinate & coor) const {
     if (vertical) {
         if (inBoxY(coor.getY()))
             return Coordinate(xLow, coor.getY());
@@ -244,12 +246,13 @@ Coordinate Line::closestCoordinate(Coordinate coor) const {
     }
 }
 
-void Line::rotateAboutCoordinate(Coordinate coor, Angle angle) {
+Line & Line::rotateAboutCoordinate(const Coordinate & coor, const Angle & angle) {
     Coordinate coor1 = getCoor1();
     coor1.rotateAboutCoordinate(coor, angle);
     Coordinate coor2 = getCoor2();
     coor2.rotateAboutCoordinate(coor, angle);
     init(coor1.getX(), coor1.getY(), coor2.getX(), coor2.getY());
+    return *this;
 }
 
 bool Line::operator==(const Line & line) const {

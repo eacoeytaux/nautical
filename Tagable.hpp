@@ -53,7 +53,7 @@ namespace nautical {
             return false;
         }
         
-        Tagable & operator=(Tagable other) {
+        Tagable & operator=(const Tagable & other) {
             id = other.id;
             tags = other.tags;
             return *this;

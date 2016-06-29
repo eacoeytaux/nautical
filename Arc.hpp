@@ -18,30 +18,30 @@
 namespace nautical {
     class Arc {
     public:
-        Arc(Coordinate origin = Coordinate(), double originDistance = 0, Angle startAngle = Angle(), Angle endAngle = Angle(), bool clockwise = true);
+        Arc(const Coordinate & origin = Coordinate(), double originDistance = 0, const Angle & startAngle = Angle(), const Angle & endAngle = Angle(), bool clockwise = true);
         virtual ~Arc();
         
         Coordinate getOrigin() const;
-        void setOrigin(Coordinate origin);
+        Arc & setOrigin(const Coordinate & origin);
         double getOriginDistance() const;
-        void setOriginDistance(double distance);
+        Arc & setOriginDistance(double distance);
         Angle getStartAngle() const;
-        void setStartAngle(Angle angle);
+        Arc & setStartAngle(const Angle & angle);
         Angle getEndAngle() const;
-        void setEndAngle(Angle angle);
+        Arc & setEndAngle(const Angle & angle);
         Angle getDAngle() const;
         double getArcLength() const;
         bool isClockwise() const;
-        void setClockwise(bool clockwise);
+        Arc & setClockwise(bool clockwise);
         Coordinate getStartCoor() const;
         Coordinate getEndCoor() const;
         
-        bool intersectsArc(Arc arc, std::vector<Coordinate> * p_intersections = nullptr) const;
-        bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const;
-        bool inArc(Angle angle) const;
-        bool inArc(Coordinate coor) const;
+        bool intersectsArc(const Arc & arc, std::vector<Coordinate> * p_intersections = nullptr) const;
+        bool intersectsLine(const Line & line, std::vector<Coordinate> * p_intersections = nullptr) const;
+        bool inArc(const Angle & angle) const;
+        bool inArc(const Coordinate & coor) const;
         
-        void rotateAboutCoordinate(Coordinate coor, Angle angle);
+        Arc & rotateAboutCoordinate(const Coordinate & coor, const Angle & angle);
         
     private:
         Coordinate origin;

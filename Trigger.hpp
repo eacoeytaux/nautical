@@ -29,11 +29,11 @@ namespace nautical {
         int getActivatedCount() const { return activatedCount; }
         bool isEnabled() const { return enabled; }
         
-        void enable() {
+        Trigger & enable() {
             enabled = true;
         }
         
-        void disable() {
+        Trigger & disable() {
             enabled = false;
         }
         
@@ -59,11 +59,11 @@ namespace nautical {
             return true;
         };
         
-        void addTriggerToEnable(Trigger * p_trigger) {
+        Trigger & addTriggerToEnable(Trigger * p_trigger) {
             triggersToEnable.insert(p_trigger);
         }
         
-        void addTriggerToDisable(Trigger * p_trigger) {
+        Trigger & addTriggerToDisable(Trigger * p_trigger) {
             triggersToDisable.insert(p_trigger);
         }
         

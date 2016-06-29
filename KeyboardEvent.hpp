@@ -30,9 +30,9 @@ namespace nautical {
         virtual ~KeyboardEvent();
         
         Key getKey() const;
-        void setKey(Key key);
+        KeyboardEvent & setKey(Key key);
         KeyboardAction getAction() const;
-        void setAction(KeyboardAction action);
+        KeyboardEvent & setAction(KeyboardAction action);
         
     private:
         KeyboardAction action;

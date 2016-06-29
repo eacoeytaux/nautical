@@ -30,16 +30,19 @@ namespace nautical {
             return (int)path.size();
         }
         
-        void addLine(Line line) {
+        Path & addLine(const Line & line) {
             path.push_back(new LineNode(line));
+            return *this;
         }
         
-        void addArc(Arc arc) {
+        Path & addArc(const Arc & arc) {
             path.push_back(new ArcNode(arc));
+            return *this;
         }
         
-        void clear() {
+        Path & clear() {
             path.clear();
+            return *this;
         }
         
         Coordinate getEndPoint() {
@@ -67,7 +70,7 @@ namespace nautical {
         struct LineNode : public Node {
             Line line;
             
-            LineNode(Line line) :
+            LineNode(const Line & line) :
             line(line) { appendTag("LineNode"); }
             
             virtual bool intersectsNode(Node * p_node, std::vector<Coordinate> * p_intersections = nullptr) const {
@@ -93,7 +96,7 @@ namespace nautical {
         struct ArcNode : public Node {
             Arc arc;
             
-            ArcNode(Arc arc) :
+            ArcNode(const Arc & arc) :
             arc(arc) { appendTag("ArcNode"); }
             virtual bool intersectsNode(Node * p_node, std::vector<Coordinate> * p_intersections = nullptr) const {
                 if (p_node->hasTag("LineNode")) {

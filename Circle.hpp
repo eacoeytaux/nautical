@@ -22,9 +22,9 @@ namespace nautical {
         virtual ~Circle();
         
         Coordinate getCenter() const;
-        void setCenter(Coordinate center);
+        Circle & setCenter(Coordinate center);
         double getRadius() const;
-        void setRadius(double radius);
+        Circle & setRadius(double radius);
         
         double convertToRadians(double distance) const;
         double convertToDistance(double radians) const;
@@ -40,8 +40,8 @@ namespace nautical {
         
         bool intersectsCircle(const Circle * p_circle, std::vector<Coordinate> * p_intersections = nullptr) const;
         
-        void move(Vector vector);
-        void rotateAboutCoordinate(Coordinate coor, Angle angle);
+        Circle & move(Vector vector);
+        Circle & rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         void draw() const;
         

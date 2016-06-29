@@ -13,14 +13,14 @@ namespace nautical {
     template<typename T>
     class Reusable { //holds onto value so it doesn't need to be recalculated everytime it's accessed
     public:
-        Reusable(T value, bool set) : value(value), set(set) { }
+        Reusable(const T & value, bool set) : value(value), set(set) { }
         virtual ~Reusable() { }
         
         T getValue() {
             return value;
         }
         
-        void setValue(T value) {
+        void setValue(const T & value) {
             this->value = value;
             set = true;
         }

@@ -37,16 +37,18 @@ MapEdge * MapVertex::getEdgeFront() const {
     return p_edgeFront;
 }
 
-void MapVertex::setEdgeFront(MapEdge * p_edge) {
+MapVertex & MapVertex::setEdgeFront(MapEdge * p_edge) {
     p_edgeFront = p_edge;
+    return *this;
 }
 
 MapEdge * MapVertex::getEdgeBack() const {
     return p_edgeBack;
 }
 
-void MapVertex::setEdgeBack(MapEdge * p_edge) {
+MapVertex & MapVertex::setEdgeBack(MapEdge * p_edge) {
     p_edgeBack = p_edge;
+    return *this;
 }
 
 void MapVertex::draw() const {

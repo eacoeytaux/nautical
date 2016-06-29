@@ -56,16 +56,18 @@ MapVertex * MapEdge::getVertexFront() const {
     return p_vertexFront;
 }
 
-void MapEdge::setVertexFront(MapVertex * p_vertex) {
+MapEdge & MapEdge::setVertexFront(MapVertex * p_vertex) {
     this->p_vertexFront = p_vertex;
+    return *this;
 }
 
 MapVertex * MapEdge::getVertexBack() const {
     return p_vertexBack;
 }
 
-void MapEdge::setVertexBack(MapVertex * p_vertex) {
+MapEdge & MapEdge::setVertexBack(MapVertex * p_vertex) {
     this->p_vertexBack = p_vertex;
+    return *this;
 }
 
 void MapEdge::draw() const {

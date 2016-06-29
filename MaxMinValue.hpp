@@ -19,7 +19,7 @@ namespace nautical {
         
         double getValue() const;
         bool update(double value);
-        void reset();
+        MaxValue & reset();
         
     private:
         double value;
@@ -31,7 +31,7 @@ namespace nautical {
         
         double getValue() const;
         bool update(double value);
-        void reset();
+        MinValue & reset();
         
     private:
         double value;

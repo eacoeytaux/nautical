@@ -38,22 +38,22 @@ namespace nautical {
         static int getPixelScale();
         static void setPixelScale(int scale);
         
-        static Coordinate worldToScreen(Coordinate coor);
+        static Coordinate worldToScreen(const Coordinate & coor);
         static double worldToScreenX(double x);
         static double worldToScreenY(double y);
-        static Coordinate screenToWorld(Coordinate coor);
+        static Coordinate screenToWorld(const Coordinate & coor);
         static double screenToWorldX(double x);
         static double screenToWorldY(double y);
         
         static Coordinate getMouseCoor();
-        static void setMouseCoor(Coordinate coor);
+        static void setMouseCoor(const Coordinate & coor);
         static bool isMouseTrapped();
         static void setMouseTrapped(bool mouseTrapped);
         
         static void updateCenter();
         static Coordinate getCenter();
         static Coordinate getCenterSet();
-        static void setCenter(Coordinate center, bool hardSet = false);
+        static void setCenter(const Coordinate & center, bool hardSet = false);
         static void setCenterSpeedRatio(float centerSpeedRatio);
         
         static void updateZoom();
@@ -62,11 +62,11 @@ namespace nautical {
         static void setZoom(float zoom, bool hardSet = false);
         static void setZoomSpeedRatio(float zoomSpeedRatio);
         
-        static void drawCoordinate(Coordinate coor, Color color = DEFAULT_COLOR, bool adjust = true);
+        static void drawCoordinate(const Coordinate & coor, Color color = DEFAULT_COLOR, bool adjust = true);
         static void drawCoordinate(double x, double y, Color color = DEFAULT_COLOR, bool adjust = true);
-        static void drawLine(Line line, Color color = DEFAULT_COLOR, bool adjust = true);
+        static void drawLine(const Line & line, Color color = DEFAULT_COLOR, bool adjust = true);
         static void drawLine(double x1, double y1, double x2, double y2, Color color = DEFAULT_COLOR, bool adjust = true);
-        static void drawParabola(Parabola parabola, Color color = DEFAULT_COLOR, bool adjust = true);
+        static void drawParabola(const Parabola & parabola, Color color = DEFAULT_COLOR, bool adjust = true);
         
         static SpriteSheet * loadSpriteSheet(std::string filePath, int widthCount, int heightCount, int scale = 1);
         static void drawImageFromSpriteSheet(const SpriteSheet * p_sheet, int frame, Coordinate coor, Angle angle = Angle(0), bool flipHorizontal = false, bool flipVertical = false, int alpha = 255, bool adjust = true);

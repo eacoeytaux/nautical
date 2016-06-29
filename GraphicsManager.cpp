@@ -101,7 +101,7 @@ bool GraphicsManager::draw() {
     SDL_RenderCopyEx(p_renderer, p_texture, &srcRect, &dstRect, 0, nullptr, SDL_FLIP_NONE);
     SDL_RenderPresent(p_renderer);
     SDL_SetRenderTarget(p_renderer, p_texture);
-    SDL_SetRenderDrawColor(p_renderer, 0, 0, 0, 255);
+    SECRET_MODE ? SDL_SetRenderDrawColor(p_renderer, 255, 255, 255, 255) : SDL_SetRenderDrawColor(p_renderer, 0, 0, 0, 255);
     SDL_RenderClear(p_renderer);
     return true;
 }
@@ -132,7 +132,7 @@ void GraphicsManager::setOffsets() {
     yOffset = (center.getY() * zoom) + (screenHeight / (2 * pixelScale));
 }
 
-Coordinate GraphicsManager::worldToScreen(Coordinate coor) {
+Coordinate GraphicsManager::worldToScreen(const Coordinate & coor) {
     return Coordinate(worldToScreenX(coor.getX()), worldToScreenY(coor.getY()));
 }
 
@@ -144,7 +144,7 @@ double GraphicsManager::worldToScreenY(double y) {
     return -ceil(y * zoom) + yOffset;
 }
 
-Coordinate GraphicsManager::screenToWorld(Coordinate coor) {
+Coordinate GraphicsManager::screenToWorld(const Coordinate & coor) {
     return Coordinate(screenToWorldX(coor.getX()), screenToWorldY(coor.getY()));
 }
 
@@ -160,7 +160,7 @@ Coordinate GraphicsManager::getMouseCoor() {
     return mouseCoor;
 }
 
-void GraphicsManager::setMouseCoor(Coordinate coor) {
+void GraphicsManager::setMouseCoor(const Coordinate & coor) {
     mouseCoor = coor;
 }
 
@@ -189,7 +189,7 @@ Coordinate GraphicsManager::getCenterSet() {
     return GraphicsManager::centerSet;
 }
 
-void GraphicsManager::setCenter(Coordinate center, bool hardSet) {
+void GraphicsManager::setCenter(const Coordinate & center, bool hardSet) {
     if (hardSet) {
         GraphicsManager::center = center;
         setOffsets();
@@ -237,7 +237,7 @@ void GraphicsManager::setZoomSpeedRatio(float zoomSpeedRatio) {
         GraphicsManager::zoomSpeedRatio = zoomSpeedRatio;
 }
 
-void GraphicsManager::drawCoordinate(Coordinate coor, Color color, bool adjust) {
+void GraphicsManager::drawCoordinate(const Coordinate & coor, Color color, bool adjust) {
     drawCoordinate(coor.getX(), coor.getY(), color, adjust);
 }
 
@@ -260,7 +260,7 @@ void GraphicsManager::drawCoordinate(double x, double y, Color color, bool adjus
     SDL_RenderFillRect(p_renderer, &rect);
 }
 
-void GraphicsManager::drawLine(Line line, Color color, bool adjust) {
+void GraphicsManager::drawLine(const Line & line, Color color, bool adjust) {
     drawLine(line.getCoor1().getX(), line.getCoor1().getY(), line.getCoor2().getX(), line.getCoor2().getY(), color, adjust);
 }
 
@@ -279,7 +279,7 @@ void GraphicsManager::drawLine(double x1, double y1, double x2, double y2, Color
     SDL_RenderDrawLine(p_renderer, (int)x1, (int)y1, (int)x2, (int)y2);
 }
 
-void GraphicsManager::drawParabola(Parabola parabola, Color color, bool adjust) {
+void GraphicsManager::drawParabola(const Parabola & parabola, Color color, bool adjust) {
     Coordinate coor1 = parabola.getLeftCoor();
     Coordinate coor2 = parabola.getRightCoor();
     

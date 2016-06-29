@@ -16,7 +16,7 @@
 
 using namespace nautical;
 
-Arc::Arc(Coordinate origin, double originDistance, Angle startAngle, Angle endAngle, bool clockwise) :
+Arc::Arc(const Coordinate & origin, double originDistance, const Angle & startAngle, const Angle & endAngle, bool clockwise) :
 origin(origin),
 originDistance(originDistance),
 startAngle(startAngle),
@@ -31,34 +31,38 @@ Coordinate Arc::getOrigin() const {
     return origin;
 }
 
-void Arc::setOrigin(Coordinate origin) {
+Arc & Arc::setOrigin(const Coordinate & origin) {
     this->origin = origin;
+    return *this;
 }
 
 double Arc::getOriginDistance() const {
     return originDistance;
 }
 
-void Arc::setOriginDistance(double distance) {
+Arc & Arc::setOriginDistance(double distance) {
     originDistance = distance;
+    return *this;
 }
 
 Angle Arc::getStartAngle() const {
     return startAngle;
 }
 
-void Arc::setStartAngle(Angle angle) {
+Arc & Arc::setStartAngle(const Angle & angle) {
     startAngle = angle;
     setDAngle();
+    return *this;
 }
 
 Angle Arc::getEndAngle() const {
     return endAngle;
 }
 
-void Arc::setEndAngle(Angle angle) {
+Arc & Arc::setEndAngle(const Angle & angle) {
     endAngle = angle;
     setDAngle();
+    return *this;
 }
 
 Angle Arc::getDAngle() const {
@@ -82,8 +86,9 @@ bool Arc::isClockwise() const {
     return clockwise;
 }
 
-void Arc::setClockwise(bool clockwise) {
+Arc & Arc::setClockwise(bool clockwise) {
     this->clockwise = clockwise;
+    return *this;
 }
 
 Coordinate Arc::getStartCoor() const {
@@ -94,7 +99,7 @@ Coordinate Arc::getEndCoor() const {
     return origin + Vector(endAngle, originDistance);
 }
 
-bool Arc::intersectsArc(Arc arc, std::vector<Coordinate> * p_intersections) const {
+bool Arc::intersectsArc(const Arc & arc, std::vector<Coordinate> * p_intersections) const {
     std::vector<Coordinate> intersections;
     Circle tempCircle(origin, originDistance);
     Circle(arc.origin, arc.originDistance).intersectsCircle(&tempCircle, &intersections);
@@ -132,7 +137,7 @@ bool Arc::intersectsArc(Arc arc, std::vector<Coordinate> * p_intersections) cons
     return intersects;
 }
 
-bool Arc::intersectsLine(Line line, std::vector<Coordinate> * p_intersections) const {
+bool Arc::intersectsLine(const Line & line, std::vector<Coordinate> * p_intersections) const {
     std::vector<Coordinate> intersections;
     Circle(origin, originDistance).intersectsLine(line, &intersections);
     
@@ -169,10 +174,10 @@ bool Arc::intersectsLine(Line line, std::vector<Coordinate> * p_intersections) c
     return intersects;
 }
 
-bool Arc::inArc(Angle angle) const {
+bool Arc::inArc(const Angle & angle) const {
     return ((clockwise ? startAngle : endAngle) - angle).getValue() <= dAngle.getValue();
 }
 
-bool Arc::inArc(Coordinate coor) const {
+bool Arc::inArc(const Coordinate & coor) const {
     return ((findDistance(origin, coor) <= originDistance) && inArc(findAngle(origin, coor)));
 }

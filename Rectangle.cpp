@@ -28,66 +28,70 @@ Coordinate Rectangle::getCenter() const {
     return center;
 }
 
-void Rectangle::setCenter(Coordinate center) {
+Rectangle & Rectangle::setCenter(Coordinate center) {
     this->center = center;
+    return *this;
 }
 
 double Rectangle::getWidth() const {
     return width;
 }
 
-void Rectangle::setWidth(double width) {
+Rectangle & Rectangle::setWidth(double width) {
     this->width = width;
     halfWidth = width / 2;
+    return *this;
 }
 
 double Rectangle::getHeight() const {
     return height;
 }
 
-void Rectangle::setHeight(double height) {
+Rectangle & Rectangle::setHeight(double height) {
     this->height = height;
     halfHeight = height / 2;
+    return *this;
 }
 
 Angle Rectangle::getAngle() const {
     return angle;
 }
 
-void Rectangle::setAngle(Angle angle) {
+Rectangle & Rectangle::setAngle(Angle angle) {
     this->angle = angle;
+    return *this;
 }
 
 Coordinate Rectangle::getTopRightCoor() const {
-    return center + Vector(halfWidth, -halfHeight).rotate(angle);
-}
-
-Coordinate Rectangle::getBottomRightCoor() const {
     return center + Vector(halfWidth, halfHeight).rotate(angle);
 }
 
-Coordinate Rectangle::getBottomLeftCoor() const {
-    return center + Vector(-halfWidth, halfHeight).rotate(angle);
+Coordinate Rectangle::getBottomRightCoor() const {
+    return center + Vector(halfWidth, -halfHeight).rotate(angle);
 }
 
-Coordinate Rectangle::getTopLeftCoor() const {
+Coordinate Rectangle::getBottomLeftCoor() const {
     return center + Vector(-halfWidth, -halfHeight).rotate(angle);
 }
 
+Coordinate Rectangle::getTopLeftCoor() const {
+    return center + Vector(-halfWidth, halfHeight).rotate(angle);
+}
+
 Line Rectangle::getTopLine() const {
-    return Line(getTopRightCoor(), getTopLeftCoor());
+    return Line(getTopLeftCoor(), getTopRightCoor());
 }
 
 Line Rectangle::getRightLine() const {
-    return Line(getBottomRightCoor(), getTopRightCoor());
+    return Line(getTopRightCoor(), getBottomRightCoor());
 }
 
 Line Rectangle::getBottomLine() const {
-    return Line(getBottomLeftCoor(), getBottomRightCoor());
+    return Line(getBottomRightCoor(), getBottomLeftCoor());
 }
 
 Line Rectangle::getLeftLine() const {
-    return Line(getTopLeftCoor(), getBottomLeftCoor());
+    return Line(getBottomLeftCoor(), getTopLeftCoor());
 }
 
 double Rectangle::getDiagonalLength() const {
@@ -151,13 +155,14 @@ bool Rectangle::intersectsShape(const Shape * p_shape, std::vector<Coordinate> *
     return intersects;
 }
 
-void Rectangle::move(Vector vector) {
-    setCenter(center += vector);
+Rectangle & Rectangle::move(Vector vector) {
+    return setCenter(center += vector);
 }
 
-void Rectangle::rotateAboutCoordinate(Coordinate coor, Angle angle) {
+Rectangle & Rectangle::rotateAboutCoordinate(Coordinate coor, Angle angle) {
     center.rotateAboutCoordinate(coor, angle);
     this->angle += angle;
+    return *this;
 }
 
 void Rectangle::draw() const {

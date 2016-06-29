@@ -33,16 +33,18 @@ Coordinate Circle::getCenter() const {
     return center;
 }
 
-void Circle::setCenter(Coordinate center) {
+Circle & Circle::setCenter(Coordinate center) {
     this->center = center;
+    return *this;
 }
 
 double Circle::getRadius() const {
     return radius;
 }
 
-void Circle::setRadius(double radius) {
+Circle & Circle::setRadius(double radius) {
     this->radius = radius;
+    return *this;
 }
 
 double Circle::convertToRadians(double distance) const {
@@ -152,12 +154,14 @@ bool Circle::intersectsCircle(const Circle * p_circle, std::vector<Coordinate> *
     return true;
 }
 
-void Circle::move(Vector vector) {
+Circle & Circle::move(Vector vector) {
     setCenter(center += vector);
+    return *this;
 }
 
-void Circle::rotateAboutCoordinate(Coordinate coor, Angle angle) {
+Circle & Circle::rotateAboutCoordinate(Coordinate coor, Angle angle) {
     center.rotateAboutCoordinate(coor, angle);
+    return *this;
 }
 
 void Circle::draw() const {

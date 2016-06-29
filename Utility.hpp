@@ -35,6 +35,7 @@
 
 namespace nautical {
     extern bool DEBUG_MODE;
+    extern bool SECRET_MODE;
     
     inline double solveQuadraticPlus(double a, double b, double c) { //solves quadratic equation
         return (-b + sqrt(pow(b, 2) - (4 * a * c))) / (2 * a);
@@ -66,7 +67,7 @@ namespace nautical {
         return findDistance(dx, dy);
     }
     
-    inline Angle findAngle(Coordinate coor1, Coordinate coor2) { //finds angle between coordinates
+    inline Angle findAngle(const Coordinate & coor1, const Coordinate & coor2) { //finds angle between coordinates
         return Angle(coor2.getX() - coor1.getX(), coor2.getY() - coor1.getY());
     }
     

@@ -20,13 +20,13 @@ namespace nautical {
         virtual ~Rectangle();
         
         Coordinate getCenter() const;
-        void setCenter(Coordinate center);
+        Rectangle & setCenter(Coordinate center);
         double getWidth() const;
-        void setWidth(double width);
+        Rectangle & setWidth(double width);
         double getHeight() const;
-        void setHeight(double height);
+        Rectangle & setHeight(double height);
         Angle getAngle() const;
-        void setAngle(Angle angle);
+        Rectangle & setAngle(Angle angle);
         
         Coordinate getTopRightCoor() const;
         Coordinate getBottomRightCoor() const;
@@ -49,8 +49,8 @@ namespace nautical {
         bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const;
         bool intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections = nullptr) const;
         
-        void move(Vector vector);
-        void rotateAboutCoordinate(Coordinate coor, Angle angle);
+        Rectangle & move(Vector vector);
+        Rectangle & rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         void draw() const;
         

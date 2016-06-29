@@ -22,14 +22,16 @@ KeyboardEvent::Key KeyboardEvent::getKey() const {
     return key;
 }
 
-void KeyboardEvent::setKey(Key key) {
+KeyboardEvent & KeyboardEvent::setKey(Key key) {
     this->key = key;
+    return *this;
 }
 
 KeyboardEvent::KeyboardAction KeyboardEvent::getAction() const {
     return action;
 }
 
-void KeyboardEvent::setAction(KeyboardAction action) {
+KeyboardEvent & KeyboardEvent::setAction(KeyboardAction action) {
     this->action = action;
+    return *this;
 }

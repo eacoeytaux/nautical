@@ -31,23 +31,25 @@ bool Countdown::check(int checks) {
     return ret;
 }
 
-void Countdown::reset() {
-    reset(set);
+Countdown & Countdown::reset() {
+    return reset(set);
 }
 
-void Countdown::reset(int set) {
+Countdown & Countdown::reset(int set) {
     this->set = set;
     count = set;
+    return *this;
 }
 
 int Countdown::getLoopCount() const {
     return loopCount;
 }
 
-void Countdown::addLoops(int loops) {
+Countdown & Countdown::addLoops(int loops) {
     if (maxLoops < 0) {
         maxLoops = loops;
     } else {
         maxLoops += loops;
     }
+    return *this;
 }

@@ -22,26 +22,26 @@ namespace climber {
         Player(nautical::Coordinate pos);
         virtual ~Player();
         
-        void setMapElement(const nautical::MapElement * p_element);
+        Player & setMapElement(const nautical::MapElement * p_element);
         
         Rope * getRope();
-        void setRope(Rope * p_rope);
+        Player & setRope(Rope * p_rope);
         
         bool isFacingRight() const;
-        void setFacingRight(bool facingRight);
+        Player & setFacingRight(bool facingRight);
         bool isMovingRight() const;
-        void setMovingRight(bool movingRight);
+        Player & setMovingRight(bool movingRight);
         bool isMovingLeft() const;
-        void setMovingLeft(bool movingLeft);
+        Player & setMovingLeft(bool movingLeft);
         
         bool isJumping() const;
-        void setJumping(bool b);
+        Player & setJumping(bool b);
         bool canJump() const;
-        void setCanJump(bool b);
+        Player & setCanJump(bool b);
         bool canGhostJump() const;
-        void setCanGhostJump(bool b);
+        Player & setCanGhostJump(bool b);
         
-        void move(nautical::Vector vec);
+        Player & move(nautical::Vector vec);
         
         bool handleEvent(nautical::Event * p_event);
         

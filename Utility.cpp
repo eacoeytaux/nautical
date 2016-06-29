@@ -11,3 +11,4 @@
 using namespace nautical;
 
 bool nautical::DEBUG_MODE = false;
+bool nautical::SECRET_MODE = false;

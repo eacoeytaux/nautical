@@ -32,25 +32,28 @@ Coordinate Rope::getOrigin() const {
     return origin;
 }
 
-void Rope::setOrigin(nautical::Coordinate origin) {
+Rope & Rope::setOrigin(nautical::Coordinate origin) {
     this->origin = origin;
+    return *this;
 }
 
 Coordinate Rope::getHead() const {
     return head;
 }
 
-void Rope::setHead(nautical::Coordinate head) {
+Rope & Rope::setHead(nautical::Coordinate head) {
     this->head = head;
     moveTo(head);
+    return *this;
 }
 
 double Rope::getLength() const {
     return length;
 }
 
-void Rope::setLength(double length) {
+Rope & Rope::setLength(double length) {
     this->length = length;
+    return *this;
 }
 
 bool Rope::isTaught() const {
@@ -155,6 +158,7 @@ void Rope::draw() const {
             break;
         }
     }
+    GraphicsManager::drawCoordinate(origin, WHITE);
     
     //draw hook
     static int arrowLength = 5;

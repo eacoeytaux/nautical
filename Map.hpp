@@ -34,7 +34,7 @@ namespace nautical {
         const std::vector<MapEdge*> * getEdgesList() const;
         
         double getAirResistanceCoefficient(double value = 1) const;
-        void setAirResistanceCoefficient(float airResistanceCoefficient);
+        Map & setAirResistanceCoefficient(float airResistanceCoefficient);
         
         static double getDefaultAirResistanceCoefficient(double value = 1);
         static void setDefaultAirResistanceCoefficient(float airResistanceCoefficient);

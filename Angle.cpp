@@ -28,15 +28,16 @@ bool Angle::truncating() const {
     return truncate;
 }
 
-void Angle::setTruncating(bool truncate) {
+Angle & Angle::setTruncating(bool truncate) {
     this->truncate = truncate;
+    return *this;
 }
 
 double Angle::getValue() const {
     return angleVal;
 }
 
-void Angle::setValue(double angleVal) {
+Angle & Angle::setValue(double angleVal) {
     if (this->angleVal != angleVal) {
         if (truncate) {
             while (angleVal > M_PI)
@@ -50,10 +51,12 @@ void Angle::setValue(double angleVal) {
         cosValue.setSet();
     }
     angleValDegrees = radiansToDegrees(angleVal);
+    return *this;
 }
 
-void Angle::setValue(double dx, double dy) {
+Angle & Angle::setValue(double dx, double dy) {
     setValue(atan2(dy, dx));
+    return *this;
 }
 
 double Angle::getSin(double scale) const {

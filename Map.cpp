@@ -77,8 +77,9 @@ double Map::getAirResistanceCoefficient(double value) const {
     return airResistanceCoefficient * value;
 }
 
-void Map::setAirResistanceCoefficient(float airResistanceCoefficient) {
+Map & Map::setAirResistanceCoefficient(float airResistanceCoefficient) {
     this->airResistanceCoefficient = airResistanceCoefficient;
+    return *this;
 }
 
 double Map::getDefaultAirResistanceCoefficient(double value) {

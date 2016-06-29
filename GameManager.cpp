@@ -40,7 +40,7 @@
 
 #define MAX_CONTROLLERS 4
 #define MAX_JOYSTICK_VALUE 32768.0
-#define JOYSTICK_DEADZONE 8192.0
+#define JOYSTICK_DEADZONE 16384.0
 
 using namespace nautical;
 
@@ -57,7 +57,7 @@ struct Controller {
         bool outsideDeadzone = false;
         int xDir, yDir;
     } joysticks[2];
-} * controllers[MAX_CONTROLLERS];
+} controllers[MAX_CONTROLLERS];
 
 const long targetTime = 1000 / FPS;
 int totalCycles = 0;
@@ -66,6 +66,10 @@ bool GameManager::running = false;
 bool paused = false;
 bool reset = false;
 unsigned int cycles = 0;
+
+//secret mode
+char secretCount = 0;
+Countdown secretCountdown;
 
 bool GameManager::startup() {
     if (init)
@@ -80,7 +84,7 @@ bool GameManager::startup() {
             Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s", SDL_GetError());
             return false;
         } else if (GraphicsManager::startup(p_window)) {
-            GraphicsManager::setPixelScale(2);
+            //GraphicsManager::setPixelScale(2);
             
             //init SDL2_mixer for audio
             //if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
@@ -88,17 +92,17 @@ bool GameManager::startup() {
             //    return false;
             //}
             
-            for (int i = 0; i < MAX_CONTROLLERS; i++) {
-                controllers[i] = new Controller();
-            }
+            //for (int i = 0; i < MAX_CONTROLLERS; i++) {
+            //    controllers[i] = new Controller();
+            //}
             
             //if using controller, init controller
             SDL_JoystickEventState(SDL_ENABLE);
-            controllers[0]->p_controller = SDL_JoystickOpen(0);
-            if (controllers[0]->p_controller == nullptr) {
+            controllers[0].p_controller = SDL_JoystickOpen(0);
+            if (controllers[0].p_controller == nullptr) {
                 Logger::writeLog(PLAIN_MESSAGE, "GameManager::init(): controller not loaded");
             } else {
-                Logger::writeLog(PLAIN_MESSAGE, "GameManager::init(): controller loaded! controller name: %s", SDL_JoystickName(controllers[0]->p_controller));
+                Logger::writeLog(PLAIN_MESSAGE, "GameManager::init(): controller loaded! controller name: %s", SDL_JoystickName(controllers[0].p_controller));
             }
         }
     }
@@ -117,9 +121,9 @@ bool GameManager::shutdown() {
     
     //close controller
     for (int i = 0; i < MAX_CONTROLLERS; i++) {
-        SDL_JoystickClose(controllers[i]->p_controller);
-        controllers[i]->p_controller = nullptr;
-        delete controllers[i];
+        SDL_JoystickClose(controllers[i].p_controller);
+        controllers[i].p_controller = nullptr;
+        //delete controllers[i];
     }
     
     GraphicsManager::shutdown();
@@ -128,6 +132,8 @@ bool GameManager::shutdown() {
     SDL_DestroyWindow(p_window);
     p_window = nullptr;
     SDL_Quit();
+    
+    Logger::shutdown();
     
     return !(init = false);
 }
@@ -195,6 +201,11 @@ void GameManager::run() {
         } else {
             Logger::writeLog(WARNING_MESSAGE, "Missed deadline by %ld ms", -wait);
         }
+        
+        if (secretCountdown.check()) {
+            secretCount = 0;
+            secretCountdown.reset(0);
+        }
     }
     
     if (reset) {
@@ -255,7 +266,7 @@ void GameManager::pollEvents(std::vector<Event*> & events) {
                 if (event.jaxis.which > MAX_CONTROLLERS)
                     break;
                 
-                Controller * p_controller = controllers[event.jaxis.which];
+                Controller * p_controller = &controllers[event.jaxis.which];
                 int joystickIndex = (event.jaxis.axis < 2) ? 0 : 1; //TODO only true for sixaxis controller, test for others
                 
                 if ((event.jaxis.axis == 0) || (event.jaxis.axis == 2)) {
@@ -324,6 +335,35 @@ void GameManager::pollEvents(std::vector<Event*> & events) {
                     case SDLK_r:
                         running = false;
                         reset = true;
+                        break;
+                    case SDLK_f:
+                        static bool fullscreen = false;
+                        //SDL_SetWindowFullscreen(p_window, ((fullscreen = !fullscreen)) ? SDL_WINDOW_FULLSCREEN : 0); //TODO
+                        break;
+                    case SDLK_n:
+                        if (secretCount == 0) {
+                            secretCount = 1;
+                            secretCountdown.reset(30);
+                        }
+                        break;
+                    case SDLK_t:
+                        if (secretCount == 1) {
+                            secretCount = 2;
+                            secretCountdown.reset(30);
+                        }
+                        break;
+                    case SDLK_c:
+                        if (secretCount == 2) {
+                            secretCount = 3;
+                            secretCountdown.reset(30);
+                        }
+                        break;
+                    case SDLK_l:
+                        if (secretCount == 3) {
+                            SECRET_MODE = !SECRET_MODE;
+                            secretCount = 0;
+                            secretCountdown.reset(0);
+                        }
                         break;
                     case SDLK_1:
                         GraphicsManager::setPixelScale(1);

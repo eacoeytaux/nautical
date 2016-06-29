@@ -25,9 +25,9 @@ namespace nautical {
         Angle getNormal() const;
         MapVertex * getVertex(MapVertex * p_other) const;
         MapVertex * getVertexFront() const;
-        void setVertexFront(MapVertex * p_vertex);
+        MapEdge & setVertexFront(MapVertex * p_vertex);
         MapVertex * getVertexBack() const;
-        void setVertexBack(MapVertex * p_vertex);
+        MapEdge & setVertexBack(MapVertex * p_vertex);
         
         virtual void draw() const;
         

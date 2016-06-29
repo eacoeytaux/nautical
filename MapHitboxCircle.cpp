@@ -18,9 +18,10 @@ MapHitboxCircle::MapHitboxCircle(Circle circle) : circle(circle) {
 
 MapHitboxCircle::~MapHitboxCircle() { }
 
-void MapHitboxCircle::move(Vector vec) {
+MapHitboxCircle & MapHitboxCircle::move(Vector vec) {
     MapHitbox::move(vec);
     circle.move(vec);
+    return *this;
 }
 
 std::shared_ptr<Shape> MapHitboxCircle::getShape() const {
@@ -31,9 +32,10 @@ Circle MapHitboxCircle::getCircle() const {
     return circle;
 }
 
-void MapHitboxCircle::setCircle(Circle circle) {
+MapHitboxCircle & MapHitboxCircle::setCircle(Circle circle) {
     this->circle = circle;
     center = circle.getCenter();
+    return *this;
 }
 
 bool MapHitboxCircle::adjustVector(const MapVertex * p_vertex, Vector * p_vector) const {

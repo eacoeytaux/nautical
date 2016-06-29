@@ -24,16 +24,18 @@ Coordinate MapCatch::getCollision() const {
     return collision;
 }
 
-void MapCatch::setCollision(Coordinate collision) {
+MapCatch & MapCatch::setCollision(Coordinate collision) {
     this->collision = collision;
+    return *this;
 }
 
 Line MapCatch::getLine() const {
     return line;
 }
 
-void MapCatch::setLine(Line line) {
+MapCatch & MapCatch::setLine(Line line) {
     this->line = line;
+    return *this;
 }
 
 bool MapCatch::containsElement(const MapElement * p_element) const {
@@ -53,18 +55,16 @@ const MapElement * MapCatch::getElement1() const {
     return p_element1;
 }
 
-void MapCatch::setElement1(const MapElement * p_element) {
+MapCatch & MapCatch::setElement1(const MapElement * p_element) {
     this->p_element1 = p_element;
+    return *this;
 }
 
 const MapElement * MapCatch::getElement2() const {
     return p_element2;
 }
 
-void MapCatch::setElement2(const MapElement * p_element) {
+MapCatch & MapCatch::setElement2(const MapElement * p_element) {
     this->p_element2 = p_element;
-}
-
-bool MapCatch::operator==(const MapCatch & mapCatch) const {
-    return ((line == mapCatch.line) && (p_element1 == mapCatch.p_element1) && (p_element2 == mapCatch.p_element2));
+    return *this;
 }

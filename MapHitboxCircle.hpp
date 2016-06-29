@@ -17,11 +17,11 @@ namespace nautical {
         MapHitboxCircle(Circle circle);
         virtual ~MapHitboxCircle();
         
-        void move(Vector vec);
+        MapHitboxCircle & move(Vector vec);
         
         std::shared_ptr<Shape> getShape() const;
         Circle getCircle() const;
-        void setCircle(Circle circle);
+        MapHitboxCircle & setCircle(Circle circle);
         
         bool adjustVector(const MapVertex * p_vertex, Vector * p_vector) const;
         std::shared_ptr<Shape> createBumper(const MapVertex * p_vertex) const; //always returns LineShape

@@ -25,8 +25,9 @@ namespace nautical {
             return center;
         }
         
-        virtual void move(Vector vec) {
+        virtual MapHitbox & move(Vector vec) {
             center += vec;
+            return *this;
         }
         
         virtual std::shared_ptr<Shape> getShape() const = 0; //pointer needs to be deleted after use

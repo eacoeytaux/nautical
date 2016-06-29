@@ -97,7 +97,16 @@ Map * World::getMap() {
     return &map;
 }
 
-void World::addObject(WorldObject * p_object, bool shouldUpdate, bool shouldDraw) {
+double World::getSpeedRatio() const {
+    return speedRatio;
+}
+
+World & World::setSpeedRatio(float speedRatio) {
+    this->speedRatio = speedRatio;
+    return *this;
+}
+
+World & World::addObject(WorldObject * p_object, bool shouldUpdate, bool shouldDraw) {
     if (p_object) {
         p_object->setParent(this);
         
@@ -115,13 +124,16 @@ void World::addObject(WorldObject * p_object, bool shouldUpdate, bool shouldDraw
     } else {
         Logger::writeLog(WARNING_MESSAGE, "World::addObject(): attempted to add nullptr");
     }
+    
+    return *this;
 }
 
-void World::markObjectForRemoval(WorldObject * p_object) {
+World & World::markObjectForRemoval(WorldObject * p_object) {
     objectsToDelete.push_back(p_object);
+    return *this;
 }
 
-void World::removeObject(WorldObject * p_object) {
+World & World::removeObject(WorldObject * p_object) {
     if (p_object) {
         if (vector_helpers::containsElement(allObjects, p_object)) {
             vector_helpers::removeElementByValue(allObjects, p_object);
@@ -140,13 +152,15 @@ void World::removeObject(WorldObject * p_object) {
     } else {
         Logger::writeLog(WARNING_MESSAGE, "World::removeObject(): attempted to remove nullptr");
     }
+    
+    return *this;
 }
 
-void World::subscribeObject(std::string eventTag, WorldObject * p_object) {
+World & World::subscribeObject(std::string eventTag, WorldObject * p_object) {
     for (std::vector<EventPairing>::iterator it = subscribedObjects.begin(); it != subscribedObjects.end(); it++) {
         if (it->eventTag == eventTag) {
             it->subscribedObjects.push_back(p_object);
-            return;
+            return *this;
         }
     }
     
@@ -155,21 +169,23 @@ void World::subscribeObject(std::string eventTag, WorldObject * p_object) {
     newPair.eventTag = eventTag;
     newPair.subscribedObjects.push_back(p_object);
     subscribedObjects.push_back(newPair);
+    return *this;
 }
 
-void World::unsubscribeObject(std::string eventTag, WorldObject * p_object) {
+World & World::unsubscribeObject(std::string eventTag, WorldObject * p_object) {
     for (std::vector<EventPairing>::iterator it = subscribedObjects.begin(); it != subscribedObjects.end(); it++) {
         if (it->eventTag == eventTag) {
             vector_helpers::removeElementByValue(it->subscribedObjects, p_object);
             if (it->subscribedObjects.size() == 0) //if no objects are subscribed to event, remove event
                 vector_helpers::removeElementByValue(subscribedObjects, *it);
-            return;
+            return *this;
         }
     }
     Logger::writeLog(WARNING_MESSAGE, "World::unregisterObjects(): attempted to unregister objects from non-existant event");
+    return *this;
 }
 
-void World::handleEvent(Event * p_event) {
+World & World::handleEvent(Event * p_event) {
     for (std::vector<EventPairing>::iterator it = subscribedObjects.begin(); it != subscribedObjects.end(); it++) {
         EventPairing pair = *it;
         if (p_event->hasTag(pair.eventTag)) {
@@ -179,6 +195,7 @@ void World::handleEvent(Event * p_event) {
         }
     }
     delete p_event;
+    return *this;
 }
 
 /*void World::generatePath(WorldObject * p_object) {
@@ -482,8 +499,9 @@ void World::update(std::vector<Event*> & events) {
     updateTimestamp++;
 }
 
-void World::updateObject(WorldObject * p_object) {
+World & World::updateObject(WorldObject * p_object) {
     p_object->Updatable::update(updateTimestamp);
+    return *this;
 }
 
 void World::draw() {

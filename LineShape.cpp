@@ -21,8 +21,9 @@ Line LineShape::getLine() const {
     return line;
 }
 
-void LineShape::setLine(Line line) {
+LineShape & LineShape::setLine(Line line) {
     this->line = line;
+    return *this;
 }
 
 double LineShape::getLowerBoundX() const {
@@ -53,12 +54,14 @@ bool LineShape::intersectsShape(const Shape * p_shape, std::vector<Coordinate> *
     return p_shape->intersectsLine(line, p_intersections);
 }
 
-void LineShape::move(Vector vector) {
+LineShape & LineShape::move(Vector vector) {
     line = Line(line.getCoor1() + vector, line.getCoor2() + vector);
+    return *this;
 }
 
-void LineShape::rotateAboutCoordinate(Coordinate coor, Angle angle) {
+LineShape & LineShape::rotateAboutCoordinate(Coordinate coor, Angle angle) {
     line.rotateAboutCoordinate(coor, angle);
+    return *this;
 }
 
 void LineShape::draw() const {

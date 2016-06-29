@@ -54,8 +54,6 @@ void Slimeball::update() {
 }
 
 void Slimeball::draw() const {
-    //getMapHitbox()->getShape()->draw();
-    
     if (p_spriteSheet)
-        GraphicsManager::drawImageFromSpriteSheet(p_spriteSheet, 0, getCenter(), rot);
+        GraphicsManager::drawImageFromSpriteSheet(p_spriteSheet, 0, getCenter());
 }

@@ -24,14 +24,16 @@ Coordinate MouseEvent::getMousePos() const {
     return GraphicsManager::screenToWorld(mousePosScreen);
 }
 
-void MouseEvent::setMousePosScreen(Coordinate mousePosScreen) {
+MouseEvent & MouseEvent::setMousePosScreen(Coordinate mousePosScreen) {
     mousePosScreen = mousePosScreen;
+    return *this;
 }
 
 MouseEvent::MouseAction MouseEvent::getAction() const {
     return action;
 }
 
-void MouseEvent::setAction(MouseAction action) {
+MouseEvent & MouseEvent::setAction(MouseAction action) {
     this->action = action;
+    return *this;
 }

@@ -35,11 +35,11 @@ namespace climber {
         virtual ~Rope();
         
         nautical::Coordinate getOrigin() const;
-        void setOrigin(nautical::Coordinate origin);
+        Rope & setOrigin(nautical::Coordinate origin);
         nautical::Coordinate getHead() const;
-        void setHead(nautical::Coordinate head);
+        Rope & setHead(nautical::Coordinate head);
         double getLength() const;
-        void setLength(double length);
+        Rope & setLength(double length);
         bool isTaught() const;
         
         bool setState(int state);

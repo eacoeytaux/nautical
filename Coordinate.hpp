@@ -17,14 +17,14 @@ namespace nautical {
         Coordinate(double x = 0, double y = 0);
         
         double getX() const;
-        void setX(double x);
-        void moveX(double dx);
+        Coordinate & setX(double x);
+        Coordinate & moveX(double dx);
         
         double getY() const;
-        void setY(double y);
-        void moveY(double dy);
+        Coordinate & setY(double y);
+        Coordinate & moveY(double dy);
         
-        void rotateAboutCoordinate(Coordinate coor, Angle angle);
+        Coordinate & rotateAboutCoordinate(const Coordinate & coor, const Angle & angle);
         
         bool operator==(const Coordinate & coor) const;
         bool operator!=(const Coordinate & coor) const;

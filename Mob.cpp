@@ -27,40 +27,43 @@ bool Mob::isAlive() const {
     return alive;
 }
 
-void Mob::kill(bool passively) {
+Mob & Mob::kill(bool passively) {
     health = 0;
     alive = false;
+    return *this;
 }
 
 int Mob::getMaxHealth() const {
     return maxHealth;
 }
 
-void Mob::setMaxHealth(int health) {
+Mob & Mob::setMaxHealth(int health) {
     maxHealth = health;
+    return *this;
 }
 
-void Mob::raiseMaxHealth(int health) {
-    setMaxHealth(health);
+Mob & Mob::raiseMaxHealth(int health) {
+    return setMaxHealth(maxHealth + health);
 }
 
-void Mob::setHealth(int health) {
+Mob & Mob::setHealth(int health) {
     if (health <= 0)
         kill(false);
     else if (health > maxHealth)
         this->health = maxHealth;
     else
         this->health = health;
+    return *this;
 }
 
-void Mob::damage(int health) {
-    setHealth(this->health -= health);
+Mob & Mob::damage(int health) {
+    return setHealth(this->health -= health);
 }
 
-void Mob::heal(int health) {
-    setHealth(this->health += health);
+Mob & Mob::heal(int health) {
+    return setHealth(this->health += health);
 }
 
-void Mob::healFull() {
-    setHealth(maxHealth);
+Mob & Mob::healFull() {
+    return setHealth(maxHealth);
 }

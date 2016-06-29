@@ -22,19 +22,19 @@ namespace nautical {
         Vector(Coordinate coor1, Coordinate coor2);
         
         double getDx() const;
-        void setDx(double dx);
+        Vector & setDx(double dx);
         bool isDxPositive();
         double getDy() const;
-        void setDy(double dy);
+        Vector & setDy(double dy);
         bool isDyPositive();
-        void setDxDy(Vector vec);
+        Vector & setDxDy(Vector vec);
         Coordinate getOrigin() const;
-        void setOrigin(Coordinate origin);
+        Vector & setOrigin(Coordinate origin);
         Coordinate getDestination() const;
-        void setDestination(Coordinate destination);
+        Vector & setDestination(Coordinate destination);
         double getMagnitude() const;
-        void setMagnitude(double magnitude);
-        void extend(double length);
+        Vector & setMagnitude(double magnitude);
+        Vector & extend(double length);
         
         Angle getAngle() const;
         Vector & rotateToAngle(Angle angle);

@@ -42,20 +42,22 @@ double Vector::getDx() const {
     return dx;
 }
 
-void Vector::setDx(double dx) {
+Vector & Vector::setDx(double dx) {
     this->dx = dx;
     angle.setSet();
     magnitude.setSet();
+    return *this;
 }
 
 double Vector::getDy() const {
     return dy;
 }
 
-void Vector::setDy(double dy) {
+Vector & Vector::setDy(double dy) {
     this->dy = dy;
     angle.setSet();
     magnitude.setSet();
+    return *this;
 }
 
 bool Vector::isDxPositive() {
@@ -66,26 +68,29 @@ bool Vector::isDyPositive() {
     return dy >= 0;
 }
 
-void Vector::setDxDy(Vector vec) {
+Vector & Vector::setDxDy(Vector vec) {
     setDx(vec.getDx());
     setDy(vec.getDy());
+    return *this;
 }
 
 Coordinate Vector::getOrigin() const {
     return origin;
 }
 
-void Vector::setOrigin(Coordinate origin) {
+Vector & Vector::setOrigin(Coordinate origin) {
     this->origin = origin;
+    return *this;
 }
 
 Coordinate Vector::getDestination() const {
     return origin + *this;
 }
 
-void Vector::setDestination(Coordinate destination) {
+Vector & Vector::setDestination(Coordinate destination) {
     setDx(destination.getX() - origin.getX());
     setDy(destination.getY() - origin.getY());
+    return *this;
 }
 
 double Vector::getMagnitude() const {
@@ -94,14 +99,15 @@ double Vector::getMagnitude() const {
     return magnitude.getValue();
 }
 
-void Vector::setMagnitude(double magnitude) {
+Vector & Vector::setMagnitude(double magnitude) {
     double ratio = magnitude / getMagnitude();
     setDx(dx * ratio);
     setDy(dy * ratio);
+    return *this;
 }
 
-void Vector::extend(double length) {
-    setMagnitude(getMagnitude() + length);
+Vector & Vector::extend(double length) {
+    return setMagnitude(getMagnitude() + length);
 }
 
 Angle Vector::getAngle() const {

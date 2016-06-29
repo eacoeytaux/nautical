@@ -35,12 +35,12 @@ namespace nautical {
         virtual double getUpperBoundX() const = 0;
         virtual double getUpperBoundY() const = 0;
         
-        virtual bool contains(Coordinate coor) const = 0;
-        virtual bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const = 0;
+        virtual bool contains(Coordinate coor) const = 0; //TODO make const reference
+        virtual bool intersectsLine(Line, std::vector<Coordinate> * p_intersections = nullptr) const = 0; //TODO make const reference
         virtual bool intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections = nullptr) const = 0;
         
-        virtual void move(Vector vector) = 0;
-        virtual void rotateAboutCoordinate(Coordinate coor, Angle angle) = 0;
+        virtual Shape & move(Vector vector) = 0; //TODO make const reference
+        virtual Shape & rotateAboutCoordinate(Coordinate coor, Angle angle) = 0;
         
         virtual void draw() const = 0;
         

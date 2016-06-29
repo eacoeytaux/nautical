@@ -217,7 +217,7 @@ bool Polygon::intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p
     return intersects;
 }
 
-void Polygon::move(Vector vector) {
+Polygon & Polygon::move(Vector vector) {
     std::vector<Coordinate> newVertices;
     for (std::vector<Coordinate>::iterator it = vertices.begin(); it != vertices.end(); it++) {
         newVertices.push_back(*it + vector);
@@ -244,9 +244,11 @@ void Polygon::move(Vector vector) {
         convexVertices = vertices;
         convexEdges = edges;
     }
+    
+    return *this;
 }
 
-void Polygon::rotateAboutCoordinate(Coordinate coor, Angle angle) {
+Polygon & Polygon::rotateAboutCoordinate(Coordinate coor, Angle angle) {
     std::vector<Coordinate> newVertices;
     for (std::vector<Coordinate>::iterator it = vertices.begin(); it != vertices.end(); it++) {
         Coordinate vertexCoor = *it;
@@ -281,6 +283,8 @@ void Polygon::rotateAboutCoordinate(Coordinate coor, Angle angle) {
         convexVertices = vertices;
         convexEdges = edges;
     }
+    
+    return *this;
 }
 
 void Polygon::draw() const {

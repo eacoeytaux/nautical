@@ -21,9 +21,10 @@ MapHitboxRectangle::MapHitboxRectangle(Rectangle rec) : rec(rec) {
 
 MapHitboxRectangle::~MapHitboxRectangle() { }
 
-void MapHitboxRectangle::move(Vector vec) {
+MapHitboxRectangle & MapHitboxRectangle::move(Vector vec) {
     MapHitbox::move(vec);
     rec.move(vec);
+    return *this;
 }
 
 std::shared_ptr<Shape> MapHitboxRectangle::getShape() const {
@@ -34,9 +35,10 @@ Rectangle MapHitboxRectangle::getRectangle() const {
     return rec;
 }
 
-void MapHitboxRectangle::setRectangle(Rectangle rec) {
+MapHitboxRectangle & MapHitboxRectangle::setRectangle(Rectangle rec) {
     this->rec = rec;
     center = rec.getCenter();
+    return *this;
 }
 
 bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, Vector * p_vector) const {
