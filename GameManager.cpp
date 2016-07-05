@@ -33,10 +33,9 @@
 #include "World.hpp"
 #include "Player.hpp"
 #include "Rope.hpp"
+#include "Rope2.hpp"
 #include "Slimeball.hpp"
 #include "Flame.hpp"
-
-#define FPS 60
 
 #define MAX_CONTROLLERS 4
 #define MAX_JOYSTICK_VALUE 32768.0
@@ -46,6 +45,7 @@ using namespace nautical;
 
 KeyboardEvent::Key getKeyFromSDLKey(int SDL_key);
 
+int FPS = 60;
 bool GameManager::init = false;
 
 SDL_Window * p_window = nullptr;
@@ -164,6 +164,8 @@ void GameManager::run() {
     
     //level.addObject(new climber::Slimeball(Coordinate(600, 600)));
     
+    //level.addObject(new climber::Rope2(Coordinate(350, 500), 50));
+    
     Clock timer;
     while (running) {
         timer.delta();
@@ -209,7 +211,6 @@ void GameManager::run() {
     }
     
     if (reset) {
-        GraphicsManager::setZoom(1);
         run();
     } else {
         shutdown();
@@ -418,8 +419,8 @@ KeyboardEvent::Key getKeyFromSDLKey(int SDL_key) {
             return KeyboardEvent::DOWNARROW;
         case SDLK_MINUS:
             return KeyboardEvent::MINUS;
-        case SDLK_PLUS:
-            return KeyboardEvent::PLUS;
+        case SDLK_EQUALS:
+            return KeyboardEvent::EQUALS;
         case SDLK_PERIOD:
             return KeyboardEvent::PERIOD;
         case SDLK_COMMA:
@@ -559,18 +560,32 @@ KeyboardEvent::Key getKeyFromSDLKey(int SDL_key) {
     }
 }
 
+#include "Mass.hpp"
+#include "Spring.hpp"
+#include "PhysicsRope.hpp"
+
 void GameManager::runTests() { //DEBUGGING
-    /*Queue<Coordinate> coors;
-     coors.insert(Coordinate(150, 250));
-     coors.insert(Coordinate(220, 300));
-     coors.insert(Coordinate(220, 150));
-     coors.insert(Coordinate(200, 180));
-     coors.insert(Coordinate(150, 150));
-     coors.insert(Coordinate(100, 100));
-     static Polygon polygon(&coors);
-     
-     bool contains = polygon.contains(GraphicsManager::getMouseCoor());
-     
-     polygon.drawFilled(RED);
-     polygon.Drawable::draw(contains ? GREEN : WHITE);*/
+//    static physics::Mass m1(Coordinate(500, 500));
+//    static physics::Mass m2(Coordinate(550, 500));
+//    static physics::Spring spring(&m1, &m2, 60, 0.25);
+//    
+//    spring.update();
+//    
+//    //m1.addToForce(Vector(0, -0.3) * m1.getM());
+//    //m1.updateVelocity();
+//    //m1.updatePosition();
+//    m2.addToForce(Vector(0, -0.3) * m2.getM());
+//    m2.updateVelocity();
+//    m2.setVelocity(m2.getVelocity() * 0.99);
+//    m2.updatePosition();
+//    m2.setForce(Vector(0, 0));
+//    
+//    GraphicsManager::drawCoordinate(m1.getPosition());
+//    GraphicsManager::drawCoordinate(m2.getPosition());
+//    GraphicsManager::drawLine(Line(m1.getPosition(), m2.getPosition()));
+    
+    static physics::PhysicsRope rope(Coordinate(300, 500), 50);
+    rope.setAnchor(GraphicsManager::screenToWorld(GraphicsManager::getMouseCoor()));
+    rope.update();
+    rope.draw();
 }

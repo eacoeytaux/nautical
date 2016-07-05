@@ -173,7 +173,7 @@ void GraphicsManager::setMouseTrapped(bool mouseTrapped) {
 }
 
 void GraphicsManager::updateCenter() {
-    if (findDistance(center, centerSet) > CENTER_OFFSET_MINIMUM) {
+    if (!DEBUG_MODE && (findDistance(center, centerSet) > CENTER_OFFSET_MINIMUM)) {
         center += Vector(center, centerSet) * fmin(centerSpeedRatio, 1);
     } else {
         center = centerSet;
@@ -205,7 +205,7 @@ void GraphicsManager::setCenterSpeedRatio(float centerSpeedRatio) {
 }
 
 void GraphicsManager::updateZoom() {
-    if (fabs(zoom - zoomSet) > ZOOM_OFFSET_MINIMUM) {
+    if (!DEBUG_MODE && (fabs(zoom - zoomSet) > ZOOM_OFFSET_MINIMUM)) {
         zoom += (zoomSet - zoom) * zoomSpeedRatio;
     } else {
         zoom = zoomSet;

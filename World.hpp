@@ -35,8 +35,8 @@ namespace nautical {
         const Map * getMap() const;
         Map * getMap();
         
-        double getSpeedRatio() const;
-        World & setSpeedRatio(float speedRatio);
+        double getTimeRatio() const;
+        World & setTimeRatio(double timeRatio);
         
         World & addObject(WorldObject * p_object, bool shouldUpdate = true, bool shouldDraw = true);
         World & markObjectForRemoval(WorldObject * p_object); //TODO when should object be deleted?
@@ -66,7 +66,7 @@ namespace nautical {
         bool verticalWorld;
         
         Map map;
-        double speedRatio = 1.f;
+        double timeRatio = 1.f;
         
         std::vector<WorldObject*> allObjects,
         objectsToDelete,

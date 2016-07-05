@@ -97,12 +97,12 @@ Map * World::getMap() {
     return &map;
 }
 
-double World::getSpeedRatio() const {
-    return speedRatio;
+double World::getTimeRatio() const {
+    return timeRatio;
 }
 
-World & World::setSpeedRatio(float speedRatio) {
-    this->speedRatio = speedRatio;
+World & World::setTimeRatio(double timeRatio) {
+    this->timeRatio = timeRatio;
     return *this;
 }
 
@@ -452,12 +452,14 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
     
     //finished checking collisions
     
-    if (p_vel)
+    if (p_vel) {
         *p_vel = vel / *p_percentage;
+    }
     
     *p_percentage = 0.f;
-    if ((distance.getValue() < INFINITY) && (vel.getMagnitude() != 0))
+    if ((distance.getValue() < INFINITY) && (vel.getMagnitude() != 0)) {
         *p_percentage = 1.f - (float)(distance.getValue() / vel.getMagnitude());
+    }
     
     return nextVel;
 }
@@ -465,13 +467,38 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
 void World::update(std::vector<Event*> & events) {
     Logger::writeLog(PLAIN_MESSAGE, "starting world[%d] update %d", id, updateTimestamp);
     
+    printf("world time ratio: %f\n", getTimeRatio());
+    
     for (std::vector<Event*>::iterator it = events.begin(); it != events.end(); it++) {
         if ((*it)->hasTag(KEYBOARD_EVENT_TAG)) { //DEBUGGING
-            if ((static_cast<KeyboardEvent*>(*it)->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(*it)->getKey() == KeyboardEvent::O)) {
-                DarknessOverlay::setInEffect(!DarknessOverlay::isInEffect());
-            } else if ((static_cast<KeyboardEvent*>(*it)->getAction() == KeyboardEvent::KEY_PRESSED) && (static_cast<KeyboardEvent*>(*it)->getKey() == KeyboardEvent::B)) {
-                DRAW_BUMPERS = !DRAW_BUMPERS;
-                MapEdge::DRAW_NORMALS = !MapEdge::DRAW_NORMALS;
+            KeyboardEvent * p_keyEvent = static_cast<KeyboardEvent*>(*it);
+            switch (p_keyEvent->getAction()) {
+                case KeyboardEvent::KEY_PRESSED: {
+                    switch (p_keyEvent->getKey()) {
+                        case KeyboardEvent::O: {
+                            DarknessOverlay::setInEffect(!DarknessOverlay::isInEffect());
+                            break;
+                        }
+                        case KeyboardEvent::B: {
+                            DRAW_BUMPERS = !DRAW_BUMPERS;
+                            MapEdge::DRAW_NORMALS = !MapEdge::DRAW_NORMALS;
+                            break;
+                        }
+                        case KeyboardEvent::EQUALS: {
+                            setTimeRatio(getTimeRatio() * 0.9);
+                            break;
+                        }
+                        case KeyboardEvent::MINUS: {
+                            setTimeRatio(getTimeRatio() / 0.9);
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                    break;
+                }
+                default:
+                    break;
             }
         }
         
