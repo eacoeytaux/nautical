@@ -15,14 +15,14 @@ using namespace climber;
 
 struct Rope2::RopeJoint {
     Coordinate pos;
-    Vector vel, force;
+    physics::Vector vel, force;
 };
 
 Rope2::Rope2(Coordinate anchor, double length) :
 WorldObject(anchor) {
     for (int i = 0; i < length; i++) {
         RopeJoint * p_joint = new RopeJoint();
-        p_joint->pos = anchor + Vector(Angle(Random::getRandDouble(M_PI * 2)), MAX_DISTANCE * i);
+        p_joint->pos = anchor + physics::Vector(Angle(Random::getRandDouble(M_PI * 2)), MAX_DISTANCE * i);
         joints.push_back(p_joint);
     }
 }
@@ -32,15 +32,15 @@ Rope2::~Rope2() { }
 void Rope2::update() {
     std::vector<RopeJoint*>::iterator it = joints.begin();
     for (it++; it != joints.end(); it++) {
-        (*it)->force += Vector(0, -0.3);
+        (*it)->force += physics::Vector(0, -0.3);
         
         if (Random::getRandBool(0.001f)) {
-            (*it)->force += Vector(15, 0);
+            (*it)->force += physics::Vector(15, 0);
         }
         
         (*it)->vel += (*it)->force;
         (*it)->pos += (*it)->vel;
-        (*it)->force.setDx(0).setDy(0);
+        (*it)->force.setMagnitude(0);
     }
     
     it = joints.begin();
@@ -51,7 +51,7 @@ void Rope2::update() {
         double distance = findDistance(p_prevJoint->pos, p_joint->pos);
         
         if (distance != 0) {
-            Vector correction(p_prevJoint->pos, p_joint->pos);
+            physics::Vector correction(p_prevJoint->pos, p_joint->pos);
             correction *= (MAX_DISTANCE / (distance - 1.0));
             
             if (p_prevJoint != joints.front()) {

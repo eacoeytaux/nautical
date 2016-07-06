@@ -120,13 +120,13 @@ Player & Player::setCanGhostJump(bool b) {
 }
 
 
-Player & Player::move(Vector vec) {
+Player & Player::move(physics::Vector vec) {
     // move camera using trap
-    Vector vecHorizontal = Vector(vec);
+    physics::Vector vecHorizontal = physics::Vector(vec);
     vecHorizontal.subtractAngle(M_PI_2);
     vecHorizontal.subtractAngle(-M_PI_2);
     
-    Vector vecVertical = Vector(vec);
+    physics::Vector vecVertical = physics::Vector(vec);
     vecVertical.subtractAngle(0);
     vecVertical.subtractAngle(M_PI);
     
@@ -209,7 +209,7 @@ bool Player::handleEvent(Event * p_event) {
                     }
                     case 7: {
                         if (!p_rope) {
-                            p_rope = new Rope(this, getCenter(), 250, getVel() + Vector(aimAngle, 10), 20); //TODO add current velocity of player to rope's velocity
+                            p_rope = new Rope(this, getCenter(), 250, getVel() + physics::Vector(aimAngle, 10), 20); //TODO add current velocity of player to rope's velocity
                             getParent()->addObject(p_rope);
                             Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): p_rope set to EXTENDING at angle %f degrees", Angle::radiansToDegrees(aimAngle.getValue()));
                             return true;
@@ -293,7 +293,7 @@ bool Player::handleEvent(Event * p_event) {
             }
             case MouseEvent::LEFT_BUTTON_PRESS: {
                 if (!p_rope) {
-                    p_rope = new Rope(this, getCenter(), 250, getVel() + Vector(aimAngle, 10), 20); //TODO add current velocity of player to rope's velocity
+                    p_rope = new Rope(this, getCenter(), 250, getVel() + physics::Vector(aimAngle, 10), 20); //TODO add current velocity of player to rope's velocity
                     getParent()->addObject(p_rope);
                     Logger::writeLog(PLAIN_MESSAGE, "Player::handleEvent(): p_rope set to EXTENDING at angle %f degrees", Angle::radiansToDegrees(aimAngle.getValue()));
                     return true;
@@ -323,18 +323,18 @@ void Player::update() {
     const MapElement * p_element = p_hitbox->getElement();
     
     if (!p_element || (p_element && !(p_element->isSticky())))
-        addToForce(Vector(0, -0.3));
+        addToForce(physics::Vector(0, -0.3));
     
     if (isMovingLeft())
-        addToForce(Vector(-0.3, 0));
+        addToForce(physics::Vector(-0.3, 0));
     if (isMovingRight())
-        addToForce(Vector(0.3, 0));
+        addToForce(physics::Vector(0.3, 0));
     
     if (jumping) {
         if (jumpValueIndex >= jumpValues.size()) {
             setJumping(false);
         } else {
-            addToForce(Vector(0, jumpValues.at((unsigned long)jumpValueIndex++)));
+            addToForce(physics::Vector(0, jumpValues.at((unsigned long)jumpValueIndex++)));
         }
     }
     
@@ -362,8 +362,8 @@ void Player::update() {
     World * p_parent = getParent();
     float percentageUsed = 1.f;
     do {
-        Vector vel = getVel();
-        Vector movement = p_parent->generatePath(&percentageUsed, &vel, getMapHitbox().get(), &p_element);
+        physics::Vector vel = getVel();
+        physics::Vector movement = p_parent->generatePath(&percentageUsed, &vel, getMapHitbox().get(), &p_element);
         
         //check movement here
         if (p_rope) {
@@ -385,7 +385,7 @@ void Player::update() {
         move(movement);
         setVel(vel);
     } while (percentageUsed > 0);
-    setForce(Vector(0, 0));
+    setForce(physics::Vector(0, 0));
     
     if (p_rope)
         p_rope->setOrigin(getCenter());
@@ -394,10 +394,10 @@ void Player::update() {
     if (DarknessOverlay::isInEffect()) {
         Circle * p_circle = new Circle(getCenter(), 150);
         static Countdown count(1); //TODO make these not static
-        static Vector moveVec[DARKNESS_LAYERS];
+        static physics::Vector moveVec[DARKNESS_LAYERS];
         if (count.check()) {
             for (int i = 0; i < DARKNESS_LAYERS; i++) {
-                moveVec[i] = Vector(Angle(Random::getRandDouble(M_PI * 2)), Random::getRandDouble(2));
+                moveVec[i] = physics::Vector(Angle(Random::getRandDouble(M_PI * 2)), Random::getRandDouble(2));
             }
             count.reset();
         }
@@ -414,7 +414,7 @@ void Player::update() {
 void Player::draw() const {
     if (DEBUG_MODE) {
         trap.draw();
-        Vector(aimAngle, 20, getCenter()).Drawable::draw(MAGENTA);
+        physics::Vector(aimAngle, 20, getCenter()).Drawable::draw(MAGENTA);
         getVel().setColor((canJump() || canGhostJump()) ? WHITE : Color(255, 191, 191)).draw(5);
     }
     getMapHitbox()->getShape()->Drawable::draw(CYAN);

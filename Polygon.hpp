@@ -35,7 +35,7 @@ namespace nautical {
         bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const;
         bool intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections = nullptr) const;
         
-        Polygon & move(Vector vector);
+        Polygon & move(physics::Vector vector);
         Polygon & rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         void draw() const;

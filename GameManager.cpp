@@ -45,7 +45,7 @@ using namespace nautical;
 
 KeyboardEvent::Key getKeyFromSDLKey(int SDL_key);
 
-int FPS = 60;
+int FPS = 20;
 bool GameManager::init = false;
 
 SDL_Window * p_window = nullptr;
@@ -584,8 +584,8 @@ void GameManager::runTests() { //DEBUGGING
 //    GraphicsManager::drawCoordinate(m2.getPosition());
 //    GraphicsManager::drawLine(Line(m1.getPosition(), m2.getPosition()));
     
-    static physics::PhysicsRope rope(Coordinate(300, 500), 50);
-    rope.setAnchor(GraphicsManager::screenToWorld(GraphicsManager::getMouseCoor()));
+    static physics::PhysicsRope rope(Coordinate(300, 500), 5);
+    //rope.setAnchor(GraphicsManager::screenToWorld(GraphicsManager::getMouseCoor()));
     rope.update();
     rope.draw();
 }

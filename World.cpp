@@ -348,8 +348,8 @@ World & World::handleEvent(Event * p_event) {
  p_object->setObjectPos(objPos);
  }*/
 
-Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement) {
-    Vector vel = *p_vel;
+physics::Vector World::generatePath(float * p_percentage, physics::Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement) {
+    physics::Vector vel = *p_vel;
     //if (vel.getMagnitude() < 0)
     //    return 0;
     
@@ -366,7 +366,7 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
     *p_nextElement = p_element;
     
     Coordinate nextCenter = center;
-    Vector nextVel = vel;
+    physics::Vector nextVel = vel;
     
     int lowerBound, upperBound;
     lowerBound = (int)(verticalWorld ? p_shape->getLowerBoundY() : p_shape->getLowerBoundX());
@@ -387,12 +387,12 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
             
             if (mapCatch.getLine().intersectsLine(adjustedVelLine)) {
                 Coordinate collision = mapCatch.getCollision();
-                Vector collisionVel(center, collision);
+                physics::Vector collisionVel(center, collision);
                 if ((collisionVel.getMagnitude() > 0) && distance.update(collisionVel.getMagnitude())) {
                     nextCenter = collision;
                     nextVel = collisionVel;
                     
-                    Vector tempVector = *p_vel;
+                    physics::Vector tempVector = *p_vel;
                     tempVector.setOrigin(collision);
                     *p_nextElement = (p_hitbox->adjustVector(mapCatch.getElement(p_element), &tempVector)) ? mapCatch.getElement(p_element) : nullptr;
                 }
@@ -411,10 +411,10 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
             std::shared_ptr<Shape> p_bumper = p_hitbox->createBumper(p_vertex);
             if (p_bumper->intersectsLine(adjustedVelLine, &collisions)) {
                 Coordinate collision = collisions.front();
-                Vector tempVector = *p_vel;
+                physics::Vector tempVector = *p_vel;
                 tempVector.setOrigin(collision);
                 if (p_hitbox->adjustVector(p_vertex, &tempVector)) {
-                    Vector collisionVel(center, collision);
+                    physics::Vector collisionVel(center, collision);
                     if ((collisionVel.getMagnitude() > 0) && distance.update(collisionVel.getMagnitude())) {
                         nextCenter = collision;
                         nextVel = collisionVel;
@@ -436,10 +436,10 @@ Vector World::generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_h
             std::shared_ptr<Shape> p_bumper = p_hitbox->createBumper(p_edge);
             if (p_bumper->intersectsLine(adjustedVelLine, &collisions)) {
                 Coordinate collision = collisions.front();
-                Vector tempVector = *p_vel;
+                physics::Vector tempVector = *p_vel;
                 tempVector.setOrigin(collision);
                 if (p_hitbox->adjustVector(p_edge, &tempVector)) {
-                    Vector collisionVel(center, collision);
+                    physics::Vector collisionVel(center, collision);
                     if ((collisionVel.getMagnitude() > 0) && distance.update(collisionVel.getMagnitude())) {
                         nextCenter = collision;
                         nextVel = collisionVel;

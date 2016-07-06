@@ -46,7 +46,7 @@ namespace nautical {
         
         World & handleEvent(Event * p_event);
         
-        Vector generatePath(float * p_percentage, Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement); //TODO rename function
+        physics::Vector generatePath(float * p_percentage, physics::Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement); //TODO rename function
         
         virtual void update(std::vector<Event*> & events);
         virtual void draw();

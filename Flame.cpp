@@ -37,7 +37,7 @@ Flame::~Flame() {
     delete p_spriteSheet;
 }
 
-Flame & Flame::addOrigin(double flameWidth, nautical::Vector offset) {
+Flame & Flame::addOrigin(double flameWidth, nautical::physics::Vector offset) {
     Origin * p_origin = new Origin;
     p_origin->origin = getCenter() + offset;
     p_origin->flameWidth = flameWidth;
@@ -75,7 +75,7 @@ void Flame::update() {
     for (std::vector<Spark*>::iterator it = orangeParticles.begin(); it != orangeParticles.end(); it++) {
         Spark * p_spark = *it;
         
-        p_spark->center += (Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5));
+        p_spark->center += physics::Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5);
         p_spark->width *= 0.97;
         p_spark->alpha -= FADE_SPEED;
         
@@ -92,7 +92,7 @@ void Flame::update() {
     for (std::vector<Spark*>::iterator it = yellowParticles.begin(); it != yellowParticles.end(); it++) {
         Spark * p_spark = *it;
         
-        p_spark->center += (Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5));
+        p_spark->center += physics::Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5);
         p_spark->width *= 0.97;
         p_spark->alpha -= FADE_SPEED;
         
@@ -107,10 +107,10 @@ void Flame::update() {
     if (DarknessOverlay::isInEffect()) {
         Circle * p_circle = new Circle(getCenter(), 100);
         static Countdown count(1);
-        static Vector moveVec[DARKNESS_LAYERS];
+        static physics::Vector moveVec[DARKNESS_LAYERS];
         if (count.check()) {
             for (int i = 0; i < DARKNESS_LAYERS; i++) {
-                moveVec[i] = Vector(Angle(Random::getRandDouble(M_PI * 2)), Random::getRandDouble(2));
+                moveVec[i] = physics::Vector(Angle(Random::getRandDouble(M_PI * 2)), Random::getRandDouble(2));
             }
             count.reset();
         }

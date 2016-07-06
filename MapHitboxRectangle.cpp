@@ -21,7 +21,7 @@ MapHitboxRectangle::MapHitboxRectangle(Rectangle rec) : rec(rec) {
 
 MapHitboxRectangle::~MapHitboxRectangle() { }
 
-MapHitboxRectangle & MapHitboxRectangle::move(Vector vec) {
+MapHitboxRectangle & MapHitboxRectangle::move(physics::Vector vec) {
     MapHitbox::move(vec);
     rec.move(vec);
     return *this;
@@ -41,7 +41,7 @@ MapHitboxRectangle & MapHitboxRectangle::setRectangle(Rectangle rec) {
     return *this;
 }
 
-bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, Vector * p_vector) const {
+bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, physics::Vector * p_vector) const {
     Angle recAngle = rec.getAngle();
     double recAngleValue = rec.getAngle().getValue();
     double recDiagonalAngleValue = Angle(rec.getWidth(), rec.getHeight()).getValue();
@@ -143,7 +143,7 @@ std::vector<MapCatch> MapHitboxRectangle::findCatches(const MapVertex * p_vertex
     return catches;
 }
 
-bool MapHitboxRectangle::adjustVector(const MapEdge * p_edge, Vector * p_vector) const {
+bool MapHitboxRectangle::adjustVector(const MapEdge * p_edge, physics::Vector * p_vector) const {
     return p_vector->subtractAngle(p_edge->getNormal());
 }
 
@@ -172,7 +172,7 @@ std::vector<MapCatch> MapHitboxRectangle::findCatches(const MapEdge * p_edge, co
     return catches;
 }
 
-Vector MapHitboxRectangle::getOffset(const MapEdge * p_edge) const {
+physics::Vector MapHitboxRectangle::getOffset(const MapEdge * p_edge) const {
     double distance = rec.getDiagonalLength() / 2;
     Angle angleOffset(rec.getWidth(), rec.getHeight());
     Angle recAngle = rec.getAngle();
@@ -185,46 +185,46 @@ Vector MapHitboxRectangle::getOffset(const MapEdge * p_edge) const {
         Angle(-M_PI_2) + recAngle};
     std::sort(angles.begin(), angles.end());
     
-    Vector ret;
+    physics::Vector ret;
     if ((normalValue >= angles.at(0).getValue()) && (normalValue < angles.at(1).getValue())) {
         if (recAngleValue > M_PI_2) {
-            ret = Vector((angleOffset * -1), -distance);
+            ret = physics::Vector((angleOffset * -1), -distance);
         } else if (recAngleValue > 0) {
-            ret = Vector(angleOffset, -distance);
+            ret = physics::Vector(angleOffset, -distance);
         } else if (recAngleValue >= -M_PI_2) {
-            ret = Vector((angleOffset * -1), distance);
+            ret = physics::Vector((angleOffset * -1), distance);
         } else {
-            ret = Vector(angleOffset, distance);
+            ret = physics::Vector(angleOffset, distance);
         }
     } else if ((normalValue >= angles.at(1).getValue()) && (normalValue < angles.at(2).getValue())) {
         if (recAngleValue > M_PI_2) {
-            ret = Vector(angleOffset, -distance);
+            ret = physics::Vector(angleOffset, -distance);
         } else if (recAngleValue > 0) {
-            ret = Vector((angleOffset * -1), distance);
+            ret = physics::Vector((angleOffset * -1), distance);
         } else if (recAngleValue >= -M_PI_2) {
-            ret = Vector(angleOffset, distance);
+            ret = physics::Vector(angleOffset, distance);
         } else {
-            ret = Vector((angleOffset * -1), -distance);
+            ret = physics::Vector((angleOffset * -1), -distance);
         }
     } else if ((normalValue >= angles.at(2).getValue()) && (normalValue < angles.at(3).getValue())) {
         if (recAngleValue > M_PI_2) {
-            ret = Vector((angleOffset * -1), distance);
+            ret = physics::Vector((angleOffset * -1), distance);
         } else if (recAngleValue > 0) {
-            ret = Vector(angleOffset, distance);
+            ret = physics::Vector(angleOffset, distance);
         } else if (recAngleValue >= -M_PI_2) {
-            ret = Vector((angleOffset * -1), -distance);
+            ret = physics::Vector((angleOffset * -1), -distance);
         } else {
-            ret = Vector(angleOffset, -distance);
+            ret = physics::Vector(angleOffset, -distance);
         }
     } else {
         if (recAngleValue > M_PI_2) {
-            ret = Vector(angleOffset, distance);
+            ret = physics::Vector(angleOffset, distance);
         } else if (recAngleValue > 0) {
-            ret = Vector((angleOffset * -1), -distance);
+            ret = physics::Vector((angleOffset * -1), -distance);
         } else if (recAngleValue >= -M_PI_2) {
-            ret = Vector(angleOffset, -distance);
+            ret = physics::Vector(angleOffset, -distance);
         } else {
-            ret = Vector((angleOffset * -1), distance);
+            ret = physics::Vector((angleOffset * -1), distance);
         }
     }
     return ret.rotate(recAngle);
@@ -232,13 +232,13 @@ Vector MapHitboxRectangle::getOffset(const MapEdge * p_edge) const {
 
 MapCatch MapHitboxRectangle::getCatchFront(const MapEdge * p_edge) const {
     Coordinate center = p_edge->getVertexFront()->getCoor();
-    Vector offset = getOffset(p_edge);
+    physics::Vector offset = getOffset(p_edge);
     return MapCatch(center + offset, Line(center, center + (offset * 2)), (MapElement*)p_edge, (MapElement*)p_edge->getVertexFront());
 }
 
 MapCatch MapHitboxRectangle::getCatchBack(const MapEdge * p_edge) const {
     Coordinate center = p_edge->getVertexBack()->getCoor();
-    Vector offset = getOffset(p_edge);
+    physics::Vector offset = getOffset(p_edge);
     return MapCatch(center + offset, Line(center, center + (offset * 2)), (MapElement*)p_edge, (MapElement*)p_edge->getVertexBack());
 }
 

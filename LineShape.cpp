@@ -54,7 +54,7 @@ bool LineShape::intersectsShape(const Shape * p_shape, std::vector<Coordinate> *
     return p_shape->intersectsLine(line, p_intersections);
 }
 
-LineShape & LineShape::move(Vector vector) {
+LineShape & LineShape::move(physics::Vector vector) {
     line = Line(line.getCoor1() + vector, line.getCoor2() + vector);
     return *this;
 }

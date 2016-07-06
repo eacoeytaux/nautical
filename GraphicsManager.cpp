@@ -174,7 +174,7 @@ void GraphicsManager::setMouseTrapped(bool mouseTrapped) {
 
 void GraphicsManager::updateCenter() {
     if (!DEBUG_MODE && (findDistance(center, centerSet) > CENTER_OFFSET_MINIMUM)) {
-        center += Vector(center, centerSet) * fmin(centerSpeedRatio, 1);
+        center += physics::Vector(center, centerSet) * fmin(centerSpeedRatio, 1);
     } else {
         center = centerSet;
     }

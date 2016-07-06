@@ -16,7 +16,7 @@ namespace nautical {
     namespace physics {
         class Mass {
         public:
-            Mass(Coordinate pos, double m = 1);
+            Mass(Coordinate pos, double m = 1.0);
             ~Mass();
             
             double getM() const;
@@ -28,12 +28,14 @@ namespace nautical {
             
             Vector getVelocity() const;
             Mass & setVelocity(const Vector & vel);
-            Mass & addToVelocity(const Vector & vel);
+            Mass & addVelocity(const Vector & vel);
             virtual Mass & updateVelocity();
             
             Vector getForce() const;
             Mass & setForce(const Vector & force);
-            Mass & addToForce(const Vector & force);
+            Mass & addForce(const Vector & force);
+            Mass & setAcceleration(const Vector & accel);
+            Mass & addAcceleration(const Vector & accel);
             virtual Mass & updateForce();
             
         private:

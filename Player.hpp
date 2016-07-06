@@ -41,7 +41,7 @@ namespace climber {
         bool canGhostJump() const;
         Player & setCanGhostJump(bool b);
         
-        Player & move(nautical::Vector vec);
+        Player & move(nautical::physics::Vector vec);
         
         bool handleEvent(nautical::Event * p_event);
         

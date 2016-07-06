@@ -49,13 +49,14 @@ Mass & Mass::setVelocity(const Vector & vel) {
     return *this;
 }
 
-Mass & Mass::addToVelocity(const Vector & vel) {
+Mass & Mass::addVelocity(const Vector & vel) {
     this->vel += vel;
     return *this;
 }
 
 Mass & Mass::updateVelocity()  {
     vel += force / m;
+    force.setMagnitude(0);
     return *this;
 }
 
@@ -68,8 +69,18 @@ Mass & Mass::setForce(const Vector & force) {
     return *this;
 }
 
-Mass & Mass::addToForce(const Vector & force) {
+Mass & Mass::addForce(const Vector & force) {
     this->force += force;
+    return *this;
+}
+
+Mass & Mass::setAcceleration(const Vector & accel) {
+    this->force = accel * m;
+    return *this;
+}
+
+Mass & Mass::addAcceleration(const Vector & accel) {
+    this->force += accel * m;
     return *this;
 }
 

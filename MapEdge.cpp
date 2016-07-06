@@ -74,7 +74,7 @@ void MapEdge::draw() const {
     GraphicsManager::drawLine(line, getColor());
     
     if (DRAW_NORMALS && DEBUG_MODE) {
-        Coordinate origin = p_vertexBack->getCoor() + (Vector(p_vertexBack->getCoor(), p_vertexFront->getCoor()) / 2);
-        Vector(normal, 5, origin).Drawable::draw(getColor().setA(127));
+        Coordinate origin = p_vertexBack->getCoor() + (physics::Vector(p_vertexBack->getCoor(), p_vertexFront->getCoor()) / 2);
+        physics::Vector(normal, 5, origin).Drawable::draw(getColor().setA(127));
     }
 }

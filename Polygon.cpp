@@ -217,7 +217,7 @@ bool Polygon::intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p
     return intersects;
 }
 
-Polygon & Polygon::move(Vector vector) {
+Polygon & Polygon::move(physics::Vector vector) {
     std::vector<Coordinate> newVertices;
     for (std::vector<Coordinate>::iterator it = vertices.begin(); it != vertices.end(); it++) {
         newVertices.push_back(*it + vector);

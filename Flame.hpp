@@ -21,7 +21,7 @@ namespace climber {
         Flame(nautical::Coordinate pos);
         virtual ~Flame();
         
-        Flame & addOrigin(double flameWidth, nautical::Vector offset = nautical::Vector(0, 0));
+        Flame & addOrigin(double flameWidth, nautical::physics::Vector offset = nautical::physics::Vector(0, 0));
         
         void update();
         void draw() const;

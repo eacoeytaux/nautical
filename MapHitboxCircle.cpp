@@ -18,7 +18,7 @@ MapHitboxCircle::MapHitboxCircle(Circle circle) : circle(circle) {
 
 MapHitboxCircle::~MapHitboxCircle() { }
 
-MapHitboxCircle & MapHitboxCircle::move(Vector vec) {
+MapHitboxCircle & MapHitboxCircle::move(physics::Vector vec) {
     MapHitbox::move(vec);
     circle.move(vec);
     return *this;
@@ -38,7 +38,7 @@ MapHitboxCircle & MapHitboxCircle::setCircle(Circle circle) {
     return *this;
 }
 
-bool MapHitboxCircle::adjustVector(const MapVertex * p_vertex, Vector * p_vector) const {
+bool MapHitboxCircle::adjustVector(const MapVertex * p_vertex, physics::Vector * p_vector) const {
     return false; //TODO
 }
 
@@ -50,13 +50,13 @@ std::vector<MapCatch> MapHitboxCircle::findCatches(const MapVertex * p_vertex, c
     return std::vector<MapCatch>(); //TODO
 }
 
-bool MapHitboxCircle::adjustVector(const MapEdge * p_edge, Vector * p_vector) const {
+bool MapHitboxCircle::adjustVector(const MapEdge * p_edge, physics::Vector * p_vector) const {
     return false; //TODO
 }
 
 std::shared_ptr<Shape> MapHitboxCircle::createBumper(const MapEdge * p_edge) const {
     std::shared_ptr<Shape> bumper(new LineShape(p_edge->getLine()));
-    Vector bumperOffset(p_edge->getNormal(), circle.getRadius());
+    physics::Vector bumperOffset(p_edge->getNormal(), circle.getRadius());
     bumper->move(bumperOffset);
     return bumper;
 }
@@ -65,19 +65,19 @@ std::vector<MapCatch> MapHitboxCircle::findCatches(const MapEdge * p_edge, const
     return std::vector<MapCatch>(); //TODO
 }
 
-Vector MapHitboxCircle::getOffset(const MapEdge * p_edge) const {
-    return Vector(0, 0); //TODO
+physics::Vector MapHitboxCircle::getOffset(const MapEdge * p_edge) const {
+    return physics::Vector(0, 0); //TODO
 }
 
 MapCatch MapHitboxCircle::getCatchFront(const MapEdge * p_edge) const {
     Coordinate center = p_edge->getVertexFront()->getCoor();
-    Vector offset = getOffset(p_edge);
+    physics::Vector offset = getOffset(p_edge);
     return MapCatch(center + offset, Line(center, center + (offset * 2)), (MapElement*)p_edge, (MapElement*)p_edge->getVertexFront());
 }
 
 MapCatch MapHitboxCircle::getCatchBack(const MapEdge * p_edge) const {
     Coordinate center = p_edge->getVertexBack()->getCoor();
-    Vector offset = getOffset(p_edge);
+    physics::Vector offset = getOffset(p_edge);
     return MapCatch(center + offset, Line(center, center + (offset * 2)), (MapElement*)p_edge, (MapElement*)p_edge->getVertexBack());
 }
 

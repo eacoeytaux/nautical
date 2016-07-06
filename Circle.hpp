@@ -40,7 +40,7 @@ namespace nautical {
         
         bool intersectsCircle(const Circle * p_circle, std::vector<Coordinate> * p_intersections = nullptr) const;
         
-        Circle & move(Vector vector);
+        Circle & move(physics::Vector vector);
         Circle & rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         void draw() const;
@@ -53,7 +53,7 @@ namespace nautical {
         double radius;
         
         static bool circleVectorsCalculated;
-        static Vector circleVectors[CIRCLE_PERCISION];
+        static physics::Vector circleVectors[CIRCLE_PERCISION];
     };
 }
 

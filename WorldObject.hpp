@@ -39,15 +39,15 @@ namespace nautical { //TODO add spritesheet?
         virtual WorldObject & setMapHitbox(MapHitbox * p_hitbox); //should delete pointer after use
         virtual const MapElement * getMapElement() const;
         virtual WorldObject & setMapElement(const MapElement * p_element);
-        virtual Vector getForce() const;
-        virtual WorldObject & setForce(Vector force);
-        virtual WorldObject & addToForce(Vector force);
-        virtual Vector getVel() const;
-        virtual WorldObject & setVel(Vector vel);
-        virtual WorldObject & addToVel(Vector vel);
+        virtual physics::Vector getForce() const;
+        virtual WorldObject & setForce(physics::Vector force);
+        virtual WorldObject & addToForce(physics::Vector force);
+        virtual physics::Vector getVel() const;
+        virtual WorldObject & setVel(physics::Vector vel);
+        virtual WorldObject & addToVel(physics::Vector vel);
         
         virtual WorldObject & moveTo(Coordinate coor);
-        virtual WorldObject & move(Vector vec);
+        virtual WorldObject & move(physics::Vector vec);
         
         //TODO make sure WorldObjects* cannot be accessed
         virtual const std::vector<WorldObject*> * getAttachedObjects() const;
@@ -76,7 +76,7 @@ namespace nautical { //TODO add spritesheet?
         
         Coordinate center;
         std::unique_ptr<MapHitbox> p_hitbox;
-        Vector force, vel;
+        physics::Vector force, vel;
         
         std::vector<WorldObject*> attachedObjects;
         

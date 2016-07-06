@@ -27,6 +27,10 @@ in DEBUG_MODE:
 
 TODOs:
 
+- change ptrs to shared_ptrs where appropriate
+
+- change pass by value to pass by const reference where appropriate
+
 - fix bugs in movement in map
 
 - edit World::generatePath() to allow for MapObject interuption between vector adjustments

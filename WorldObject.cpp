@@ -65,41 +65,41 @@ WorldObject & WorldObject::setMapElement(const MapElement * p_element) {
     return *this;
 }
 
-Vector WorldObject::getForce() const {
+physics::Vector WorldObject::getForce() const {
     return force;
 }
 
-WorldObject & WorldObject::setForce(Vector force) {
+WorldObject & WorldObject::setForce(physics::Vector force) {
     this->force = force;
     return *this;
 }
 
-WorldObject & WorldObject::addToForce(Vector force) {
+WorldObject & WorldObject::addToForce(physics::Vector force) {
     this->force += force;
     this->force.setOrigin(center);
     return *this;
 }
 
-Vector WorldObject::getVel() const {
+physics::Vector WorldObject::getVel() const {
     return vel;
 }
 
-WorldObject & WorldObject::setVel(Vector vel) {
+WorldObject & WorldObject::setVel(physics::Vector vel) {
     this->vel = vel;
     this->vel.setOrigin(center);
     return *this;
 }
 
-WorldObject & WorldObject::addToVel(Vector vel) {
+WorldObject & WorldObject::addToVel(physics::Vector vel) {
     this->vel += vel;
     return *this;
 }
 
 WorldObject & WorldObject::moveTo(Coordinate coor) {
-    return move(Vector(center, coor));
+    return move(physics::Vector(center, coor));
 }
 
-WorldObject & WorldObject::move(Vector vec) {
+WorldObject & WorldObject::move(physics::Vector vec) {
     p_hitbox->move(vec);
     center += vec;
     force.setOrigin(center);

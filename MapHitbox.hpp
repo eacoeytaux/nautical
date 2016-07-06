@@ -25,7 +25,7 @@ namespace nautical {
             return center;
         }
         
-        virtual MapHitbox & move(Vector vec) {
+        virtual MapHitbox & move(physics::Vector vec) {
             center += vec;
             return *this;
         }
@@ -38,11 +38,11 @@ namespace nautical {
             return *this;
         }
         
-        virtual bool adjustVector(Vector * p_vector) const {
+        virtual bool adjustVector(physics::Vector * p_vector) const {
             return adjustVector(p_element, p_vector);
         }
         
-        virtual bool adjustVector(const MapElement * p_element, Vector * p_vector) const {
+        virtual bool adjustVector(const MapElement * p_element, physics::Vector * p_vector) const {
             if (p_element) {
                 if (p_element->hasTag(MAP_VERTEX_TAG))
                     return adjustVector(static_cast<const MapVertex*>(p_element), p_vector);
@@ -80,11 +80,11 @@ namespace nautical {
             return std::vector<MapCatch>();
         }
         
-        virtual bool adjustVector(const MapVertex * p_vertex, Vector * p_vector) const = 0;
+        virtual bool adjustVector(const MapVertex * p_vertex, physics::Vector * p_vector) const = 0;
         virtual std::shared_ptr<Shape> createBumper(const MapVertex * p_vertex) const = 0;
         virtual std::vector<MapCatch> findCatches(const MapVertex * p_vertex, const Map * p_map) const = 0;
         
-        virtual bool adjustVector(const MapEdge * p_edge, Vector * p_vector) const = 0;
+        virtual bool adjustVector(const MapEdge * p_edge, physics::Vector * p_vector) const = 0;
         virtual std::shared_ptr<Shape> createBumper(const MapEdge * p_edge) const = 0;
         virtual std::vector<MapCatch> findCatches(const MapEdge * p_edge, const Map * p_map) const = 0;
         

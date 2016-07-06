@@ -15,7 +15,7 @@
 using namespace nautical;
 using namespace climber;
 
-Rope::Rope(Player * p_parent, nautical::Coordinate origin, double length, nautical::Vector extendVector, double retractSpeed) :
+Rope::Rope(Player * p_parent, nautical::Coordinate origin, double length, physics::Vector extendVector, double retractSpeed) :
 WorldObject(origin),
 StateMachine(EXTENDING),
 p_parent(p_parent),
@@ -75,7 +75,7 @@ bool Rope::openState(int state) {
     switch (state) {
         case SET:
             Angle angle = findAngle(origin, head);
-            head = origin + Vector(angle, length);
+            head = origin + physics::Vector(angle, length);
             break;
     }
     return true;
@@ -97,7 +97,7 @@ void Rope::update() {
                 //Coordinate coor = origin + Vector(x, sin((8 * (length / distance)) * x) * ((64 * (distance - x)) / distance)); //TODO save this, this is awesome
                 double amplitude = 16 * (1 - (x / distance));// * cos(distance / 64);
                 double angularFrequency = ((((length - distance) / 3) + 1) / length);
-                Coordinate coor = origin + Vector(x, amplitude * sin((angularFrequency * x) + (M_PI * 5))).rotate(angle);
+                Coordinate coor = origin + physics::Vector(x, amplitude * sin((angularFrequency * x) + (M_PI * 5))).rotate(angle);
                 wave.addLine(Line(lastCoor, coor));
                 lastCoor = coor;
             }
@@ -118,12 +118,12 @@ void Rope::update() {
             } else {
                 length -= retractSpeed;
                 if (taught) {
-                    head += Vector(findAngle(head, origin), retractSpeed);
+                    head += physics::Vector(findAngle(head, origin), retractSpeed);
                     hookAngle = findAngle(origin, head);
                 } else {
                     double parabolaLengthDifference = findDistance(origin, head) - length;
                     if ((taught = (parabolaLengthDifference > 0))) { //purposely setting taught to result of equation
-                        head += Vector(findAngle(head, origin), retractSpeed - parabolaLengthDifference);
+                        head += physics::Vector(findAngle(head, origin), retractSpeed - parabolaLengthDifference);
                         hookAngle = findAngle(origin, head);
                     }
                 }

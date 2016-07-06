@@ -45,7 +45,7 @@ Coordinate & Coordinate::moveY(double dy) {
 }
 
 Coordinate & Coordinate::rotateAboutCoordinate(const Coordinate & coor, const Angle & angle) {
-    return *this = Vector(coor, *this).rotate(angle).getDestination();
+    return *this = physics::Vector(coor, *this).rotate(angle).getDestination();
 }
 
 bool Coordinate::operator==(const Coordinate & coor) const {

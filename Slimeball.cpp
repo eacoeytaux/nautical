@@ -31,7 +31,7 @@ Slimeball::~Slimeball() {
 void Slimeball::update() {
     const MapElement * p_element = getMapHitbox()->getElement();
     if (!p_element || (p_element && !(p_element->isSticky())))
-        addToForce(Vector(0, -0.3));
+        addToForce(physics::Vector(0, -0.3));
     
     addToVel(getForce());
     
@@ -44,13 +44,13 @@ void Slimeball::update() {
     World * p_parent = getParent();
     float percentageUsed = 1.f;
     do {
-        Vector vel = getVel();
-        Vector movement = p_parent->generatePath(&percentageUsed, &vel, getMapHitbox().get(), &p_element);
+        physics::Vector vel = getVel();
+        physics::Vector movement = p_parent->generatePath(&percentageUsed, &vel, getMapHitbox().get(), &p_element);
         setMapElement(p_element);
         move(movement);
         setVel(vel);
     } while (percentageUsed > 0);
-    setForce(Vector(0, 0));
+    setForce(physics::Vector(0, 0));
 }
 
 void Slimeball::draw() const {

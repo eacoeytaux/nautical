@@ -31,7 +31,7 @@ namespace climber {
             RETRACTING
         };
         
-        Rope(Player * p_parent, nautical::Coordinate origin, double length, nautical::Vector extendVector, double retractSpeed);
+        Rope(Player * p_parent, nautical::Coordinate origin, double length, nautical::physics::Vector extendVector, double retractSpeed);
         virtual ~Rope();
         
         nautical::Coordinate getOrigin() const;
@@ -75,7 +75,7 @@ namespace climber {
         head;
         double length;
         bool taught;
-        nautical::Vector extendVector;
+        nautical::physics::Vector extendVector;
         double retractSpeed;
         nautical::Angle hookAngle;
         bool shouldRetract = false, //bool used to note is grapple should retract once done extending

@@ -18,7 +18,7 @@ namespace nautical {
     namespace physics {
         class PhysicsRope {
         public:
-            PhysicsRope(Coordinate anchor, double length, double segmentLength = 5);
+            PhysicsRope(Coordinate anchor, double length, double segmentLength = 0.5);
             ~PhysicsRope();
             
             PhysicsRope & setAnchor(const Coordinate & anchor);

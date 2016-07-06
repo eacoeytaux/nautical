@@ -11,6 +11,7 @@
 #include "Utility.hpp"
 
 using namespace nautical;
+using namespace physics;
 
 Vector::Vector(double dx, double dy, Coordinate origin) :
 origin(origin) {
@@ -68,12 +69,6 @@ bool Vector::isDyPositive() {
     return dy >= 0;
 }
 
-Vector & Vector::setDxDy(Vector vec) {
-    setDx(vec.getDx());
-    setDy(vec.getDy());
-    return *this;
-}
-
 Coordinate Vector::getOrigin() const {
     return origin;
 }
@@ -100,9 +95,10 @@ double Vector::getMagnitude() const {
 }
 
 Vector & Vector::setMagnitude(double magnitude) {
-    double ratio = magnitude / getMagnitude();
-    setDx(dx * ratio);
-    setDy(dy * ratio);
+    Angle currAngle = getAngle();
+    setDx(currAngle.getCos(magnitude));
+    setDy(currAngle.getSin(magnitude));
+    this->magnitude.setValue(magnitude);
     return *this;
 }
 

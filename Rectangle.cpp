@@ -63,19 +63,19 @@ Rectangle & Rectangle::setAngle(Angle angle) {
 }
 
 Coordinate Rectangle::getTopRightCoor() const {
-    return center + Vector(halfWidth, halfHeight).rotate(angle);
+    return center + physics::Vector(halfWidth, halfHeight).rotate(angle);
 }
 
 Coordinate Rectangle::getBottomRightCoor() const {
-    return center + Vector(halfWidth, -halfHeight).rotate(angle);
+    return center + physics::Vector(halfWidth, -halfHeight).rotate(angle);
 }
 
 Coordinate Rectangle::getBottomLeftCoor() const {
-    return center + Vector(-halfWidth, -halfHeight).rotate(angle);
+    return center + physics::Vector(-halfWidth, -halfHeight).rotate(angle);
 }
 
 Coordinate Rectangle::getTopLeftCoor() const {
-    return center + Vector(-halfWidth, halfHeight).rotate(angle);
+    return center + physics::Vector(-halfWidth, halfHeight).rotate(angle);
 }
 
 Line Rectangle::getTopLine() const {
@@ -155,7 +155,7 @@ bool Rectangle::intersectsShape(const Shape * p_shape, std::vector<Coordinate> *
     return intersects;
 }
 
-Rectangle & Rectangle::move(Vector vector) {
+Rectangle & Rectangle::move(physics::Vector vector) {
     return setCenter(center += vector);
 }
 

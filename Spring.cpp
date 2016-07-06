@@ -61,8 +61,8 @@ void Spring::update() {
     Vector force = vec;
     force.setMagnitude(k * (vec.getMagnitude() - length));
     
-    force *= 0.5;
+    force -= (p_mass1->getVelocity() - p_mass2->getVelocity()) * 0.2;
     
-    p_mass1->addToForce(force);
-    p_mass2->addToForce(force * -1);
+    p_mass1->addForce(force);
+    p_mass2->addForce(force * -1);
 }
