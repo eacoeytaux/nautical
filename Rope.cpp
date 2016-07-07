@@ -81,7 +81,7 @@ bool Rope::openState(int state) {
     return true;
 }
 
-void Rope::update() {
+void Rope::update(double dt) { //TODO add dt
     switch (getState()) {
         case EXTENDING: {
             head += extendVector;

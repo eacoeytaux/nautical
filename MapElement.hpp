@@ -60,7 +60,7 @@ namespace nautical {
         static double getDefaultFrictionCoefficient(double value = 1) { return MapElement::defaultFrictionCoefficient * value; }
         static void setDefaultFrictionCoefficient(double frictionCoefficient) { MapElement::defaultFrictionCoefficient = frictionCoefficient; }
         
-        virtual void update() { }
+        virtual void update(double dt) { }
         virtual void draw() const = 0; //for debugging
         
     protected:

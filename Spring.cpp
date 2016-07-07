@@ -11,11 +11,12 @@
 using namespace nautical;
 using namespace physics;
 
-Spring::Spring(Mass * p_mass1, Mass * p_mass2, double length, double k) :
+Spring::Spring(Mass * p_mass1, Mass * p_mass2, double length, double k, double damper) :
 p_mass1(p_mass1),
 p_mass2(p_mass2),
 length(length),
-k(k) { }
+k(k),
+damper(damper) { }
 
 Spring::~Spring() { }
 
@@ -56,13 +57,31 @@ Spring & Spring::setLength(double length) {
 }
 
 void Spring::update() {
-    Vector vec(p_mass1->getPosition(), p_mass2->getPosition());
+    struct SpringAccelerator : public Mass::Accelerator {
+        SpringAccelerator(const Mass * p_otherMass, double length, double k, double damper) :
+        length(length),
+        k(k),
+        damper(damper),
+        p_otherMass(p_otherMass) { }
+        
+        const Mass * p_otherMass = nullptr;
+        double length, k, damper;
+        Vector accelerate(const Mass & mass) const {
+            if (!p_otherMass) {
+                Logger::writeLog(ERROR_MESSAGE, "Spring::SpringAccelerator::accelerate(): p_otherMass is null");
+                return Vector();
+            }
+            
+            Vector vec(mass.getPosition(), p_otherMass->getPosition());
+            Vector force = vec;
+            force.setMagnitude(k * (vec.getMagnitude() - length)) -= (mass.getVelocity() - p_otherMass->getVelocity()) * damper;
+            return force * mass.getM();
+        }
+    };
     
-    Vector force = vec;
-    force.setMagnitude(k * (vec.getMagnitude() - length));
+    std::shared_ptr<SpringAccelerator> p_accelerator1(new SpringAccelerator(p_mass2, length, k, damper)),
+    p_accelerator2(new SpringAccelerator(p_mass1, length, k, damper));
     
-    force -= (p_mass1->getVelocity() - p_mass2->getVelocity()) * 0.2;
-    
-    p_mass1->addForce(force);
-    p_mass2->addForce(force * -1);
+    p_mass1->addAccelerator(p_accelerator1);
+    p_mass2->addAccelerator(p_accelerator2);
 }

@@ -313,7 +313,7 @@ bool Player::handleEvent(Event * p_event) {
     return false;
 }
 
-void Player::update() {
+void Player::update(double dt) { //TODO implement dt
     //update countdowns
     if (ghostJumpCountdown.check())
         setCanGhostJump(false);

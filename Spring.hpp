@@ -15,7 +15,7 @@ namespace nautical {
     namespace physics {
         class Spring {
         public:
-            Spring(Mass * p_mass1, Mass * p_mass2, double length, double k);
+            Spring(Mass * p_mass1, Mass * p_mass2, double length, double k, double damper);
             ~Spring();
             
             const Mass * getMass1();
@@ -33,7 +33,8 @@ namespace nautical {
             Mass * p_mass1,
             * p_mass2;
             double length,
-            k;
+            k,
+            damper;
         };
     }
 }

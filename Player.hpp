@@ -45,7 +45,7 @@ namespace climber {
         
         bool handleEvent(nautical::Event * p_event);
         
-        void update();
+        void update(double dt);
         void draw() const;
         
     private:

@@ -45,7 +45,7 @@ Flame & Flame::addOrigin(double flameWidth, nautical::physics::Vector offset) {
     return *this;
 }
 
-void Flame::update() {
+void Flame::update(double dt) { //TODO implement dt
     for (std::vector<Origin*>::iterator it = origins.begin(); it != origins.end(); it++) {
         Origin * p_origin = *it;
         

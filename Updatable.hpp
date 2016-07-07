@@ -14,14 +14,14 @@ namespace nautical {
     public:
         int getTimestamp() const { return timestamp; }
         
-        void update(int timestamp) {
+        void updateTimestamp(int timestamp, double dt = 1) {
             if (this->timestamp != timestamp) {
                 this->timestamp = timestamp;
-                update();
+                update(dt);
             }
         }
         
-        virtual void update() = 0;
+        virtual void update(double dt = 1) = 0;
         
     private:
         int timestamp = -1;

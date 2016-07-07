@@ -45,7 +45,7 @@ using namespace nautical;
 
 KeyboardEvent::Key getKeyFromSDLKey(int SDL_key);
 
-int FPS = 20;
+int FPS = 60;
 bool GameManager::init = false;
 
 SDL_Window * p_window = nullptr;
@@ -565,27 +565,22 @@ KeyboardEvent::Key getKeyFromSDLKey(int SDL_key) {
 #include "PhysicsRope.hpp"
 
 void GameManager::runTests() { //DEBUGGING
-//    static physics::Mass m1(Coordinate(500, 500));
-//    static physics::Mass m2(Coordinate(550, 500));
-//    static physics::Spring spring(&m1, &m2, 60, 0.25);
+//    static physics::Mass m1(1, Coordinate(500, 500));
+//    m1.setImmobile(true);
+//    static physics::Mass m2(1, Coordinate(530, 500));
+//    static physics::Spring spring(&m1, &m2, 60, 1, 3);
 //    
 //    spring.update();
 //    
-//    //m1.addToForce(Vector(0, -0.3) * m1.getM());
-//    //m1.updateVelocity();
-//    //m1.updatePosition();
-//    m2.addToForce(Vector(0, -0.3) * m2.getM());
-//    m2.updateVelocity();
-//    m2.setVelocity(m2.getVelocity() * 0.99);
-//    m2.updatePosition();
-//    m2.setForce(Vector(0, 0));
+//    m1.update();
+//    m2.update();
 //    
 //    GraphicsManager::drawCoordinate(m1.getPosition());
 //    GraphicsManager::drawCoordinate(m2.getPosition());
 //    GraphicsManager::drawLine(Line(m1.getPosition(), m2.getPosition()));
     
-    static physics::PhysicsRope rope(Coordinate(300, 500), 5);
-    //rope.setAnchor(GraphicsManager::screenToWorld(GraphicsManager::getMouseCoor()));
+    static physics::PhysicsRope rope(Coordinate(300, 500), 15);
+    rope.setAnchor(GraphicsManager::screenToWorld(GraphicsManager::getMouseCoor()));
     rope.update();
     rope.draw();
 }

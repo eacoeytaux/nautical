@@ -44,7 +44,7 @@ namespace climber {
         
         bool setState(int state);
         
-        void update();
+        void update(double dt);
         void draw() const;
         
     private:

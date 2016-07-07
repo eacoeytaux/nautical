@@ -467,8 +467,6 @@ physics::Vector World::generatePath(float * p_percentage, physics::Vector * p_ve
 void World::update(std::vector<Event*> & events) {
     Logger::writeLog(PLAIN_MESSAGE, "starting world[%d] update %d", id, updateTimestamp);
     
-    printf("world time ratio: %f\n", getTimeRatio());
-    
     for (std::vector<Event*>::iterator it = events.begin(); it != events.end(); it++) {
         if ((*it)->hasTag(KEYBOARD_EVENT_TAG)) { //DEBUGGING
             KeyboardEvent * p_keyEvent = static_cast<KeyboardEvent*>(*it);
@@ -527,7 +525,7 @@ void World::update(std::vector<Event*> & events) {
 }
 
 World & World::updateObject(WorldObject * p_object) {
-    p_object->Updatable::update(updateTimestamp);
+    p_object->Updatable::updateTimestamp(updateTimestamp);
     return *this;
 }
 

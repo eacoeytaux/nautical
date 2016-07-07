@@ -66,7 +66,7 @@ namespace nautical {
         bool verticalWorld;
         
         Map map;
-        double timeRatio = 1.f;
+        double timeRatio = 1; //TODO stuff with this
         
         std::vector<WorldObject*> allObjects,
         objectsToDelete,

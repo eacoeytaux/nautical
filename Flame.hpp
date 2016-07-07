@@ -23,7 +23,7 @@ namespace climber {
         
         Flame & addOrigin(double flameWidth, nautical::physics::Vector offset = nautical::physics::Vector(0, 0));
         
-        void update();
+        void update(double dt);
         void draw() const;
         
     private:
