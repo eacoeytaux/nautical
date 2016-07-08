@@ -483,11 +483,11 @@ void World::update(std::vector<Event*> & events) {
                             break;
                         }
                         case KeyboardEvent::EQUALS: {
-                            setTimeRatio(getTimeRatio() * 0.9);
+                            setTimeRatio(getTimeRatio() / 0.9);
                             break;
                         }
                         case KeyboardEvent::MINUS: {
-                            setTimeRatio(getTimeRatio() / 0.9);
+                            setTimeRatio(getTimeRatio() * 0.9);
                             break;
                         }
                         default:
@@ -525,7 +525,7 @@ void World::update(std::vector<Event*> & events) {
 }
 
 World & World::updateObject(WorldObject * p_object) {
-    p_object->Updatable::updateTimestamp(updateTimestamp);
+    p_object->Updatable::updateTimestamp(updateTimestamp, timeRatio);
     return *this;
 }
 

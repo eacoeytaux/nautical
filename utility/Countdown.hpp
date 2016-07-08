@@ -12,18 +12,18 @@
 namespace nautical {
     class Countdown {
     public:
-        Countdown(int set = 0, int loops = -1);
+        Countdown(double set = 0, int loops = -1);
         
-        bool check(int checks = 1);
+        bool check(double checks = 1);
         Countdown & reset();
-        Countdown & reset(int set);
+        Countdown & reset(double set);
         int getLoopCount() const;
         Countdown & addLoops(int loops);
         
     private:
-        int count,
-        set,
-        loopCount,
+        double count,
+        set;
+        int loopCount,
         maxLoops;
     };
 }

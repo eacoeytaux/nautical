@@ -14,7 +14,7 @@ using namespace nautical;
 using namespace climber;
 
 //TODO use more defines
-#define FADE_SPEED 2
+#define FADE_SPEED 2.0
 
 Flame::Flame(nautical::Coordinate pos) :
 WorldObject(pos) {
@@ -45,12 +45,12 @@ Flame & Flame::addOrigin(double flameWidth, nautical::physics::Vector offset) {
     return *this;
 }
 
-void Flame::update(double dt) { //TODO implement dt
+void Flame::update(double dt) {
     for (std::vector<Origin*>::iterator it = origins.begin(); it != origins.end(); it++) {
         Origin * p_origin = *it;
         
         //orange particles
-        if (p_origin->orangeCountdown.check()) {
+        if (p_origin->orangeCountdown.check(dt)) {
             Spark * p_spark = new Spark;
             p_spark->center = p_origin->origin;
             p_spark->width = p_origin->flameWidth * (Random::getRandDouble(0.3) + 0.7);
@@ -60,7 +60,7 @@ void Flame::update(double dt) { //TODO implement dt
         }
         
         //yellow particles
-        if (p_origin->yellowCountdown.check()) {
+        if (p_origin->yellowCountdown.check(dt)) {
             Spark * p_spark = new Spark;
             p_spark->center = p_origin->origin;
             p_spark->width = p_origin->flameWidth * (Random::getRandDouble(0.2) + 0.3);
@@ -75,9 +75,9 @@ void Flame::update(double dt) { //TODO implement dt
     for (std::vector<Spark*>::iterator it = orangeParticles.begin(); it != orangeParticles.end(); it++) {
         Spark * p_spark = *it;
         
-        p_spark->center += physics::Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5);
-        p_spark->width *= 0.97;
-        p_spark->alpha -= FADE_SPEED;
+        p_spark->center += physics::Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5) * dt;
+        p_spark->width *= (1.0 - (0.03 * dt));
+        p_spark->alpha -= FADE_SPEED * dt;
         
         if ((p_spark->width < (1 / GraphicsManager::getZoom())) || (p_spark->alpha <= 0))
             sparksToDelete.push_back(p_spark);
@@ -92,9 +92,9 @@ void Flame::update(double dt) { //TODO implement dt
     for (std::vector<Spark*>::iterator it = yellowParticles.begin(); it != yellowParticles.end(); it++) {
         Spark * p_spark = *it;
         
-        p_spark->center += physics::Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5);
-        p_spark->width *= 0.97;
-        p_spark->alpha -= FADE_SPEED;
+        p_spark->center += physics::Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5) * dt;
+        p_spark->width *= (1.0 - (0.03 * dt));
+        p_spark->alpha -= FADE_SPEED * dt;
         
         if ((p_spark->width < (1 / GraphicsManager::getZoom())) || (p_spark->alpha <= 0))
             sparksToDelete.push_back(p_spark);
@@ -106,9 +106,9 @@ void Flame::update(double dt) { //TODO implement dt
     
     if (DarknessOverlay::isInEffect()) {
         Circle * p_circle = new Circle(getCenter(), 100);
-        static Countdown count(1);
+        static Countdown count(1); //TODO don't make static
         static physics::Vector moveVec[DARKNESS_LAYERS];
-        if (count.check()) {
+        if (count.check(dt)) {
             for (int i = 0; i < DARKNESS_LAYERS; i++) {
                 moveVec[i] = physics::Vector(Angle(Random::getRandDouble(M_PI * 2)), Random::getRandDouble(2));
             }
@@ -131,12 +131,12 @@ void Flame::draw() const {
         for (std::vector<Spark*>::const_iterator it = orangeParticles.begin(); it != orangeParticles.end(); it++) {
             Spark * p_spark = *it;
             p_spriteSheet->setScale((float)(p_spark->width));
-            GraphicsManager::drawImageFromSpriteSheet(p_spriteSheet, 0, p_spark->center, rotationAngle, false, false, p_spark->alpha);
+            GraphicsManager::drawImageFromSpriteSheet(p_spriteSheet, 0, p_spark->center, rotationAngle, false, false, (char)p_spark->alpha);
         }
         for (std::vector<Spark*>::const_iterator it = yellowParticles.begin(); it != yellowParticles.end(); it++) {
             Spark * p_spark = *it;
             p_spriteSheet->setScale((float)(p_spark->width));
-            GraphicsManager::drawImageFromSpriteSheet(p_spriteSheet, 1, p_spark->center, rotationAngle, false, false, p_spark->alpha);
+            GraphicsManager::drawImageFromSpriteSheet(p_spriteSheet, 1, p_spark->center, rotationAngle, false, false, (char)p_spark->alpha);
         }
     }
 }

@@ -40,7 +40,7 @@ namespace climber {
         struct Spark {
             nautical::Coordinate center;
             double width;
-            int alpha;
+            double alpha;
         };
         std::vector<Spark*> orangeParticles;
         std::vector<Spark*> yellowParticles;

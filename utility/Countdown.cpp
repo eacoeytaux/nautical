@@ -10,32 +10,36 @@
 
 using namespace nautical;
 
-Countdown::Countdown(int set, int loops) :
+Countdown::Countdown(double set, int loops) :
 count(set),
 set(set),
 loopCount(0),
 maxLoops(loops) { }
 
-bool Countdown::check(int checks) {
-    bool ret = false;
-    for (int i = 0; i < checks; i++) {
-        if ((maxLoops < 0) || (maxLoops - loopCount >= 0)) {
-            if (!(--count > 0)) {
-                if (maxLoops >= 0)
-                    loopCount++;
-                reset();
-                ret |= true;
-            }
+bool Countdown::check(double checks) {
+    if (set <= 0) {
+        return true;
+    } else if (count > checks) {
+        count -= checks;
+        return false;
+    } else {
+        checks -= count;
+        loopCount++;
+        while (checks >= set) {
+            checks -= set;
+            loopCount++;
         }
+        reset();
+        count -= checks;
+        return true;
     }
-    return ret;
 }
 
 Countdown & Countdown::reset() {
     return reset(set);
 }
 
-Countdown & Countdown::reset(int set) {
+Countdown & Countdown::reset(double set) {
     this->set = set;
     count = set;
     return *this;
