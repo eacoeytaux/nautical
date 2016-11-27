@@ -32,31 +32,30 @@ namespace nautical {
         
         bool isVertical() const;
         
-        const Map * getMap() const;
-        Map * getMap();
+        const Map & getMap() const;
         
         double getTimeRatio() const;
         World & setTimeRatio(double timeRatio);
         
-        World & addObject(WorldObject * p_object, bool shouldUpdate = true, bool shouldDraw = true);
-        World & markObjectForRemoval(WorldObject * p_object); //TODO when should object be deleted?
+        World & addObject(std::shared_ptr<WorldObject> p_object, bool shouldUpdate = true, bool shouldDraw = true);
+        World & markObjectForRemoval(std::shared_ptr<WorldObject> p_object); //TODO when should object be deleted?
         
-        World & subscribeObject(std::string eventTag, WorldObject * p_object);
-        World & unsubscribeObject(std::string eventTag, WorldObject * p_object);
+        World & subscribeObject(std::string eventTag, std::shared_ptr<WorldObject> p_object);
+        World & unsubscribeObject(std::string eventTag, std::shared_ptr<WorldObject> p_object);
         
-        World & handleEvent(Event * p_event);
+        World & handleEvent(std::shared_ptr<Event> p_event);
         
-        physics::Vector generatePath(float * p_percentage, physics::Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement); //TODO rename function
+        Vector generatePath(float & p_percentage, Vector & vel, std::shared_ptr<MapHitbox> p_hitbox, std::shared_ptr<const MapElement> & p_nextElement); //TODO rename function
         
-        virtual void update(std::vector<Event*> & events);
+        virtual void update(std::vector<std::shared_ptr<Event>> & events);
         virtual void draw();
         
         static bool DRAW_BUMPERS; //DEBUGGING
         
     protected:
-        World & removeObject(WorldObject * p_object);
+        World & removeObject(std::shared_ptr<WorldObject> p_object);
         
-        virtual World & updateObject(WorldObject * p_object);
+        virtual World & updateObject(std::shared_ptr<WorldObject> p_object);
         
     private:
         int id,
@@ -68,14 +67,14 @@ namespace nautical {
         Map map;
         double timeRatio = 1; //TODO stuff with this
         
-        std::vector<WorldObject*> allObjects,
+        std::vector<std::shared_ptr<WorldObject>> allObjects,
         objectsToDelete,
         objectsToUpdate[MAX_PRIORITY + 1],
         objectsToDraw[MAX_BELOW_ALTITUDE + MAX_ABOVE_ALTITUDE + 1];
         
         struct EventPairing {
             std::string eventTag;
-            std::vector<WorldObject*> subscribedObjects;
+            std::vector<std::shared_ptr<WorldObject>> subscribedObjects;
             
             inline bool operator==(const EventPairing & other) const { return (eventTag == other.eventTag); }
         };

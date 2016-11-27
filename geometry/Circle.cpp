@@ -11,7 +11,7 @@
 using namespace nautical;
 
 bool Circle::circleVectorsCalculated = false;
-physics::Vector Circle::circleVectors[CIRCLE_PERCISION];
+Vector Circle::circleVectors[CIRCLE_PERCISION];
 
 Circle::Circle(Coordinate center, double radius) :
 center(center),
@@ -20,7 +20,7 @@ radius(radius) {
     
     if (!circleVectorsCalculated) {
         for (int i = 0; i < CIRCLE_PERCISION - 1; i++) {
-            circleVectors[i] = physics::Vector(cos((M_PI * 2) * ((float)i / (float)(CIRCLE_PERCISION - 1))), sin((M_PI * 2) * ((float)i / (float)(CIRCLE_PERCISION - 1))));
+            circleVectors[i] = Vector(cos((M_PI * 2) * ((float)i / (float)(CIRCLE_PERCISION - 1))), sin((M_PI * 2) * ((float)i / (float)(CIRCLE_PERCISION - 1))));
         }
         circleVectors[CIRCLE_PERCISION - 1] = circleVectors[0];
         circleVectorsCalculated = true;
@@ -138,7 +138,7 @@ bool Circle::intersectsCircle(const Circle * p_circle, std::vector<Coordinate> *
         return false;
     } else if (distance == radius + p_circle->radius) {
         if (p_intersections)
-            p_intersections->push_back(center + physics::Vector(circleAngle, radius));
+            p_intersections->push_back(center + Vector(circleAngle, radius));
         return true;
     }
     
@@ -147,14 +147,14 @@ bool Circle::intersectsCircle(const Circle * p_circle, std::vector<Coordinate> *
     
     if (p_intersections) {
         Angle angle1 = circleAngle + triangleAngle, angle2 = circleAngle - triangleAngle;
-        p_intersections->push_back(center + physics::Vector(angle1, radius));
-        p_intersections->push_back(center + physics::Vector(angle2, radius));
+        p_intersections->push_back(center + Vector(angle1, radius));
+        p_intersections->push_back(center + Vector(angle2, radius));
     }
     
     return true;
 }
 
-Circle & Circle::move(physics::Vector vector) {
+Circle & Circle::move(Vector vector) {
     setCenter(center += vector);
     return *this;
 }

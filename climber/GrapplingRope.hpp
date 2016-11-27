@@ -1,13 +1,13 @@
 //
-//  Rope.hpp
+//  GrapplingRope.hpp
 //  Nautical
 //
 //  Created by Ethan Coeytaux on 5/5/16.
 //  Copyright © 2016 EthanCo. All rights reserved.
 //
 
-#ifndef Rope_hpp
-#define Rope_hpp
+#ifndef GrapplingRope_hpp
+#define GrapplingRope_hpp
 
 #include "WorldObject.hpp"
 #include "StateMachine.hpp"
@@ -21,9 +21,9 @@
 namespace climber {
     class Player;
     
-    const std::string ROPE_TAG = "rope";
+    const std::string GRAPPLING_ROPE_TAG = "grappling_rope";
     
-    class Rope : public nautical::WorldObject, public nautical::StateMachine { //TODO is rope is taught it should move with player
+    class GrapplingRope : public nautical::WorldObject, public nautical::StateMachine { //TODO is rope is taught it should move with player
     public:
         enum State {
             EXTENDING,
@@ -31,20 +31,20 @@ namespace climber {
             RETRACTING
         };
         
-        Rope(Player * p_parent, nautical::Coordinate origin, double length, nautical::physics::Vector extendVector, double retractSpeed);
-        virtual ~Rope();
+        GrapplingRope(nautical::Coordinate origin, double length, nautical::Vector extendVector, double retractSpeed);
+        virtual ~GrapplingRope();
         
         nautical::Coordinate getOrigin() const;
-        Rope & setOrigin(nautical::Coordinate origin);
+        GrapplingRope & setOrigin(nautical::Coordinate origin);
         nautical::Coordinate getHead() const;
-        Rope & setHead(nautical::Coordinate head);
+        GrapplingRope & setHead(nautical::Coordinate head);
         double getLength() const;
-        Rope & setLength(double length);
+        GrapplingRope & setLength(double length);
         bool isTaught() const;
         
         bool setState(int state);
         
-        void update(double dt);
+        void update(nautical::World * p_world, double dt);
         void draw() const;
         
     private:
@@ -70,12 +70,11 @@ namespace climber {
         
         nautical::LinkedList<Segment*> segments;*/
         
-        Player * p_parent = nullptr;
         nautical::Coordinate origin, //origin of Rope
         head;
         double length;
         bool taught;
-        nautical::physics::Vector extendVector;
+        nautical::Vector extendVector;
         double retractSpeed;
         nautical::Angle hookAngle;
         bool shouldRetract = false, //bool used to note is grapple should retract once done extending
@@ -88,4 +87,4 @@ namespace climber {
     };
 }
 
-#endif /* Rope_hpp */
+#endif /* GrapplingRope_hpp */

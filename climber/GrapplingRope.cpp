@@ -1,12 +1,12 @@
 //
-//  Rope.cpp
+//  GrapplingRope.cpp
 //  Nautical
 //
 //  Created by Ethan Coeytaux on 5/5/16.
 //  Copyright © 2016 EthanCo. All rights reserved.
 //
 
-#include "Rope.hpp"
+#include "GrapplingRope.hpp"
 
 #include "Circle.hpp"
 #include "Map.hpp"
@@ -15,10 +15,9 @@
 using namespace nautical;
 using namespace climber;
 
-Rope::Rope(Player * p_parent, nautical::Coordinate origin, double length, physics::Vector extendVector, double retractSpeed) :
-WorldObject(origin),
+GrapplingRope::GrapplingRope(nautical::Coordinate origin, double length, Vector extendVector, double retractSpeed) :
+WorldObject(1, origin), //TODO what should the mass be?
 StateMachine(EXTENDING),
-p_parent(p_parent),
 origin(origin),
 head(origin),
 length(length),
@@ -26,41 +25,41 @@ extendVector(extendVector),
 retractSpeed(retractSpeed),
 hookAngle(extendVector.getAngle()) { }
 
-Rope::~Rope() { }
+GrapplingRope::~GrapplingRope() { }
 
-Coordinate Rope::getOrigin() const {
+Coordinate GrapplingRope::getOrigin() const {
     return origin;
 }
 
-Rope & Rope::setOrigin(nautical::Coordinate origin) {
+GrapplingRope & GrapplingRope::setOrigin(nautical::Coordinate origin) {
     this->origin = origin;
     return *this;
 }
 
-Coordinate Rope::getHead() const {
+Coordinate GrapplingRope::getHead() const {
     return head;
 }
 
-Rope & Rope::setHead(nautical::Coordinate head) {
+GrapplingRope & GrapplingRope::setHead(nautical::Coordinate head) {
     this->head = head;
-    moveTo(head);
+    setPosition(head);
     return *this;
 }
 
-double Rope::getLength() const {
+double GrapplingRope::getLength() const {
     return length;
 }
 
-Rope & Rope::setLength(double length) {
+GrapplingRope & GrapplingRope::setLength(double length) {
     this->length = length;
     return *this;
 }
 
-bool Rope::isTaught() const {
+bool GrapplingRope::isTaught() const {
     return taught;
 }
 
-bool Rope::setState(int state) {
+bool GrapplingRope::setState(int state) {
     if (getState() == EXTENDING) {
         if ((state == RETRACTING) && !overrideRetract) {
             shouldRetract = true;
@@ -71,17 +70,17 @@ bool Rope::setState(int state) {
     return StateMachine::setState(state);
 }
 
-bool Rope::openState(int state) {
+bool GrapplingRope::openState(int state) {
     switch (state) {
         case SET:
             Angle angle = findAngle(origin, head);
-            head = origin + physics::Vector(angle, length);
+            head = origin + Vector(angle, length);
             break;
     }
     return true;
 }
 
-void Rope::update(double dt) { //TODO add dt
+void GrapplingRope::update(World * p_world, double dt) { //TODO add dt
     switch (getState()) {
         case EXTENDING: {
             head += extendVector;
@@ -97,7 +96,7 @@ void Rope::update(double dt) { //TODO add dt
                 //Coordinate coor = origin + Vector(x, sin((8 * (length / distance)) * x) * ((64 * (distance - x)) / distance)); //TODO save this, this is awesome
                 double amplitude = 16 * (1 - (x / distance));// * cos(distance / 64);
                 double angularFrequency = ((((length - distance) / 3) + 1) / length);
-                Coordinate coor = origin + physics::Vector(x, amplitude * sin((angularFrequency * x) + (M_PI * 5))).rotate(angle);
+                Coordinate coor = origin + Vector(x, amplitude * sin((angularFrequency * x) + (M_PI * 5))).rotate(angle);
                 wave.addLine(Line(lastCoor, coor));
                 lastCoor = coor;
             }
@@ -113,17 +112,17 @@ void Rope::update(double dt) { //TODO add dt
         }
         case RETRACTING: {
             if (length <= retractSpeed) {
-                getParent()->markObjectForRemoval(this);
-                p_parent->setRope(nullptr);
+                //getParent()->markObjectForRemoval(std::shared_ptr<WorldObject>(this)); //TODO?
+                //p_parent->setRope(nullptr); //TODO TODO TODO
             } else {
                 length -= retractSpeed;
                 if (taught) {
-                    head += physics::Vector(findAngle(head, origin), retractSpeed);
+                    head += Vector(findAngle(head, origin), retractSpeed);
                     hookAngle = findAngle(origin, head);
                 } else {
                     double parabolaLengthDifference = findDistance(origin, head) - length;
                     if ((taught = (parabolaLengthDifference > 0))) { //purposely setting taught to result of equation
-                        head += physics::Vector(findAngle(head, origin), retractSpeed - parabolaLengthDifference);
+                        head += Vector(findAngle(head, origin), retractSpeed - parabolaLengthDifference);
                         hookAngle = findAngle(origin, head);
                     }
                 }
@@ -135,7 +134,7 @@ void Rope::update(double dt) { //TODO add dt
     parabola = Parabola(origin, head, length);
 }
 
-void Rope::draw() const {
+void GrapplingRope::draw() const {
     switch (getState()) {
         case EXTENDING: {
             wave.draw();

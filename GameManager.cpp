@@ -32,8 +32,7 @@
 //TODO remove these includes
 #include "World.hpp"
 #include "Player.hpp"
-#include "Rope.hpp"
-#include "Rope2.hpp"
+#include "GrapplingRope.hpp"
 #include "Slimeball.hpp"
 #include "Flame.hpp"
 
@@ -43,15 +42,16 @@
 
 using namespace nautical;
 
+//converts SDL key to nautical key
 KeyboardEvent::Key getKeyFromSDLKey(int SDL_key);
 
-int FPS = 60;
+int FPS = 60; //target FPS
 bool GameManager::init = false;
 
 SDL_Window * p_window = nullptr;
 bool fullscreen = false;
 
-struct Controller {
+struct Controller { //struct used to monitor joysticks on controllers
     SDL_Joystick * p_controller = nullptr;
     struct Joystick {
         bool outsideDeadzone = false;
@@ -60,14 +60,14 @@ struct Controller {
 } controllers[MAX_CONTROLLERS];
 
 const long targetTime = 1000 / FPS;
-int totalCycles = 0;
+int totalCycles = 0; //running count of cycles run
 
 bool GameManager::running = false;
 bool paused = false;
 bool reset = false;
 unsigned int cycles = 0;
 
-//secret mode
+//secret mode (subtle right?)
 char secretCount = 0;
 Countdown secretCountdown;
 
@@ -76,14 +76,14 @@ bool GameManager::startup() {
         return init;
     
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) { //initialize SDL
-        Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s", SDL_GetError());
+        Logger::writeLog(ERROR, "GameManager::init(): %s", SDL_GetError());
         return false;
     } else {
         p_window = SDL_CreateWindow("Climber", 0, 0, GraphicsManager::getScreenWidth(), GraphicsManager::getScreenHeight(), SDL_WINDOW_SHOWN); //create window
         if (p_window == nullptr) {
-            Logger::writeLog(ERROR_MESSAGE, "GameManager::init(): %s", SDL_GetError());
+            Logger::writeLog(ERROR, "GameManager::init(): %s", SDL_GetError());
             return false;
-        } else if (GraphicsManager::startup(p_window)) {
+        } else if (GraphicsManager::startup(p_window)) { //initialize GraphicsManager
             //GraphicsManager::setPixelScale(2);
             
             //init SDL2_mixer for audio
@@ -92,17 +92,13 @@ bool GameManager::startup() {
             //    return false;
             //}
             
-            //for (int i = 0; i < MAX_CONTROLLERS; i++) {
-            //    controllers[i] = new Controller();
-            //}
-            
-            //if using controller, init controller
+            //if using controllers, init controllers
             SDL_JoystickEventState(SDL_ENABLE);
             controllers[0].p_controller = SDL_JoystickOpen(0);
             if (controllers[0].p_controller == nullptr) {
-                Logger::writeLog(PLAIN_MESSAGE, "GameManager::init(): controller not loaded");
+                Logger::writeLog(INFO, "GameManager::init(): controller not loaded");
             } else {
-                Logger::writeLog(PLAIN_MESSAGE, "GameManager::init(): controller loaded! controller name: %s", SDL_JoystickName(controllers[0].p_controller));
+                Logger::writeLog(INFO, "GameManager::init(): controller loaded! controller name: %s", SDL_JoystickName(controllers[0].p_controller));
             }
         }
     }
@@ -119,7 +115,7 @@ bool GameManager::shutdown() {
     //exit mixer
     //Mix_Quit();
     
-    //close controller
+    //close controllers
     for (int i = 0; i < MAX_CONTROLLERS; i++) {
         SDL_JoystickClose(controllers[i].p_controller);
         controllers[i].p_controller = nullptr;
@@ -133,42 +129,44 @@ bool GameManager::shutdown() {
     p_window = nullptr;
     SDL_Quit();
     
-    Logger::shutdown();
-    
     return !(init = false);
 }
 
 void GameManager::run() {
     if (!startup()) {
-        Logger::writeLog(ERROR_MESSAGE, "GameManager::run(): attempted to run game loop without first initializing window");
+        Logger::writeLog(ERROR, "GameManager::run(): attempted to run game loop without first initializing window");
         return;
     }
     
-    Logger::writeLog(PLAIN_MESSAGE, "GameManager::run(): starting game loop...");
+    Logger::writeLog(INFO, "GameManager::run(): starting game loop...");
     
     reset = false;
     running = true;
     
-    std::vector<Event*> events;
+    std::vector<std::shared_ptr<Event>> events; //used to poll events from SDL to be passed to World
     World level;
     
+    //TEST AREA - added objects for testing purposes
+    
     Coordinate playerCoor(390, 480);
-    level.addObject(new climber::Player(playerCoor));
+    level.addObject(std::shared_ptr<climber::Player>(new climber::Player(playerCoor)));
     GraphicsManager::setCenter(playerCoor, true);
     
-    climber::Flame * flame = new climber::Flame(Coordinate(450, 300));
-    flame->addOrigin(40);
+    std::shared_ptr<climber::Flame> p_flame = std::shared_ptr<climber::Flame>(new climber::Flame(Coordinate(450, 300)));
+    p_flame->addOrigin(40);
     //flame->addOrigin(20, Vector(-15, 0));
     //flame->addOrigin(20, Vector(15, 0));
-    level.addObject(flame);
+    level.addObject(p_flame);
     
     //level.addObject(new climber::Slimeball(Coordinate(600, 600)));
     
-    //level.addObject(new climber::Rope2(Coordinate(350, 500), 50));
+    //level.addObject(new climber::GrapplingRope(Coordinate(350, 500), 50));
     
-    Clock timer;
+    //END TEST AREA
+    
+    Clock timer; //used for FPS calculation
     while (running) {
-        timer.delta();
+        timer.delta(); //start timer
         
         events.clear();
         pollEvents(events);
@@ -201,7 +199,7 @@ void GameManager::run() {
 #endif
             //printf("Hit deadline with %ld ms to spare! (targetTime: %ld)\n", wait, targetTime);
         } else {
-            Logger::writeLog(WARNING_MESSAGE, "Missed deadline by %ld ms", -wait);
+            Logger::writeLog(MESSAGE, "Missed deadline by %ld ms", -wait);
         }
         
         if (secretCountdown.check()) {
@@ -210,14 +208,14 @@ void GameManager::run() {
         }
     }
     
-    if (reset) {
+    if (reset) { //if loop quit by reset, rerun run()
         run();
     } else {
         shutdown();
     }
 }
 
-void GameManager::pollEvents(std::vector<Event*> & events) {
+void GameManager::pollEvents(std::vector<std::shared_ptr<Event>> & events) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
@@ -242,19 +240,19 @@ void GameManager::pollEvents(std::vector<Event*> & events) {
                     }
                 }
                 
-                ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::BUTTON_PRESS);
+                std::shared_ptr<ControllerEvent> p_controllerEvent = std::shared_ptr<ControllerEvent>(new ControllerEvent(event.jaxis.which, ControllerEvent::BUTTON_PRESS));
                 p_controllerEvent->setButtonIndex(event.jbutton.button);
                 events.push_back(p_controllerEvent);
                 break;
             }
             case SDL_JOYBUTTONUP: {
-                ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::BUTTON_RELEASE);
+                std::shared_ptr<ControllerEvent> p_controllerEvent = std::shared_ptr<ControllerEvent>(new ControllerEvent(event.jaxis.which, ControllerEvent::BUTTON_RELEASE));
                 p_controllerEvent->setButtonIndex(event.jbutton.button);
                 events.push_back(p_controllerEvent);
                 break;
             }
             case SDL_JOYHATMOTION: {
-                ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::HAT_VALUE_CHANGE);
+                std::shared_ptr<ControllerEvent> p_controllerEvent = std::shared_ptr<ControllerEvent>(new ControllerEvent(event.jaxis.which, ControllerEvent::HAT_VALUE_CHANGE));
                 int hatValue = event.jhat.value;
                 p_controllerEvent->setUpPressed(hatValue & 1);
                 p_controllerEvent->setRightPressed(hatValue & 2);
@@ -281,7 +279,7 @@ void GameManager::pollEvents(std::vector<Event*> & events) {
                 if (findDistance((double)(p_controller->joysticks[joystickIndex].xDir), (double)(p_controller->joysticks[joystickIndex].yDir)) > JOYSTICK_DEADZONE) {
                     p_controller->joysticks[joystickIndex].outsideDeadzone = true;
                     
-                    ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::JOYSTICK_MOVEMENT);
+                    std::shared_ptr<ControllerEvent> p_controllerEvent = std::shared_ptr<ControllerEvent>(new ControllerEvent(event.jaxis.which, ControllerEvent::JOYSTICK_MOVEMENT));
                     p_controllerEvent->setJoystickIndex(joystickIndex);
                     p_controllerEvent->setOutsideDeadzone(true);
                     p_controllerEvent->setJoystickAngle(joystickAngle);
@@ -289,7 +287,7 @@ void GameManager::pollEvents(std::vector<Event*> & events) {
                 } else if (p_controller->joysticks[joystickIndex].outsideDeadzone) { //joystick has gone from outside to inside deadzone
                     p_controller->joysticks[joystickIndex].outsideDeadzone = false;
                     
-                    ControllerEvent * p_controllerEvent = new ControllerEvent(event.jaxis.which, ControllerEvent::JOYSTICK_MOVEMENT);
+                    std::shared_ptr<ControllerEvent> p_controllerEvent = std::shared_ptr<ControllerEvent>(new ControllerEvent(event.jaxis.which, ControllerEvent::JOYSTICK_MOVEMENT));
                     p_controllerEvent->setJoystickIndex(joystickIndex);
                     p_controllerEvent->setOutsideDeadzone(false);
                     p_controllerEvent->setJoystickAngle(joystickAngle);
@@ -302,21 +300,21 @@ void GameManager::pollEvents(std::vector<Event*> & events) {
                 mousePos.setX(mousePos.getX() / GraphicsManager::getPixelScale());
                 mousePos.setY(mousePos.getY() / GraphicsManager::getPixelScale());
                 GraphicsManager::setMouseCoor(mousePos);
-                events.push_back(new MouseEvent(mousePos, MouseEvent::MOUSE_MOVEMENT));
+                events.push_back(std::shared_ptr<MouseEvent>(new MouseEvent(mousePos, MouseEvent::MOUSE_MOVEMENT)));
                 break;
             }
             case SDL_MOUSEBUTTONDOWN: {
                 if (event.button.button == SDL_BUTTON_LEFT)
-                    events.push_back(new MouseEvent(GraphicsManager::getMouseCoor(), MouseEvent::LEFT_BUTTON_PRESS));
+                    events.push_back(std::shared_ptr<MouseEvent>(new MouseEvent(GraphicsManager::getMouseCoor(), MouseEvent::LEFT_BUTTON_PRESS)));
                 else if (event.button.button == SDL_BUTTON_RIGHT)
-                    events.push_back(new MouseEvent(GraphicsManager::getMouseCoor(), MouseEvent::RIGHT_BUTTON_PRESS));
+                    events.push_back(std::shared_ptr<MouseEvent>(new MouseEvent(GraphicsManager::getMouseCoor(), MouseEvent::RIGHT_BUTTON_PRESS)));
                 break;
             }
             case SDL_MOUSEBUTTONUP: {
                 if (event.button.button == SDL_BUTTON_LEFT)
-                    events.push_back(new MouseEvent(GraphicsManager::getMouseCoor(), MouseEvent::LEFT_BUTTON_RELEASE));
+                    events.push_back(std::shared_ptr<MouseEvent>(new MouseEvent(GraphicsManager::getMouseCoor(), MouseEvent::LEFT_BUTTON_RELEASE)));
                 else if (event.button.button == SDL_BUTTON_RIGHT)
-                    events.push_back(new MouseEvent(GraphicsManager::getMouseCoor(), MouseEvent::RIGHT_BUTTON_RELEASE));
+                    events.push_back(std::shared_ptr<MouseEvent>(new MouseEvent(GraphicsManager::getMouseCoor(), MouseEvent::RIGHT_BUTTON_RELEASE)));
                 break;
             }
             case SDL_KEYDOWN: {
@@ -379,11 +377,11 @@ void GameManager::pollEvents(std::vector<Event*> & events) {
                         GraphicsManager::setPixelScale(4);
                         break;
                 }
-                events.push_back(new KeyboardEvent(getKeyFromSDLKey(event.key.keysym.sym), KeyboardEvent::KEY_PRESSED));
+                events.push_back(std::shared_ptr<KeyboardEvent>(new KeyboardEvent(getKeyFromSDLKey(event.key.keysym.sym), KeyboardEvent::KEY_PRESSED)));
                 break;
             }
             case SDL_KEYUP: {
-                events.push_back(new KeyboardEvent(getKeyFromSDLKey(event.key.keysym.sym), KeyboardEvent::KEY_RELEASED));
+                events.push_back(std::shared_ptr<KeyboardEvent>(new KeyboardEvent(getKeyFromSDLKey(event.key.keysym.sym), KeyboardEvent::KEY_RELEASED)));
                 break;
             }
         }
@@ -562,24 +560,24 @@ KeyboardEvent::Key getKeyFromSDLKey(int SDL_key) {
 
 #include "Mass.hpp"
 #include "Spring.hpp"
-#include "PhysicsRope.hpp"
+#include "Rope.hpp"
 
 void GameManager::runTests() { //DEBUGGING
-//    static physics::Mass m1(1, Coordinate(500, 500));
-//    m1.setImmobile(true);
-//    static physics::Mass m2(1, Coordinate(530, 500));
-//    static physics::Spring spring(&m1, &m2, 60, 1, 3);
-//    
-//    spring.update();
-//    
-//    m1.update();
-//    m2.update();
-//    
-//    GraphicsManager::drawCoordinate(m1.getPosition());
-//    GraphicsManager::drawCoordinate(m2.getPosition());
-//    GraphicsManager::drawLine(Line(m1.getPosition(), m2.getPosition()));
+    static Mass m1(1, Coordinate(500, 500));
+    //m1.setImmobile(true);
+    static Mass m2(1, Coordinate(530, 500));
+    static Spring spring(std::shared_ptr<Mass>(&m1), std::shared_ptr<Mass>(&m2), 60, 1, 0.2);
     
-    static physics::PhysicsRope rope(Coordinate(300, 500), 15);
+    spring.update();
+    
+    m1.update();
+    m2.update();
+    
+    GraphicsManager::drawCoordinate(m1.getPosition());
+    GraphicsManager::drawCoordinate(m2.getPosition());
+    GraphicsManager::drawLine(Line(m1.getPosition(), m2.getPosition()));
+    
+    static Rope rope(Coordinate(300, 500), 150);
     rope.setAnchor(GraphicsManager::screenToWorld(GraphicsManager::getMouseCoor()));
     rope.update();
     rope.draw();

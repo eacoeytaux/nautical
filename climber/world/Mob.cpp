@@ -11,7 +11,7 @@
 using namespace nautical;
 
 Mob::Mob(Coordinate pos, int maxHealth) :
-WorldObject(pos),
+WorldObject(1, pos),
 maxHealth(maxHealth),
 health(maxHealth) {
     appendTag(MOB_TAG);

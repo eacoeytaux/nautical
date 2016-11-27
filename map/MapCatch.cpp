@@ -12,7 +12,7 @@
 
 using namespace nautical;
 
-MapCatch::MapCatch(Coordinate collision, Line line, MapElement * p_element1, MapElement * p_element2) :
+MapCatch::MapCatch(Coordinate collision, Line line, std::shared_ptr<const MapElement> p_element1, std::shared_ptr<const MapElement> p_element2) :
 collision(collision),
 line(line),
 p_element1(p_element1),
@@ -38,11 +38,11 @@ MapCatch & MapCatch::setLine(Line line) {
     return *this;
 }
 
-bool MapCatch::containsElement(const MapElement * p_element) const {
+bool MapCatch::containsElement(std::shared_ptr<const MapElement> p_element) const {
     return ((p_element1 == p_element) || (p_element2 == p_element));
 }
 
-const MapElement * MapCatch::getElement(const MapElement * p_other) const {
+std::shared_ptr<const MapElement> MapCatch::getElement(std::shared_ptr<const MapElement> p_other) const {
     if (p_element1 == p_other)
         return p_element2;
     else if (p_element2 == p_other)
@@ -51,20 +51,20 @@ const MapElement * MapCatch::getElement(const MapElement * p_other) const {
         return nullptr;
 }
 
-const MapElement * MapCatch::getElement1() const {
+std::shared_ptr<const MapElement> MapCatch::getElement1() const {
     return p_element1;
 }
 
-MapCatch & MapCatch::setElement1(const MapElement * p_element) {
+MapCatch & MapCatch::setElement1(std::shared_ptr<const MapElement> p_element) {
     this->p_element1 = p_element;
     return *this;
 }
 
-const MapElement * MapCatch::getElement2() const {
+std::shared_ptr<const MapElement> MapCatch::getElement2() const {
     return p_element2;
 }
 
-MapCatch & MapCatch::setElement2(const MapElement * p_element) {
+MapCatch & MapCatch::setElement2(std::shared_ptr<const MapElement> p_element) {
     this->p_element2 = p_element;
     return *this;
 }

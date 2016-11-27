@@ -22,7 +22,8 @@ namespace nautical {
         std::string getExtensionName() const;
         SaveFile & setExtensionName(std::string extensionName);
         
-        virtual SaveFile & save(int slot = -1) = 0; //slot indicates which slot to save to, -1 means no slot
+        //slot indicates which slot to save to, -1 means no slot
+        virtual SaveFile & save(int slot = -1) = 0;
         virtual SaveFile & load(int slot = -1) = 0;
         
     private:

@@ -12,11 +12,11 @@ using namespace nautical;
 using namespace climber;
 
 Tentacle::Tentacle(nautical::Coordinate origin, nautical::Angle originAngle, nautical::Coordinate target) :
-WorldObject(origin),
+WorldObject(1, origin),
 origin(origin),
 originAngle(originAngle),
 target(target) {
-    physics::Vector offset(originAngle, relaxedLength);
+    Vector offset(originAngle, relaxedLength);
     tentacle[0].pos = origin;
     tentacle[0].angle = originAngle;
     tentacle[0].targetAngle = findAngle(origin, target);
@@ -33,7 +33,7 @@ Tentacle::~Tentacle() { }
 void Tentacle::update() {
     for (int i = 0; i < TENTACLE_SEGMENT_COUNT; i++) {
         Angle prevAngle = (i != 0) ? tentacle[i - 1].angle : originAngle;
-        tentacle[i].pos = (i != 0) ? tentacle[i - 1].pos + physics::Vector(prevAngle, relaxedLength) : origin;
+        tentacle[i].pos = (i != 0) ? tentacle[i - 1].pos + Vector(prevAngle, relaxedLength) : origin;
         tentacle[i].targetAngle = findAngle(tentacle[i].pos, target);// - (M_PI_2 * i / TENTACLE_SEGMENT_COUNT);
         
         double targetAngleOffset = prevAngle.getValue() - tentacle[i].targetAngle.getValue();

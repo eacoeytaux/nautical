@@ -45,6 +45,6 @@ TODOs:
 
 KNOWN BUGS:
 
-- sometimes object will jump to other end of edge when passing to vertex
+- sometimes object will jump to other end of map edge when passing to map vertex
 
 - in DarknessOverlay subtracted shapes cause issues when going off-screen

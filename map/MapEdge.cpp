@@ -16,24 +16,21 @@ using namespace nautical;
 
 bool MapEdge::DRAW_NORMALS = false;
 
-MapEdge::MapEdge(MapVertex * p_vertexBack, MapVertex * p_vertexFront, bool sticky) :
+MapEdge::MapEdge(std::shared_ptr<MapVertex> p_vertexBack, std::shared_ptr<MapVertex> p_vertexFront, bool sticky) :
 MapElement(sticky),
-p_vertexBack(p_vertexBack),
-p_vertexFront(p_vertexFront) {
+p_vertexBack(std::weak_ptr<MapVertex>(p_vertexBack)),
+p_vertexFront(std::weak_ptr<MapVertex>(p_vertexFront)) {
     appendTag(MAP_EDGE_TAG);
     
     setColor(isSticky() ? GREEN : RED);
     line = Line(p_vertexBack->getCoor(), p_vertexFront->getCoor());
     normal = Angle(line.getAngle() + M_PI_2);
     
-    p_vertexBack->setEdgeFront(this);
-    p_vertexFront->setEdgeBack(this);
+    //p_vertexBack->setEdgeFront(shared_from_this());
+    //p_vertexFront->setEdgeBack(shared_from_this());
 }
 
-MapEdge::~MapEdge() {
-    p_vertexFront->setEdgeBack(nullptr);
-    p_vertexBack->setEdgeFront(nullptr);
-}
+MapEdge::~MapEdge() { }
 
 Line MapEdge::getLine() const {
     return line;
@@ -43,29 +40,29 @@ Angle MapEdge::getNormal() const {
     return normal;
 }
 
-MapVertex * MapEdge::getVertex(MapVertex * p_other) const {
-    if (p_other == p_vertexFront)
-        return p_vertexBack;
-    else if (p_other == p_vertexBack)
-        return p_vertexFront;
+std::shared_ptr<MapVertex> MapEdge::getVertex(std::shared_ptr<MapVertex> p_other) const {
+    if (p_other == p_vertexFront.lock())
+        return p_vertexBack.lock();
+    else if (p_other == p_vertexBack.lock())
+        return p_vertexFront.lock();
     else
         return nullptr;
 }
 
-MapVertex * MapEdge::getVertexFront() const {
-    return p_vertexFront;
+std::shared_ptr<MapVertex> MapEdge::getVertexFront() const {
+    return p_vertexFront.lock();
 }
 
-MapEdge & MapEdge::setVertexFront(MapVertex * p_vertex) {
+MapEdge & MapEdge::setVertexFront(std::shared_ptr<MapVertex> p_vertex) {
     this->p_vertexFront = p_vertex;
     return *this;
 }
 
-MapVertex * MapEdge::getVertexBack() const {
-    return p_vertexBack;
+std::shared_ptr<MapVertex> MapEdge::getVertexBack() const {
+    return p_vertexBack.lock();
 }
 
-MapEdge & MapEdge::setVertexBack(MapVertex * p_vertex) {
+MapEdge & MapEdge::setVertexBack(std::shared_ptr<MapVertex> p_vertex) {
     this->p_vertexBack = p_vertex;
     return *this;
 }
@@ -74,7 +71,7 @@ void MapEdge::draw() const {
     GraphicsManager::drawLine(line, getColor());
     
     if (DRAW_NORMALS && DEBUG_MODE) {
-        Coordinate origin = p_vertexBack->getCoor() + (physics::Vector(p_vertexBack->getCoor(), p_vertexFront->getCoor()) / 2);
-        physics::Vector(normal, 5, origin).Drawable::draw(getColor().setA(127));
+        Coordinate origin = p_vertexBack.lock()->getCoor() + (Vector(p_vertexBack.lock()->getCoor(), p_vertexFront.lock()->getCoor()) / 2);
+        Vector(normal, 5, origin).Drawable::draw(getColor().setA(127));
     }
 }

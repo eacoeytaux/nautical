@@ -39,7 +39,7 @@ namespace nautical {
         virtual bool intersectsLine(Line, std::vector<Coordinate> * p_intersections = nullptr) const = 0; //TODO make const reference
         virtual bool intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections = nullptr) const = 0;
         
-        virtual Shape & move(physics::Vector vector) = 0; //TODO make const reference
+        virtual Shape & move(Vector vector) = 0; //TODO make const reference
         virtual Shape & rotateAboutCoordinate(Coordinate coor, Angle angle) = 0;
         
         virtual void draw() const = 0;
@@ -81,7 +81,7 @@ namespace nautical {
                             
                             lineIntersections.push_back(line);
                         } else {
-                            Logger::writeLog(ERROR_MESSAGE, "Shape::drawFilled(): horizontal line intersections shape odd number of times");
+                            Logger::writeLog(ERROR, "Shape::drawFilled(): horizontal line intersections shape odd number of times");
                         }
                     }
                 }

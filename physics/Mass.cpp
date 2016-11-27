@@ -9,12 +9,13 @@
 #include "Mass.hpp"
 
 using namespace nautical;
-using namespace physics;
 
 Mass::Mass(double m, Coordinate pos, Vector vel) :
 m(m),
 pos(pos),
-vel(vel) { }
+vel(vel) {
+    vel.setOrigin(pos);
+}
 
 Mass::~Mass() { }
 
@@ -36,12 +37,18 @@ Mass & Mass::setPosition(const Coordinate & pos) {
     return *this;
 }
 
+Mass & Mass::movePosition(const Vector & dPos) {
+    pos += dPos;
+    return *this;
+}
+
 Vector Mass::getVelocity() const  {
     return vel;
 }
 
 Mass & Mass::setVelocity(const Vector & vel) {
     this->vel = vel;
+    this->vel.setOrigin(pos);
     return *this;
 }
 
@@ -66,9 +73,9 @@ Mass & Mass::addAccelerator(std::shared_ptr<Accelerator> accelerator) {
 
 //RK4 implemented from http://gafferongames.com/game-physics/integration-basics/
 
-void Mass::update(double dt) {
+std::pair<Coordinate, Vector> Mass::update(double dt) {
     if (immobile)
-        return;
+        return std::pair<Coordinate, Vector>();
     
     std::pair<Vector, Vector> a, b, c, d; //first = dPos/dt, second = dVel/dt
     
@@ -77,14 +84,9 @@ void Mass::update(double dt) {
     c = evaluate(b, 0.5 * dt);
     d = evaluate(c, dt);
     
-    //Taylor Series expansion, should not be made variables
+    //Taylor Series expansion, number values should not be made variables
     Vector dPos = (a.first + ((b.first + c.first) * 2.0) + d.first) * (1.0 / 6.0);
     Vector dVel = (a.second + ((b.second + c.second) * 2.0) + d.second) * (1.0 / 6.0);
-    
-    printf("pos %f:%f\n", pos.getX(), pos.getY());
-    printf("vel %f:%f\n", vel.getDx(), vel.getDy());
-    printf("dPos %f:%f\n", dPos.getDx(), dPos.getDy());
-    printf("dVel %f:%f\n\n", dVel.getDx(), dVel.getDy());
     
     pos += dPos * dt;
     vel += dVel * dt;
@@ -100,6 +102,8 @@ void Mass::update(double dt) {
     }
     
     accelerators.clear();
+    
+    return std::pair<Coordinate, Vector>(pos, vel);
 }
 
 std::pair<Vector, Vector> Mass::evaluate(const std::pair<Vector, Vector> & derivative, double dt) { //helper function for update

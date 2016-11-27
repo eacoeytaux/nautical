@@ -18,7 +18,7 @@ MapHitboxCircle::MapHitboxCircle(Circle circle) : circle(circle) {
 
 MapHitboxCircle::~MapHitboxCircle() { }
 
-MapHitboxCircle & MapHitboxCircle::move(physics::Vector vec) {
+MapHitboxCircle & MapHitboxCircle::move(Vector vec) {
     MapHitbox::move(vec);
     circle.move(vec);
     return *this;
@@ -38,49 +38,49 @@ MapHitboxCircle & MapHitboxCircle::setCircle(Circle circle) {
     return *this;
 }
 
-bool MapHitboxCircle::adjustVector(const MapVertex * p_vertex, physics::Vector * p_vector) const {
+bool MapHitboxCircle::adjustVector(std::shared_ptr<const MapVertex> p_vertex, Vector & vector) const {
     return false; //TODO
 }
 
-std::shared_ptr<Shape> MapHitboxCircle::createBumper(const MapVertex * p_vertex) const {
+std::shared_ptr<Shape> MapHitboxCircle::createBumper(std::shared_ptr<const MapVertex> p_vertex) const {
     return std::shared_ptr<Shape>(new Circle(p_vertex->getCoor(), circle.getRadius()));
 }
 
-std::vector<MapCatch> MapHitboxCircle::findCatches(const MapVertex * p_vertex, const Map * p_map) const {
+std::vector<MapCatch> MapHitboxCircle::findCatches(std::shared_ptr<const MapVertex> p_vertex, const std::vector<std::shared_ptr<MapVertex>> & p_vertices, const std::vector<std::shared_ptr<MapEdge>> & p_edges) const {
     return std::vector<MapCatch>(); //TODO
 }
 
-bool MapHitboxCircle::adjustVector(const MapEdge * p_edge, physics::Vector * p_vector) const {
+bool MapHitboxCircle::adjustVector(std::shared_ptr<const MapEdge> p_edge, Vector & vector) const {
     return false; //TODO
 }
 
-std::shared_ptr<Shape> MapHitboxCircle::createBumper(const MapEdge * p_edge) const {
+std::shared_ptr<Shape> MapHitboxCircle::createBumper(std::shared_ptr<const MapEdge> p_edge) const {
     std::shared_ptr<Shape> bumper(new LineShape(p_edge->getLine()));
-    physics::Vector bumperOffset(p_edge->getNormal(), circle.getRadius());
+    Vector bumperOffset(p_edge->getNormal(), circle.getRadius());
     bumper->move(bumperOffset);
     return bumper;
 }
 
-std::vector<MapCatch> MapHitboxCircle::findCatches(const MapEdge * p_edge, const Map * p_map) const {
+std::vector<MapCatch> MapHitboxCircle::findCatches(std::shared_ptr<const MapEdge> p_edge, const std::vector<std::shared_ptr<MapVertex>> & p_vertices, const std::vector<std::shared_ptr<MapEdge>> & p_edges) const {
     return std::vector<MapCatch>(); //TODO
 }
 
-physics::Vector MapHitboxCircle::getOffset(const MapEdge * p_edge) const {
-    return physics::Vector(0, 0); //TODO
+Vector MapHitboxCircle::getOffset(std::shared_ptr<const MapEdge> p_edge) const {
+    return Vector(0, 0); //TODO
 }
 
-MapCatch MapHitboxCircle::getCatchFront(const MapEdge * p_edge) const {
+MapCatch MapHitboxCircle::getCatchFront(std::shared_ptr<const MapEdge> p_edge) const {
     Coordinate center = p_edge->getVertexFront()->getCoor();
-    physics::Vector offset = getOffset(p_edge);
-    return MapCatch(center + offset, Line(center, center + (offset * 2)), (MapElement*)p_edge, (MapElement*)p_edge->getVertexFront());
+    Vector offset = getOffset(p_edge);
+    return MapCatch(center + offset, Line(center, center + (offset * 2)), std::static_pointer_cast<const MapElement>(p_edge), std::static_pointer_cast<const MapElement>(p_edge->getVertexFront()));
 }
 
-MapCatch MapHitboxCircle::getCatchBack(const MapEdge * p_edge) const {
+MapCatch MapHitboxCircle::getCatchBack(std::shared_ptr<const MapEdge> p_edge) const {
     Coordinate center = p_edge->getVertexBack()->getCoor();
-    physics::Vector offset = getOffset(p_edge);
-    return MapCatch(center + offset, Line(center, center + (offset * 2)), (MapElement*)p_edge, (MapElement*)p_edge->getVertexBack());
+    Vector offset = getOffset(p_edge);
+    return MapCatch(center + offset, Line(center, center + (offset * 2)), std::static_pointer_cast<const MapElement>(p_edge), std::static_pointer_cast<const MapElement>(p_edge->getVertexBack()));
 }
 
-MapHitboxCircle * MapHitboxCircle::deepCopy() const {
-    return new MapHitboxCircle(*this);
-}
+//MapHitboxCircle * MapHitboxCircle::deepCopy() const {
+//    return new MapHitboxCircle(*this);
+//}

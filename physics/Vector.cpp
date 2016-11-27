@@ -11,7 +11,6 @@
 #include "Utility.hpp"
 
 using namespace nautical;
-using namespace physics;
 
 Vector::Vector(double dx, double dy, Coordinate origin) :
 origin(origin) {

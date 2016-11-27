@@ -24,11 +24,11 @@ bool World::DRAW_BUMPERS = false;
 
 //functions used for weighing WorldObjects in SortedLists
 double weighWorldObjectByX(WorldObject * const * p_object) {
-    return (*p_object)->getCenter().getX();
+    return (*p_object)->getPosition().getX();
 }
 
 double weighWorldObjectByY(WorldObject * const * p_object) {
-    return (*p_object)->getCenter().getY();
+    return (*p_object)->getPosition().getY();
 }
 
 World::World(bool verticalWorld) {
@@ -46,32 +46,27 @@ World::World(bool verticalWorld) {
     
     //generate map //TODO move this somewhere else
     map = Map(verticalWorld);
-    Map * p_map = &map;
-    MapVertex * v0 = p_map->createVertex(Coordinate(100, 640));
-    MapVertex * v1 = p_map->createVertex(Coordinate(10, 340));
-    MapVertex * v2 = p_map->createVertex(Coordinate(175, 220));
-    //MapVertex * v3 = p_map->createVertex(Coordinate(250, 220));
-    MapVertex * v4 = p_map->createVertex(Coordinate(400, 290));
-    MapVertex * v5 = p_map->createVertex(Coordinate(450, 265));
-    MapVertex * v6 = p_map->createVertex(Coordinate(500, 290));
-    MapVertex * v7 = p_map->createVertex(Coordinate(800, 240));
-    MapVertex * v8 = p_map->createVertex(Coordinate(750, 640));
+    std::shared_ptr<MapVertex> v0 = map.createVertex(Coordinate(100, 640));
+    std::shared_ptr<MapVertex> v1 = map.createVertex(Coordinate(10, 340));
+    std::shared_ptr<MapVertex> v2 = map.createVertex(Coordinate(175, 220));
+    //std::shared_ptr<MapVertex> v3 = map.createVertex(Coordinate(250, 220));
+    std::shared_ptr<MapVertex> v4 = map.createVertex(Coordinate(400, 290));
+    std::shared_ptr<MapVertex> v5 = map.createVertex(Coordinate(450, 265));
+    std::shared_ptr<MapVertex> v6 = map.createVertex(Coordinate(500, 290));
+    std::shared_ptr<MapVertex> v7 = map.createVertex(Coordinate(800, 240));
+    std::shared_ptr<MapVertex> v8 = map.createVertex(Coordinate(750, 640));
     
-    p_map->createEdge(v0, v1, false);
-    p_map->createEdge(v1, v2, true);
+    map.createEdge(v0, v1, false);
+    map.createEdge(v1, v2, true);
     //createEdge(v2, v3, true);
-    p_map->createEdge(v2, v4, true);
-    p_map->createEdge(v4, v5, true);
-    p_map->createEdge(v5, v6, true);
-    p_map->createEdge(v6, v7, true);
-    p_map->createEdge(v7, v8, false);
+    map.createEdge(v2, v4, true);
+    map.createEdge(v4, v5, true);
+    map.createEdge(v5, v6, true);
+    map.createEdge(v6, v7, true);
+    map.createEdge(v7, v8, false);
 }
 
-World::~World() {
-    for (std::vector<WorldObject*>::iterator it = allObjects.begin(); it != allObjects.end(); it++) {
-        delete *it;
-    }
-}
+World::~World() { }
 
 int World::getID() const {
     return id;
@@ -89,12 +84,8 @@ bool World::isVertical() const {
     return isVertical();
 }
 
-const Map * World::getMap() const {
-    return &map;
-}
-
-Map * World::getMap() {
-    return &map;
+const Map & World::getMap() const {
+    return map;
 }
 
 double World::getTimeRatio() const {
@@ -106,9 +97,9 @@ World & World::setTimeRatio(double timeRatio) {
     return *this;
 }
 
-World & World::addObject(WorldObject * p_object, bool shouldUpdate, bool shouldDraw) {
+World & World::addObject(std::shared_ptr<WorldObject> p_object, bool shouldUpdate, bool shouldDraw) {
     if (p_object) {
-        p_object->setParent(this);
+        //p_object->setParent(std::shared_ptr<World>(this));
         
         allObjects.push_back(p_object);
         if (shouldUpdate)
@@ -116,24 +107,25 @@ World & World::addObject(WorldObject * p_object, bool shouldUpdate, bool shouldD
         if (shouldDraw)
             objectsToDraw[p_object->getAltitude() + MAX_BELOW_ALTITUDE].push_back(p_object);
         
-        for (std::vector<std::string>::const_iterator it = p_object->getSubscribedEventTags()->begin(); it != p_object->getSubscribedEventTags()->end(); it++) {
+        for (std::vector<std::string>::const_iterator it = p_object->getSubscribedEventTags().begin(); it != p_object->getSubscribedEventTags().end(); it++) {
             subscribeObject(*it, p_object);
         }
         
-        Logger::writeLog(PLAIN_MESSAGE, "World::addObject(): added object[%d] to world[%d]", p_object->getID(), id);
+        Logger::writeLog(INFO, "World::addObject(): added object[%d] to world[%d]", p_object->getID(), id);
     } else {
-        Logger::writeLog(WARNING_MESSAGE, "World::addObject(): attempted to add nullptr");
+        Logger::writeLog(MESSAGE, "World::addObject(): attempted to add nullptr");
     }
     
     return *this;
 }
 
-World & World::markObjectForRemoval(WorldObject * p_object) {
+World & World::markObjectForRemoval(std::shared_ptr<WorldObject> p_object) {
     objectsToDelete.push_back(p_object);
     return *this;
 }
 
-World & World::removeObject(WorldObject * p_object) {
+//TODO this should be done by saving indexes
+World & World::removeObject(std::shared_ptr<WorldObject> p_object) {
     if (p_object) {
         if (vector_helpers::containsElement(allObjects, p_object)) {
             vector_helpers::removeElementByValue(allObjects, p_object);
@@ -142,21 +134,20 @@ World & World::removeObject(WorldObject * p_object) {
             if (vector_helpers::containsElement(objectsToDraw[p_object->getAltitude() + MAX_BELOW_ALTITUDE], p_object))
                 vector_helpers::removeElementByValue(objectsToDraw[p_object->getAltitude() + MAX_BELOW_ALTITUDE], p_object);
             
-            for (std::vector<std::string>::const_iterator it = p_object->getSubscribedEventTags()->begin(); it != p_object->getSubscribedEventTags()->end(); it++) {
+            for (std::vector<std::string>::const_iterator it = p_object->getSubscribedEventTags().begin(); it != p_object->getSubscribedEventTags().end(); it++) {
                 unsubscribeObject(*it, p_object);
             }
         } else {
-            Logger::writeLog(WARNING_MESSAGE,"World::removeObject(): attempted to remove object not in world's list of all objects");
+            Logger::writeLog(MESSAGE,"World::removeObject(): attempted to remove object not in world's list of all objects");
         }
-        delete p_object;
     } else {
-        Logger::writeLog(WARNING_MESSAGE, "World::removeObject(): attempted to remove nullptr");
+        Logger::writeLog(MESSAGE, "World::removeObject(): attempted to remove nullptr");
     }
     
     return *this;
 }
 
-World & World::subscribeObject(std::string eventTag, WorldObject * p_object) {
+World & World::subscribeObject(std::string eventTag, std::shared_ptr<WorldObject> p_object) {
     for (std::vector<EventPairing>::iterator it = subscribedObjects.begin(); it != subscribedObjects.end(); it++) {
         if (it->eventTag == eventTag) {
             it->subscribedObjects.push_back(p_object);
@@ -172,7 +163,7 @@ World & World::subscribeObject(std::string eventTag, WorldObject * p_object) {
     return *this;
 }
 
-World & World::unsubscribeObject(std::string eventTag, WorldObject * p_object) {
+World & World::unsubscribeObject(std::string eventTag, std::shared_ptr<WorldObject> p_object) {
     for (std::vector<EventPairing>::iterator it = subscribedObjects.begin(); it != subscribedObjects.end(); it++) {
         if (it->eventTag == eventTag) {
             vector_helpers::removeElementByValue(it->subscribedObjects, p_object);
@@ -181,20 +172,19 @@ World & World::unsubscribeObject(std::string eventTag, WorldObject * p_object) {
             return *this;
         }
     }
-    Logger::writeLog(WARNING_MESSAGE, "World::unregisterObjects(): attempted to unregister objects from non-existant event");
+    Logger::writeLog(MESSAGE, "World::unregisterObjects(): attempted to unregister objects from non-existant event");
     return *this;
 }
 
-World & World::handleEvent(Event * p_event) {
+World & World::handleEvent(std::shared_ptr<Event> p_event) {
     for (std::vector<EventPairing>::iterator it = subscribedObjects.begin(); it != subscribedObjects.end(); it++) {
         EventPairing pair = *it;
         if (p_event->hasTag(pair.eventTag)) {
-            for (std::vector<WorldObject*>::iterator subIt = pair.subscribedObjects.begin(); subIt != pair.subscribedObjects.end(); subIt++) {
+            for (std::vector<std::shared_ptr<WorldObject>>::iterator subIt = pair.subscribedObjects.begin(); subIt != pair.subscribedObjects.end(); subIt++) {
                 (*subIt)->handleEvent(p_event);
             }
         }
     }
-    delete p_event;
     return *this;
 }
 
@@ -348,25 +338,25 @@ World & World::handleEvent(Event * p_event) {
  p_object->setObjectPos(objPos);
  }*/
 
-physics::Vector World::generatePath(float * p_percentage, physics::Vector * p_vel, MapHitbox * p_hitbox, const MapElement ** p_nextElement) {
-    physics::Vector vel = *p_vel;
+Vector World::generatePath(float & percentage, Vector & vel, std::shared_ptr<MapHitbox> p_hitbox, std::shared_ptr<const MapElement> & p_nextElement) {
+    //Vector vel = *p_vel;
     //if (vel.getMagnitude() < 0)
     //    return 0;
     
     std::shared_ptr<Shape> p_shape = p_hitbox->getShape();
     Coordinate center = p_hitbox->getCenter();
-    const MapElement * p_element = p_hitbox->getElement();
-    const MapElement * p_prevElement = p_element;
+    std::shared_ptr<const MapElement> p_element = p_hitbox->getElement();
+    std::shared_ptr<const MapElement> p_prevElement = p_element;
     
-    vel *= *p_percentage;
+    vel *= percentage;
     
-    if (p_element && !p_hitbox->adjustVector(&vel))
+    if (p_element && !p_hitbox->adjustVector(vel))
         p_element = nullptr;
     
-    *p_nextElement = p_element;
+    p_nextElement = p_element;
     
     Coordinate nextCenter = center;
-    physics::Vector nextVel = vel;
+    Vector nextVel = vel;
     
     int lowerBound, upperBound;
     lowerBound = (int)(verticalWorld ? p_shape->getLowerBoundY() : p_shape->getLowerBoundX());
@@ -379,7 +369,7 @@ physics::Vector World::generatePath(float * p_percentage, physics::Vector * p_ve
     MinValue distance;
     
     if (p_element) { //if touching element, check only element catches
-        std::vector<MapCatch> catches = p_hitbox->findCatches(&map);
+        std::vector<MapCatch> catches = p_hitbox->findCatches(map.getVerticesList(), map.getEdgesList()); //TODO this should be &map
         for (std::vector<MapCatch>::iterator it = catches.begin(); it != catches.end(); it++) {
             MapCatch mapCatch = *it;
             
@@ -387,21 +377,21 @@ physics::Vector World::generatePath(float * p_percentage, physics::Vector * p_ve
             
             if (mapCatch.getLine().intersectsLine(adjustedVelLine)) {
                 Coordinate collision = mapCatch.getCollision();
-                physics::Vector collisionVel(center, collision);
+                Vector collisionVel(center, collision);
                 if ((collisionVel.getMagnitude() > 0) && distance.update(collisionVel.getMagnitude())) {
                     nextCenter = collision;
                     nextVel = collisionVel;
                     
-                    physics::Vector tempVector = *p_vel;
+                    Vector tempVector = vel;
                     tempVector.setOrigin(collision);
-                    *p_nextElement = (p_hitbox->adjustVector(mapCatch.getElement(p_element), &tempVector)) ? mapCatch.getElement(p_element) : nullptr;
+                    p_nextElement = (p_hitbox->adjustVectorAmbigious(mapCatch.getElement(p_element), tempVector)) ? mapCatch.getElement(p_element) : nullptr;
                 }
             }
         }
     } else { //free fall, check all elements
         //check all vertices for collision
-        for (std::vector<MapVertex*>::const_iterator it = map.getVerticesList()->begin(); it != map.getVerticesList()->end(); it++) {//TODO = map.getVerticesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
-            MapVertex * p_vertex = *it;
+        for (std::vector<std::shared_ptr<MapVertex>>::const_iterator it = map.getVerticesList().begin(); it != map.getVerticesList().end(); it++) {//TODO = map.getVerticesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
+            std::shared_ptr<const MapVertex> p_vertex = *it;
             
             if (p_vertex == p_prevElement)
                 continue;
@@ -411,22 +401,22 @@ physics::Vector World::generatePath(float * p_percentage, physics::Vector * p_ve
             std::shared_ptr<Shape> p_bumper = p_hitbox->createBumper(p_vertex);
             if (p_bumper->intersectsLine(adjustedVelLine, &collisions)) {
                 Coordinate collision = collisions.front();
-                physics::Vector tempVector = *p_vel;
+                Vector tempVector = vel;
                 tempVector.setOrigin(collision);
-                if (p_hitbox->adjustVector(p_vertex, &tempVector)) {
-                    physics::Vector collisionVel(center, collision);
+                if (p_hitbox->adjustVector(p_vertex, tempVector)) {
+                    Vector collisionVel(center, collision);
                     if ((collisionVel.getMagnitude() > 0) && distance.update(collisionVel.getMagnitude())) {
                         nextCenter = collision;
                         nextVel = collisionVel;
-                        *p_nextElement = p_vertex;
+                        p_nextElement = p_vertex;
                     }
                 }
             }
         }
         
         //check all edges for collision
-        for (std::vector<MapEdge*>::const_iterator it = map.getEdgesList()->begin(); it != map.getEdgesList()->end(); it++) {//TODO = map.getEdgesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
-            MapEdge * p_edge = *it;
+        for (std::vector<std::shared_ptr<MapEdge>>::const_iterator it = map.getEdgesList().begin(); it != map.getEdgesList().end(); it++) {//TODO = map.getEdgesListIterator(lowerBound, upperBound); !iterator->complete(); iterator->next()) {
+            std::shared_ptr<const MapEdge> p_edge = *it;
             
             if (p_edge == p_prevElement)
                 continue;
@@ -436,14 +426,14 @@ physics::Vector World::generatePath(float * p_percentage, physics::Vector * p_ve
             std::shared_ptr<Shape> p_bumper = p_hitbox->createBumper(p_edge);
             if (p_bumper->intersectsLine(adjustedVelLine, &collisions)) {
                 Coordinate collision = collisions.front();
-                physics::Vector tempVector = *p_vel;
+                Vector tempVector = vel;
                 tempVector.setOrigin(collision);
-                if (p_hitbox->adjustVector(p_edge, &tempVector)) {
-                    physics::Vector collisionVel(center, collision);
+                if (p_hitbox->adjustVector(p_edge, tempVector)) {
+                    Vector collisionVel(center, collision);
                     if ((collisionVel.getMagnitude() > 0) && distance.update(collisionVel.getMagnitude())) {
                         nextCenter = collision;
                         nextVel = collisionVel;
-                        *p_nextElement = p_edge;
+                        p_nextElement = p_edge;
                     }
                 }
             }
@@ -452,24 +442,22 @@ physics::Vector World::generatePath(float * p_percentage, physics::Vector * p_ve
     
     //finished checking collisions
     
-    if (p_vel) {
-        *p_vel = vel / *p_percentage;
-    }
+    vel = vel / percentage;
     
-    *p_percentage = 0.f;
+    percentage = 0.f;
     if ((distance.getValue() < INFINITY) && (vel.getMagnitude() != 0)) {
-        *p_percentage = 1.f - (float)(distance.getValue() / vel.getMagnitude());
+        percentage = 1.f - (float)(distance.getValue() / vel.getMagnitude());
     }
     
     return nextVel;
 }
 
-void World::update(std::vector<Event*> & events) {
-    Logger::writeLog(PLAIN_MESSAGE, "starting world[%d] update %d", id, updateTimestamp);
+void World::update(std::vector<std::shared_ptr<Event>> & events) {
+    Logger::writeLog(INFO, "starting world[%d] update %d", id, updateTimestamp);
     
-    for (std::vector<Event*>::iterator it = events.begin(); it != events.end(); it++) {
+    for (std::vector<std::shared_ptr<Event>>::iterator it = events.begin(); it != events.end(); it++) {
         if ((*it)->hasTag(KEYBOARD_EVENT_TAG)) { //DEBUGGING
-            KeyboardEvent * p_keyEvent = static_cast<KeyboardEvent*>(*it);
+            std::shared_ptr<KeyboardEvent> p_keyEvent = std::static_pointer_cast<KeyboardEvent>(*it);
             switch (p_keyEvent->getAction()) {
                 case KeyboardEvent::KEY_PRESSED: {
                     switch (p_keyEvent->getKey()) {
@@ -504,8 +492,8 @@ void World::update(std::vector<Event*> & events) {
     }
     
     for (int i = MAX_PRIORITY; i >= 0; i--) {
-        for (std::vector<WorldObject*>::iterator it = objectsToUpdate[i].begin(); it != objectsToUpdate[i].end(); it++) {
-            WorldObject* p_object = *it;
+        for (std::vector<std::shared_ptr<WorldObject>>::iterator it = objectsToUpdate[i].begin(); it != objectsToUpdate[i].end(); it++) {
+            std::shared_ptr<WorldObject> p_object = *it;
             
             if (p_object->getPriority() != i) { //if object's priority has changed, move object to appropriate priority but still update object //TODO this may need to be done after loop
                 vector_helpers::removeElementByValue(objectsToUpdate[i], p_object);
@@ -516,7 +504,7 @@ void World::update(std::vector<Event*> & events) {
         }
     }
     
-    for (std::vector<WorldObject*>::iterator it = objectsToDelete.begin(); it != objectsToDelete.end(); it++) {
+    for (std::vector<std::shared_ptr<WorldObject>>::iterator it = objectsToDelete.begin(); it != objectsToDelete.end(); it++) {
         removeObject(*it);
     }
     objectsToDelete.clear();
@@ -524,23 +512,23 @@ void World::update(std::vector<Event*> & events) {
     updateTimestamp++;
 }
 
-World & World::updateObject(WorldObject * p_object) {
-    p_object->Updatable::updateTimestamp(updateTimestamp, timeRatio);
+World & World::updateObject(std::shared_ptr<WorldObject> p_object) {
+    p_object->Updatable::updateTimestamp(updateTimestamp, this, timeRatio);
     return *this;
 }
 
 void World::draw() {
-    //Logger::writeLog(PLAIN_MESSAGE, "starting world[%d] draw %d", id, drawTimestamp);
+    //Logger::writeLog(INFO, "starting world[%d] draw %d", id, drawTimestamp);
     
     for (int i = 0; i <= MAX_BELOW_ALTITUDE + MAX_ABOVE_ALTITUDE; i++) {
         if (i == MAX_BELOW_ALTITUDE) {
             map.draw();
             if (DRAW_BUMPERS && DEBUG_MODE)
-                map.drawBumpers(climber::Player(Coordinate(0, 0)).getMapHitbox().get());
+                map.drawBumpers(climber::Player(Coordinate(0, 0)).getMapHitbox());
         }
         
-        for (std::vector<WorldObject*>::iterator it = objectsToDraw[i].begin(); it != objectsToDraw[i].end(); it++) {
-            WorldObject* p_object = *it;
+        for (std::vector<std::shared_ptr<WorldObject>>::iterator it = objectsToDraw[i].begin(); it != objectsToDraw[i].end(); it++) {
+            std::shared_ptr<WorldObject> p_object = *it;
             
             if ((p_object->getAltitude() + MAX_BELOW_ALTITUDE) != i) { //if object's altitude has changed, move object to appropriate altitude but still draw object
                 vector_helpers::removeElementByValue(objectsToDraw[i], p_object);

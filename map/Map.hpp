@@ -26,12 +26,12 @@ namespace nautical {
         
         bool isVertical() const;
         
-        virtual MapVertex * createVertex(Coordinate coor);
-        virtual MapEdge * createEdge(MapVertex * p_vertexBack, MapVertex * p_vertexFront, bool sticky = false);
+        virtual std::shared_ptr<MapVertex> createVertex(Coordinate coor);
+        virtual std::shared_ptr<MapEdge> createEdge(std::shared_ptr<MapVertex> p_vertexBack, std::shared_ptr<MapVertex> p_vertexFront, bool sticky = false);
         
         //TODO check to make sure MapElements* cannot be accessed
-        const std::vector<MapVertex*> * getVerticesList() const;
-        const std::vector<MapEdge*> * getEdgesList() const;
+        const std::vector<std::shared_ptr<MapVertex>> & getVerticesList() const;
+        const std::vector<std::shared_ptr<MapEdge>> & getEdgesList() const;
         
         double getAirResistanceCoefficient(double value = 1) const;
         Map & setAirResistanceCoefficient(float airResistanceCoefficient);
@@ -40,15 +40,13 @@ namespace nautical {
         static void setDefaultAirResistanceCoefficient(float airResistanceCoefficient);
         
         void draw() const; //for debugging only
-        void drawBumpers(MapHitbox * p_hitbox, bool drawCatches = true) const; //for debugging on;y
+        void drawBumpers(std::shared_ptr<MapHitbox> p_hitbox, bool drawCatches = true) const; //for debugging on;y
         
     private:
-        World * p_parent;
-        
         bool verticalMap;
         
-        std::vector<MapVertex*> vertices;
-        std::vector<MapEdge*> edges;
+        std::vector<std::shared_ptr<MapVertex>> p_vertices;
+        std::vector<std::shared_ptr<MapEdge>> p_edges;
         
         double airResistanceCoefficient;
         static double defaultAirResistanceCoefficient;

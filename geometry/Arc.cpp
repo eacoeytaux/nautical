@@ -92,11 +92,11 @@ Arc & Arc::setClockwise(bool clockwise) {
 }
 
 Coordinate Arc::getStartCoor() const {
-    return origin + physics::Vector(startAngle, originDistance);
+    return origin + Vector(startAngle, originDistance);
 }
 
 Coordinate Arc::getEndCoor() const {
-    return origin + physics::Vector(endAngle, originDistance);
+    return origin + Vector(endAngle, originDistance);
 }
 
 bool Arc::intersectsArc(const Arc & arc, std::vector<Coordinate> * p_intersections) const {

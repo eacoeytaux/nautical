@@ -9,9 +9,8 @@
 #include "Spring.hpp"
 
 using namespace nautical;
-using namespace physics;
 
-Spring::Spring(Mass * p_mass1, Mass * p_mass2, double length, double k, double damper) :
+Spring::Spring(std::shared_ptr<Mass> p_mass1, std::shared_ptr<Mass> p_mass2, double length, double k, double damper) :
 p_mass1(p_mass1),
 p_mass2(p_mass2),
 length(length),
@@ -20,20 +19,20 @@ damper(damper) { }
 
 Spring::~Spring() { }
 
-const Mass * Spring::getMass1() {
+std::shared_ptr<const Mass> Spring::getMass1() const {
     return p_mass1;
 }
 
-Spring & Spring::setMass1(Mass * p_mass) {
+Spring & Spring::setMass1(std::shared_ptr<Mass> p_mass) {
     p_mass1 = p_mass;
     return *this;
 }
 
-const Mass * Spring::getMass2() {
+std::shared_ptr<const Mass> Spring::getMass2() const {
     return p_mass2;
 }
 
-Spring & Spring::setMass2(Mass * p_mass) {
+Spring & Spring::setMass2(std::shared_ptr<Mass> p_mass) {
     p_mass2 = p_mass;
     return *this;
 }
@@ -58,24 +57,29 @@ Spring & Spring::setLength(double length) {
 
 void Spring::update() {
     struct SpringAccelerator : public Mass::Accelerator {
-        SpringAccelerator(const Mass * p_otherMass, double length, double k, double damper) :
+        SpringAccelerator(std::shared_ptr<const Mass> p_otherMass, double length, double k, double damper) :
+        Mass::Accelerator(Vector()),
         length(length),
         k(k),
         damper(damper),
         p_otherMass(p_otherMass) { }
         
-        const Mass * p_otherMass = nullptr;
+        std::shared_ptr<const Mass> p_otherMass = nullptr;
         double length, k, damper;
         Vector accelerate(const Mass & mass) const {
             if (!p_otherMass) {
-                Logger::writeLog(ERROR_MESSAGE, "Spring::SpringAccelerator::accelerate(): p_otherMass is null");
+                Logger::writeLog(ERROR, "Spring::SpringAccelerator::accelerate(): p_otherMass is null");
                 return Vector();
             }
             
             Vector vec(mass.getPosition(), p_otherMass->getPosition());
             Vector force = vec;
-            force.setMagnitude(k * (vec.getMagnitude() - length)) -= (mass.getVelocity() - p_otherMass->getVelocity()) * damper;
-            return force * mass.getM();
+            //if (vec.getMagnitude() > length) {
+                force.setMagnitude(k * (vec.getMagnitude() - length)) -= (mass.getVelocity() - p_otherMass->getVelocity()) * damper;
+                return force * mass.getM();
+            //} else {
+            //    return Vector();
+            //}
         }
     };
     

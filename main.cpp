@@ -12,5 +12,6 @@
 int main(int argc, char * argv[]) {
     nautical::Logger::startup();
     nautical::GameManager::run();
+    nautical::Logger::shutdown();
     return 0;
 }

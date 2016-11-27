@@ -18,16 +18,16 @@ namespace nautical {
     
     class MapEdge : public MapElement {
     public:
-        MapEdge(MapVertex * p_vertexBack, MapVertex * p_vertexFront, bool sticky = false);
+        MapEdge(std::shared_ptr<MapVertex> p_vertexBack, std::shared_ptr<MapVertex> p_vertexFront, bool sticky = false);
         virtual ~MapEdge();
         
         Line getLine() const;
         Angle getNormal() const;
-        MapVertex * getVertex(MapVertex * p_other) const;
-        MapVertex * getVertexFront() const;
-        MapEdge & setVertexFront(MapVertex * p_vertex);
-        MapVertex * getVertexBack() const;
-        MapEdge & setVertexBack(MapVertex * p_vertex);
+        std::shared_ptr<MapVertex> getVertex(std::shared_ptr<MapVertex> p_other) const;
+        std::shared_ptr<MapVertex> getVertexFront() const;
+        MapEdge & setVertexFront(std::shared_ptr<MapVertex> p_vertex);
+        std::shared_ptr<MapVertex> getVertexBack() const;
+        MapEdge & setVertexBack(std::shared_ptr<MapVertex> p_vertex);
         
         virtual void draw() const;
         
@@ -36,7 +36,7 @@ namespace nautical {
     private:
         Line line;
         Angle normal;
-        MapVertex * p_vertexFront = nullptr, * p_vertexBack = nullptr;
+        std::weak_ptr<MapVertex> p_vertexFront, p_vertexBack;
     };
 }
 

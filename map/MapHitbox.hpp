@@ -25,74 +25,74 @@ namespace nautical {
             return center;
         }
         
-        virtual MapHitbox & move(physics::Vector vec) {
+        virtual MapHitbox & move(Vector vec) {
             center += vec;
             return *this;
         }
         
         virtual std::shared_ptr<Shape> getShape() const = 0; //pointer needs to be deleted after use
         
-        const MapElement * getElement() const { return p_element; } //pointer should NOT be deleted
-        MapHitbox & setElement(const MapElement * p_element) {
+        std::shared_ptr<const MapElement> getElement() const { return p_element; } //pointer should NOT be deleted
+        MapHitbox & setElement(std::shared_ptr<const MapElement> p_element) {
             this->p_element = p_element;
             return *this;
         }
         
-        virtual bool adjustVector(physics::Vector * p_vector) const {
-            return adjustVector(p_element, p_vector);
+        virtual bool adjustVector(Vector & vector) const {
+            return adjustVectorAmbigious(p_element, vector);
         }
         
-        virtual bool adjustVector(const MapElement * p_element, physics::Vector * p_vector) const {
+        virtual bool adjustVectorAmbigious(std::shared_ptr<const MapElement> p_element, Vector & vector) const {
             if (p_element) {
                 if (p_element->hasTag(MAP_VERTEX_TAG))
-                    return adjustVector(static_cast<const MapVertex*>(p_element), p_vector);
+                    return adjustVector(std::static_pointer_cast<const MapVertex>(p_element), vector);
                 else if (p_element->hasTag(MAP_EDGE_TAG))
-                    return adjustVector(static_cast<const MapEdge*>(p_element), p_vector);
+                    return adjustVector(std::static_pointer_cast<const MapEdge>(p_element), vector);
             }
             return false;
         }
         
         std::shared_ptr<Shape> createBumper() const {
-            return createBumper(p_element);
+            return createBumperAmbigious(p_element);
         }
         
-        virtual std::shared_ptr<Shape> createBumper(const MapElement * p_element) const {
+        virtual std::shared_ptr<Shape> createBumperAmbigious(std::shared_ptr<const MapElement> p_element) const {
             if (p_element) {
                 if (p_element->hasTag(MAP_VERTEX_TAG))
-                    return createBumper(static_cast<const MapVertex*>(p_element));
+                    return createBumper(std::static_pointer_cast<const MapVertex>(p_element));
                 else if (p_element->hasTag(MAP_EDGE_TAG))
-                    return createBumper(static_cast<const MapEdge*>(p_element));
+                    return createBumper(std::static_pointer_cast<const MapEdge>(p_element));
             }
             return nullptr;
         }
         
-        std::vector<MapCatch> findCatches(const Map * p_map) const {
-            return findCatches(p_element, p_map);
+        std::vector<MapCatch> findCatches(const std::vector<std::shared_ptr<MapVertex>> & p_vertices, const std::vector<std::shared_ptr<MapEdge>> & p_edges) const {
+            return findCatchesAmbigious(p_element, p_vertices, p_edges);
         }
         
-        virtual std::vector<MapCatch> findCatches(const MapElement * p_element, const Map * p_map) const {
+        virtual std::vector<MapCatch> findCatchesAmbigious(std::shared_ptr<const MapElement> p_element, const std::vector<std::shared_ptr<MapVertex>> & p_vertices, const std::vector<std::shared_ptr<MapEdge>> & p_edges) const { //TODO vertices and edges should be const...
             if (p_element) {
                 if (p_element->hasTag(MAP_VERTEX_TAG))
-                    return findCatches(static_cast<const MapVertex*>(p_element), p_map);
+                    return findCatches(std::static_pointer_cast<const MapVertex>(p_element), p_vertices, p_edges);
                 else if (p_element->hasTag(MAP_EDGE_TAG))
-                    return findCatches(static_cast<const MapEdge*>(p_element), p_map);
+                    return findCatches(std::static_pointer_cast<const MapEdge>(p_element), p_vertices, p_edges);
             }
             return std::vector<MapCatch>();
         }
         
-        virtual bool adjustVector(const MapVertex * p_vertex, physics::Vector * p_vector) const = 0;
-        virtual std::shared_ptr<Shape> createBumper(const MapVertex * p_vertex) const = 0;
-        virtual std::vector<MapCatch> findCatches(const MapVertex * p_vertex, const Map * p_map) const = 0;
+        virtual bool adjustVector(std::shared_ptr<const MapVertex> p_vertex, Vector & vector) const = 0;
+        virtual std::shared_ptr<Shape> createBumper(std::shared_ptr<const MapVertex> p_vertex) const = 0;
+        virtual std::vector<MapCatch> findCatches(std::shared_ptr<const MapVertex> p_vertex, const std::vector<std::shared_ptr<MapVertex>> & p_vertices, const std::vector<std::shared_ptr<MapEdge>> & p_edges) const = 0;
         
-        virtual bool adjustVector(const MapEdge * p_edge, physics::Vector * p_vector) const = 0;
-        virtual std::shared_ptr<Shape> createBumper(const MapEdge * p_edge) const = 0;
-        virtual std::vector<MapCatch> findCatches(const MapEdge * p_edge, const Map * p_map) const = 0;
+        virtual bool adjustVector(std::shared_ptr<const MapEdge> p_edge, Vector & vector) const = 0;
+        virtual std::shared_ptr<Shape> createBumper(std::shared_ptr<const MapEdge> p_edge) const = 0;
+        virtual std::vector<MapCatch> findCatches(std::shared_ptr<const MapEdge> p_edge, const std::vector<std::shared_ptr<MapVertex>> & p_vertices, const std::vector<std::shared_ptr<MapEdge>> & p_edges) const = 0;
         
-        virtual MapHitbox * deepCopy() const = 0;
+        //virtual MapHitbox * deepCopy() const = 0;
         
     protected:
         Coordinate center;
-        const MapElement * p_element = nullptr;
+        std::shared_ptr<const MapElement> p_element = nullptr;
     };
 }
 

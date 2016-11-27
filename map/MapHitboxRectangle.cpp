@@ -21,7 +21,7 @@ MapHitboxRectangle::MapHitboxRectangle(Rectangle rec) : rec(rec) {
 
 MapHitboxRectangle::~MapHitboxRectangle() { }
 
-MapHitboxRectangle & MapHitboxRectangle::move(physics::Vector vec) {
+MapHitboxRectangle & MapHitboxRectangle::move(Vector vec) {
     MapHitbox::move(vec);
     rec.move(vec);
     return *this;
@@ -41,11 +41,11 @@ MapHitboxRectangle & MapHitboxRectangle::setRectangle(Rectangle rec) {
     return *this;
 }
 
-bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, physics::Vector * p_vector) const {
+bool MapHitboxRectangle::adjustVector(std::shared_ptr<const MapVertex> p_vertex, Vector & vector) const {
     Angle recAngle = rec.getAngle();
     double recAngleValue = rec.getAngle().getValue();
     double recDiagonalAngleValue = Angle(rec.getWidth(), rec.getHeight()).getValue();
-    double angleToOriginValue = findAngle(p_vertex->getCoor(), p_vector->getOrigin()).getValue();
+    double angleToOriginValue = findAngle(p_vertex->getCoor(), vector.getOrigin()).getValue();
     
     enum MapEdgeRelativePosition {
         UNDEFINED = 0,
@@ -66,8 +66,8 @@ bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, physics::Vecto
     }
     
     //check to see if edgePos is in invalid pos
-    MapEdge * p_edgeFront = p_vertex->getEdgeFront(),
-    * p_edgeBack = p_vertex->getEdgeBack();
+    std::shared_ptr<const MapEdge> p_edgeFront = p_vertex->getEdgeFront(),
+    p_edgeBack = p_vertex->getEdgeBack();
     if (p_edgeFront) {
         double normalAngleValue = p_edgeFront->getNormal().getValue();
         
@@ -106,13 +106,13 @@ bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, physics::Vecto
     //adjust vector according to angle
     switch (edgePos) {
         case ABOVE:
-            return p_vector->subtractAngle(Angle(M_PI_2) + recAngle);
+            return vector.subtractAngle(Angle(M_PI_2) + recAngle);
         case RIGHT:
-            return p_vector->subtractAngle(recAngle);
+            return vector.subtractAngle(recAngle);
         case BELOW:
-            return p_vector->subtractAngle(Angle(-M_PI_2) + recAngle);
+            return vector.subtractAngle(Angle(-M_PI_2) + recAngle);
         case LEFT:
-            return p_vector->subtractAngle(Angle(M_PI) + recAngle);
+            return vector.subtractAngle(Angle(M_PI) + recAngle);
         case UNDEFINED:
         default:
             return false;
@@ -130,11 +130,11 @@ bool MapHitboxRectangle::adjustVector(const MapVertex * p_vertex, physics::Vecto
     //}
 }
 
-std::shared_ptr<Shape> MapHitboxRectangle::createBumper(const MapVertex * p_vertex) const {
+std::shared_ptr<Shape> MapHitboxRectangle::createBumper(std::shared_ptr<const MapVertex> p_vertex) const {
     return std::shared_ptr<Shape>(new Rectangle(p_vertex->getCoor(), rec.getWidth(), rec.getHeight(), rec.getAngle()));
 }
 
-std::vector<MapCatch> MapHitboxRectangle::findCatches(const MapVertex * p_vertex, const Map * p_map) const {
+std::vector<MapCatch> MapHitboxRectangle::findCatches(std::shared_ptr<const MapVertex> p_vertex, const std::vector<std::shared_ptr<MapVertex>> & p_vertices, const std::vector<std::shared_ptr<MapEdge>> & p_edges) const {
     std::vector<MapCatch> catches;
     if (p_vertex->getEdgeFront())
         catches.push_back(getCatchBack(p_vertex->getEdgeFront()));
@@ -143,21 +143,20 @@ std::vector<MapCatch> MapHitboxRectangle::findCatches(const MapVertex * p_vertex
     return catches;
 }
 
-bool MapHitboxRectangle::adjustVector(const MapEdge * p_edge, physics::Vector * p_vector) const {
-    return p_vector->subtractAngle(p_edge->getNormal());
+bool MapHitboxRectangle::adjustVector(std::shared_ptr<const MapEdge> p_edge, Vector & vector) const {
+    return vector.subtractAngle(p_edge->getNormal());
 }
 
-std::shared_ptr<Shape> MapHitboxRectangle::createBumper(const MapEdge * p_edge) const {
+std::shared_ptr<Shape> MapHitboxRectangle::createBumper(std::shared_ptr<const MapEdge> p_edge) const {
     std::shared_ptr<Shape> bumper(new LineShape(p_edge->getLine()));
     bumper->move(getOffset(p_edge));
     return bumper;
 }
 
-std::vector<MapCatch> MapHitboxRectangle::findCatches(const MapEdge * p_edge, const Map * p_map) const {
+std::vector<MapCatch> MapHitboxRectangle::findCatches(std::shared_ptr<const MapEdge> p_edge, const std::vector<std::shared_ptr<MapVertex>> & p_vertices, const std::vector<std::shared_ptr<MapEdge>> & p_edges) const {
     std::vector<MapCatch> catches;
-    const std::vector<MapEdge*> * p_edgesList = p_map->getEdgesList();
-    for (std::vector<MapEdge*>::const_iterator it = p_edgesList->begin(); it != p_edgesList->end(); it++) {//= p_map->getEdgesListIterator(fmin(p_edge->getVertexBack()->getCoor().getX(), p_edge->getVertexFront()->getCoor().getX()) - rec.getWidth(), fmax(p_edge->getVertexBack()->getCoor().getX(), p_edge->getVertexFront()->getCoor().getX()) + rec.getWidth()); !iterator->complete(); iterator->next()) { //TODO filter by lower/upper bounds
-        MapEdge * p_edge2 = *it;
+    for (std::vector<std::shared_ptr<MapEdge>>::const_iterator it = p_edges.begin(); it != p_edges.end(); it++) {//= p_map->getEdgesListIterator(fmin(p_edge->getVertexBack()->getCoor().getX(), p_edge->getVertexFront()->getCoor().getX()) - rec.getWidth(), fmax(p_edge->getVertexBack()->getCoor().getX(), p_edge->getVertexFront()->getCoor().getX()) + rec.getWidth()); !iterator->complete(); iterator->next()) { //TODO filter by lower/upper bounds
+        std::shared_ptr<const MapEdge> p_edge2 = *it;
         if (p_edge2 == p_edge)
             continue;
         
@@ -165,14 +164,14 @@ std::vector<MapCatch> MapHitboxRectangle::findCatches(const MapEdge * p_edge, co
         std::shared_ptr<Shape> p_lineShape2 = createBumper(p_edge2);
         std::vector<Coordinate> collisions;
         if (p_lineShape->intersectsShape(p_lineShape2.get(), &collisions))
-            catches.push_back(MapCatch(collisions.front(), std::dynamic_pointer_cast<LineShape>(p_lineShape2)->getLine(), (MapElement*)p_edge, (MapElement*)p_edge2));
+            catches.push_back(MapCatch(collisions.front(), std::dynamic_pointer_cast<LineShape>(p_lineShape2)->getLine(), std::static_pointer_cast<const MapElement>(p_edge), std::static_pointer_cast<const MapElement>(p_edge2)));
     }
     catches.push_back(getCatchBack(p_edge));
     catches.push_back(getCatchFront(p_edge));
     return catches;
 }
 
-physics::Vector MapHitboxRectangle::getOffset(const MapEdge * p_edge) const {
+Vector MapHitboxRectangle::getOffset(std::shared_ptr<const MapEdge> p_edge) const {
     double distance = rec.getDiagonalLength() / 2;
     Angle angleOffset(rec.getWidth(), rec.getHeight());
     Angle recAngle = rec.getAngle();
@@ -185,63 +184,63 @@ physics::Vector MapHitboxRectangle::getOffset(const MapEdge * p_edge) const {
         Angle(-M_PI_2) + recAngle};
     std::sort(angles.begin(), angles.end());
     
-    physics::Vector ret;
+    Vector ret;
     if ((normalValue >= angles.at(0).getValue()) && (normalValue < angles.at(1).getValue())) {
         if (recAngleValue > M_PI_2) {
-            ret = physics::Vector((angleOffset * -1), -distance);
+            ret = Vector((angleOffset * -1), -distance);
         } else if (recAngleValue > 0) {
-            ret = physics::Vector(angleOffset, -distance);
+            ret = Vector(angleOffset, -distance);
         } else if (recAngleValue >= -M_PI_2) {
-            ret = physics::Vector((angleOffset * -1), distance);
+            ret = Vector((angleOffset * -1), distance);
         } else {
-            ret = physics::Vector(angleOffset, distance);
+            ret = Vector(angleOffset, distance);
         }
     } else if ((normalValue >= angles.at(1).getValue()) && (normalValue < angles.at(2).getValue())) {
         if (recAngleValue > M_PI_2) {
-            ret = physics::Vector(angleOffset, -distance);
+            ret = Vector(angleOffset, -distance);
         } else if (recAngleValue > 0) {
-            ret = physics::Vector((angleOffset * -1), distance);
+            ret = Vector((angleOffset * -1), distance);
         } else if (recAngleValue >= -M_PI_2) {
-            ret = physics::Vector(angleOffset, distance);
+            ret = Vector(angleOffset, distance);
         } else {
-            ret = physics::Vector((angleOffset * -1), -distance);
+            ret = Vector((angleOffset * -1), -distance);
         }
     } else if ((normalValue >= angles.at(2).getValue()) && (normalValue < angles.at(3).getValue())) {
         if (recAngleValue > M_PI_2) {
-            ret = physics::Vector((angleOffset * -1), distance);
+            ret = Vector((angleOffset * -1), distance);
         } else if (recAngleValue > 0) {
-            ret = physics::Vector(angleOffset, distance);
+            ret = Vector(angleOffset, distance);
         } else if (recAngleValue >= -M_PI_2) {
-            ret = physics::Vector((angleOffset * -1), -distance);
+            ret = Vector((angleOffset * -1), -distance);
         } else {
-            ret = physics::Vector(angleOffset, -distance);
+            ret = Vector(angleOffset, -distance);
         }
     } else {
         if (recAngleValue > M_PI_2) {
-            ret = physics::Vector(angleOffset, distance);
+            ret = Vector(angleOffset, distance);
         } else if (recAngleValue > 0) {
-            ret = physics::Vector((angleOffset * -1), -distance);
+            ret = Vector((angleOffset * -1), -distance);
         } else if (recAngleValue >= -M_PI_2) {
-            ret = physics::Vector(angleOffset, -distance);
+            ret = Vector(angleOffset, -distance);
         } else {
-            ret = physics::Vector((angleOffset * -1), distance);
+            ret = Vector((angleOffset * -1), distance);
         }
     }
     return ret.rotate(recAngle);
 }
 
-MapCatch MapHitboxRectangle::getCatchFront(const MapEdge * p_edge) const {
+MapCatch MapHitboxRectangle::getCatchFront(std::shared_ptr<const MapEdge> p_edge) const {
     Coordinate center = p_edge->getVertexFront()->getCoor();
-    physics::Vector offset = getOffset(p_edge);
-    return MapCatch(center + offset, Line(center, center + (offset * 2)), (MapElement*)p_edge, (MapElement*)p_edge->getVertexFront());
+    Vector offset = getOffset(p_edge);
+    return MapCatch(center + offset, Line(center, center + (offset * 2)), std::static_pointer_cast<const MapElement>(p_edge), std::static_pointer_cast<const MapElement>(p_edge->getVertexFront()));
 }
 
-MapCatch MapHitboxRectangle::getCatchBack(const MapEdge * p_edge) const {
+MapCatch MapHitboxRectangle::getCatchBack(std::shared_ptr<const MapEdge> p_edge) const {
     Coordinate center = p_edge->getVertexBack()->getCoor();
-    physics::Vector offset = getOffset(p_edge);
-    return MapCatch(center + offset, Line(center, center + (offset * 2)), (MapElement*)p_edge, (MapElement*)p_edge->getVertexBack());
+    Vector offset = getOffset(p_edge);
+    return MapCatch(center + offset, Line(center, center + (offset * 2)), std::static_pointer_cast<const MapElement>(p_edge), std::static_pointer_cast<const MapElement>(p_edge->getVertexBack()));
 }
 
-MapHitboxRectangle * MapHitboxRectangle::deepCopy() const {
-    return new MapHitboxRectangle(*this);
-}
+//MapHitboxRectangle * MapHitboxRectangle::deepCopy() const {
+//    return new MapHitboxRectangle(*this);
+//}

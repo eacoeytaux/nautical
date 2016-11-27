@@ -19,12 +19,12 @@ Polygon::~Polygon() { }
 
 void Polygon::init(std::vector<Coordinate> * p_coors, bool checkForConcave) {
     if (p_coors == nullptr) {
-        Logger::writeLog(ERROR_MESSAGE, "Polygon::Polygon(): attempted to create polygon with null list of Coordinates");
+        Logger::writeLog(ERROR, "Polygon::Polygon(): attempted to create polygon with null list of Coordinates");
         return;
     }
     
     if (p_coors->size() < 3) {
-        Logger::writeLog(ERROR_MESSAGE, "Polygon::Polygon(): attempted to create polygon with less than 3 vertices");
+        Logger::writeLog(ERROR, "Polygon::Polygon(): attempted to create polygon with less than 3 vertices");
         return;
     }
     
@@ -105,7 +105,7 @@ void Polygon::init(std::vector<Coordinate> * p_coors, bool checkForConcave) {
                     triangle.coor2 = subtractedCoors.at(1);
                     triangle.coor3 = subtractedCoors.at(2);
                 } else {
-                    Logger::writeLog(ERROR_MESSAGE, "Polygon::init(): subtractedCoors does not contain 3 coordinates");
+                    Logger::writeLog(ERROR, "Polygon::init(): subtractedCoors does not contain 3 coordinates");
                 }            }
         } while (!outlineConvex);
         
@@ -217,7 +217,7 @@ bool Polygon::intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p
     return intersects;
 }
 
-Polygon & Polygon::move(physics::Vector vector) {
+Polygon & Polygon::move(Vector vector) {
     std::vector<Coordinate> newVertices;
     for (std::vector<Coordinate>::iterator it = vertices.begin(); it != vertices.end(); it++) {
         newVertices.push_back(*it + vector);

@@ -49,7 +49,7 @@ namespace nautical {
         bool intersectsLine(Line line, std::vector<Coordinate> * p_intersections = nullptr) const;
         bool intersectsShape(const Shape * p_shape, std::vector<Coordinate> * p_intersections = nullptr) const;
         
-        Rectangle & move(physics::Vector vector);
+        Rectangle & move(Vector vector);
         Rectangle & rotateAboutCoordinate(Coordinate coor, Angle angle);
         
         void draw() const;

@@ -12,7 +12,7 @@
 #include "Mob.hpp"
 
 #include "Countdown.hpp"
-#include "Rope.hpp"
+#include "GrapplingRope.hpp"
 
 namespace climber {
     const std::string PLAYER_TAG = "player";
@@ -22,10 +22,10 @@ namespace climber {
         Player(nautical::Coordinate pos);
         virtual ~Player();
         
-        Player & setMapElement(const nautical::MapElement * p_element);
+        Player & setMapElement(std::shared_ptr<const nautical::MapElement> p_element);
         
-        Rope * getRope();
-        Player & setRope(Rope * p_rope);
+        std::shared_ptr<GrapplingRope> getRope();
+        Player & setRope(std::shared_ptr<GrapplingRope> p_rope);
         
         bool isFacingRight() const;
         Player & setFacingRight(bool facingRight);
@@ -41,11 +41,11 @@ namespace climber {
         bool canGhostJump() const;
         Player & setCanGhostJump(bool b);
         
-        Player & move(nautical::physics::Vector vec);
+        Player & movePosition(nautical::Vector vec);
         
-        bool handleEvent(nautical::Event * p_event);
+        bool handleEvent(std::shared_ptr<nautical::Event> p_event);
         
-        void update(double dt);
+        void update(nautical::World * p_world, double dt);
         void draw() const;
         
     private:
@@ -63,7 +63,7 @@ namespace climber {
         nautical::Countdown ghostJumpCountdown; //countdown from leaving ground where player can still jump
         
         nautical::Angle aimAngle = nautical::Angle(M_PI_2);
-        Rope * p_rope = nullptr;
+        std::shared_ptr<GrapplingRope> p_rope = nullptr;
     };
 }
 

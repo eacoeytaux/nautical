@@ -59,11 +59,11 @@ namespace nautical {
             return true;
         };
         
-        Trigger & addTriggerToEnable(Trigger * p_trigger) {
+        Trigger & addTriggerToEnable(std::shared_ptr<Trigger> p_trigger) {
             triggersToEnable.insert(p_trigger);
         }
         
-        Trigger & addTriggerToDisable(Trigger * p_trigger) {
+        Trigger & addTriggerToDisable(std::shared_ptr<Trigger> p_trigger) {
             triggersToDisable.insert(p_trigger);
         }
         
@@ -73,8 +73,8 @@ namespace nautical {
     private:
         int activatedCount = 0;
         bool enabled, autoDisable;
-        std::vector<Trigger*> triggersToEnable;
-        std::vector<Trigger*> triggersToDisable;
+        std::vector<std::shared_ptr<Trigger>> p_triggersToEnable;
+        std::vector<std::shared_ptr<Trigger>> p_triggersToDisable;
     };
 }
 

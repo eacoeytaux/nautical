@@ -16,25 +16,25 @@ namespace nautical {
     
     class MapCatch {
     public:
-        MapCatch(Coordinate collision, Line line, MapElement * p_element1, MapElement * p_element2);
+        MapCatch(Coordinate collision, Line line, std::shared_ptr<const MapElement> p_element1, std::shared_ptr<const MapElement> p_element2);
         virtual ~MapCatch();
         
         Coordinate getCollision() const;
         MapCatch & setCollision(Coordinate collision);
         Line getLine() const;
         MapCatch & setLine(Line line);
-        bool containsElement(const MapElement * p_element) const;
-        const MapElement * getElement(const MapElement * p_other) const;
-        const MapElement * getElement1() const;
-        MapCatch & setElement1(const MapElement * p_element);
-        const MapElement * getElement2() const;
-        MapCatch & setElement2(const MapElement * p_element);
+        bool containsElement(std::shared_ptr<const MapElement> p_element) const;
+        std::shared_ptr<const MapElement> getElement(std::shared_ptr<const MapElement> p_other) const;
+        std::shared_ptr<const MapElement> getElement1() const;
+        MapCatch & setElement1(std::shared_ptr<const MapElement> p_element);
+        std::shared_ptr<const MapElement> getElement2() const;
+        MapCatch & setElement2(std::shared_ptr<const MapElement> p_element);
         
     private:
         Coordinate collision;
         Line line;
-        const MapElement * p_element1 = nullptr,
-        * p_element2 = nullptr;
+        std::shared_ptr<const MapElement> p_element1 = nullptr,
+        p_element2 = nullptr;
     };
 }
 

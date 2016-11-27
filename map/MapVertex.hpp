@@ -22,16 +22,16 @@ namespace nautical {
         virtual ~MapVertex();
         
         Coordinate getCoor() const;
-        MapEdge * getEdgeFront() const;
-        MapVertex & setEdgeFront(MapEdge * p_edge);
-        MapEdge * getEdgeBack() const;
-        MapVertex & setEdgeBack(MapEdge * p_edge);
+        std::shared_ptr<const MapEdge> getEdgeFront() const;
+        MapVertex & setEdgeFront(std::shared_ptr<const MapEdge> p_edge);
+        std::shared_ptr<const MapEdge> getEdgeBack() const;
+        MapVertex & setEdgeBack(std::shared_ptr<const MapEdge> p_edge);
         
         virtual void draw() const;
         
     private:
         Coordinate coor;
-        MapEdge * p_edgeFront = nullptr, * p_edgeBack = nullptr;
+        std::weak_ptr<const MapEdge> p_edgeFront, p_edgeBack;
     };
 }
 

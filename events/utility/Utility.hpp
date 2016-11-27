@@ -79,9 +79,10 @@ namespace nautical {
         return (str1.compare(str2) == 0);
     }
     
+    //functions that affect vectors
     namespace vector_helpers {
         template<typename T>
-        inline void removeElementByValue(std::vector<T> & vector, T value, bool removeAll = false) {
+        inline void removeElementByValue(std::vector<T> & vector, T value, bool removeAll = false) { //finds element in vector and removes first or all element(s) if found
             if (removeAll) {
                 vector.erase(std::remove(vector.begin(), vector.end(), value), vector.end());
             } else {
@@ -89,24 +90,24 @@ namespace nautical {
                 if (it != vector.end())
                     vector.erase(it);
                 else
-                    Logger::writeLog(ERROR_MESSAGE, "removeElementByValue(): attempted to remove non-existant element from vector");
+                    Logger::writeLog(ERROR, "removeElementByValue(): attempted to remove non-existant element from vector");
             }
         }
         
         template<typename T>
-        inline void removeElementByIndex(std::vector<T> & vector, int index) {
+        inline void removeElementByIndex(std::vector<T> & vector, int index) { //removes vector[index] from vector
             //TODO index bounds checking
             vector.erase(vector.begin() + index);
         }
         
         template<typename T>
-        inline int getIndexOfElement(std::vector<T> & vector, T value) { //returns -1 if not found
+        inline int getIndexOfElement(std::vector<T> & vector, T value) { //finds index of element in vector, returns -1 if not found
             int index = (int)(std::find(vector.begin(), vector.end(), value) - vector.begin());
             return (index >= vector.size()) ? -1 : index;
         }
         
         template<typename T>
-        inline bool containsElement(std::vector<T> & vector, T value) {
+        inline bool containsElement(std::vector<T> & vector, T value) { //returns true if element is in vecotr
             return getIndexOfElement(vector, value) != -1;
         }
     }

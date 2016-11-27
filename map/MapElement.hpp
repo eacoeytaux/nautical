@@ -38,18 +38,6 @@ namespace nautical {
         
         virtual ~MapElement() { }
         
-        Map * getParent() const { return p_parent; }
-        bool setParent(Map * p_parent) {
-            static bool parentSet = false;
-            if (parentSet) {
-                return false;
-            } else {
-                this->p_parent = p_parent;
-                parentSet = true;
-                return true;
-            }
-        }
-        
         bool isSticky() const { return sticky; }
         double getFrictionCoefficient(double value = 1) const { return frictionCoefficient * value; }
         MapElement & setFrictionCoefficient(float frictionCoefficient) {
@@ -60,11 +48,8 @@ namespace nautical {
         static double getDefaultFrictionCoefficient(double value = 1) { return MapElement::defaultFrictionCoefficient * value; }
         static void setDefaultFrictionCoefficient(double frictionCoefficient) { MapElement::defaultFrictionCoefficient = frictionCoefficient; }
         
-        virtual void update(double dt) { }
+        virtual void update(World * p_world, double dt) { }
         virtual void draw() const = 0; //for debugging
-        
-    protected:
-        Map * p_parent;
         
     private:
         bool sticky; //whether or not gravity affects object while on edge

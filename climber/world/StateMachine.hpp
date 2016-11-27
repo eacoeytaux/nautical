@@ -21,10 +21,10 @@ namespace nautical {
         
         virtual bool setState(int state) {
             if (!closeState(state)) {
-                Logger::writeLog(ERROR_MESSAGE, "StateMachine::setState(): could not close current state");
+                Logger::writeLog(ERROR, "StateMachine::setState(): could not close current state");
                 return false;
             } else if (!openState(state)) {
-                Logger::writeLog(ERROR_MESSAGE, "StateMachine::setState(): could not open next state");
+                Logger::writeLog(ERROR, "StateMachine::setState(): could not open next state");
                 return false;
             } else {
                 currentState = state;

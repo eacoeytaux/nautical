@@ -27,7 +27,7 @@ namespace nautical {
         static bool init, //prevents game from re-initialized unnecessarily
         running; //whether or not game is running
         
-        static void pollEvents(std::vector<Event*> & events);
+        static void pollEvents(std::vector<std::shared_ptr<Event>> & events);
         
         static void runTests(); //this function for debugging only, put test code in here so it can be easily removed later
     };

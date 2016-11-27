@@ -17,7 +17,7 @@ using namespace climber;
 #define FADE_SPEED 2.0
 
 Flame::Flame(nautical::Coordinate pos) :
-WorldObject(pos) {
+WorldObject(0, pos) {
     appendTag(FLAME_TAG);
     
     p_spriteSheet = GraphicsManager::loadSpriteSheet("spritesheets/fire-particles.png", 2, 1, 10);
@@ -37,15 +37,15 @@ Flame::~Flame() {
     delete p_spriteSheet;
 }
 
-Flame & Flame::addOrigin(double flameWidth, nautical::physics::Vector offset) {
+Flame & Flame::addOrigin(double flameWidth, nautical::Vector offset) {
     Origin * p_origin = new Origin;
-    p_origin->origin = getCenter() + offset;
+    p_origin->origin = getPosition() + offset;
     p_origin->flameWidth = flameWidth;
     origins.push_back(p_origin);
     return *this;
 }
 
-void Flame::update(double dt) {
+void Flame::update(World * p_world, double dt) {
     for (std::vector<Origin*>::iterator it = origins.begin(); it != origins.end(); it++) {
         Origin * p_origin = *it;
         
@@ -75,7 +75,7 @@ void Flame::update(double dt) {
     for (std::vector<Spark*>::iterator it = orangeParticles.begin(); it != orangeParticles.end(); it++) {
         Spark * p_spark = *it;
         
-        p_spark->center += physics::Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5) * dt;
+        p_spark->center += Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5) * dt;
         p_spark->width *= (1.0 - (0.03 * dt));
         p_spark->alpha -= FADE_SPEED * dt;
         
@@ -92,7 +92,7 @@ void Flame::update(double dt) {
     for (std::vector<Spark*>::iterator it = yellowParticles.begin(); it != yellowParticles.end(); it++) {
         Spark * p_spark = *it;
         
-        p_spark->center += physics::Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5) * dt;
+        p_spark->center += Vector(Angle(Random::getRandDouble(M_PI_2) + M_PI_4), Random::getRandDouble(0.5) + 0.5) * dt;
         p_spark->width *= (1.0 - (0.03 * dt));
         p_spark->alpha -= FADE_SPEED * dt;
         
@@ -105,22 +105,21 @@ void Flame::update(double dt) {
     }
     
     if (DarknessOverlay::isInEffect()) {
-        Circle * p_circle = new Circle(getCenter(), 100);
+        std::shared_ptr<Circle> p_circle = std::shared_ptr<Circle>(new Circle(getPosition(), 100));
         static Countdown count(1); //TODO don't make static
-        static physics::Vector moveVec[DARKNESS_LAYERS];
+        static Vector moveVec[DARKNESS_LAYERS];
         if (count.check(dt)) {
             for (int i = 0; i < DARKNESS_LAYERS; i++) {
-                moveVec[i] = physics::Vector(Angle(Random::getRandDouble(M_PI * 2)), Random::getRandDouble(2));
+                moveVec[i] = Vector(Angle(Random::getRandDouble(M_PI * 2)), Random::getRandDouble(2));
             }
             count.reset();
         }
         for (int i = 0; i < DARKNESS_LAYERS; i++) {
-            Circle * p_circleToAdd = new Circle(*p_circle);
+            std::shared_ptr<Circle> p_circleToAdd = std::shared_ptr<Circle>(new Circle(*p_circle));
             p_circleToAdd->move(moveVec[i]);
             DarknessOverlay::addShape(p_circleToAdd, i);
             p_circle->setRadius(p_circle->getRadius() + 10);
         }
-        delete p_circle;
     }
 }
 

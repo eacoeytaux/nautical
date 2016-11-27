@@ -17,7 +17,7 @@ using namespace nautical;
 
 bool DarknessOverlay::inEffect = false;
 float DarknessOverlay::percentage = 1.f;
-std::vector<Shape*> DarknessOverlay::subtractedShapes[DARKNESS_LAYERS];
+std::vector<std::shared_ptr<Shape>> DarknessOverlay::subtractedShapes[DARKNESS_LAYERS];
 MinValue DarknessOverlay::lowerBoundX;
 MinValue DarknessOverlay::lowerBoundY;
 MaxValue DarknessOverlay::upperBoundX;
@@ -39,7 +39,7 @@ void DarknessOverlay::setPercentage(float percentage) {
     DarknessOverlay::percentage = percentage;
 }
 
-void DarknessOverlay::addShape(Shape * p_shape, int layer) {
+void DarknessOverlay::addShape(std::shared_ptr<Shape> p_shape, int layer) {
     //TODO layer bounds checking
     subtractedShapes[layer].push_back(p_shape);
     lowerBoundX.update(p_shape->getLowerBoundX());
@@ -50,9 +50,6 @@ void DarknessOverlay::addShape(Shape * p_shape, int layer) {
 
 void DarknessOverlay::clearShapes() {
     for (int i = 0; i < DARKNESS_LAYERS; i++) {
-        for (std::vector<Shape*>::iterator it = subtractedShapes[i].begin(); it != subtractedShapes[i].end(); it++) {
-            delete *it;
-        }
         subtractedShapes[i].clear();
     }
     lowerBoundX.reset();
@@ -75,7 +72,7 @@ void DarknessOverlay::draw() { //TODO optimize (only needs to check between yLow
             Line screenLine(GraphicsManager::screenToWorld(Coordinate(screenLowerBoundX, y)), GraphicsManager::screenToWorld(Coordinate(screenUpperBoundX, y)));
             
             std::vector<Shape::IntersectionLine> lineIntersections;
-            for (std::vector<Shape*>::iterator it = subtractedShapes[i].begin(); it != subtractedShapes[i].end(); it++) {
+            for (std::vector<std::shared_ptr<Shape>>::iterator it = subtractedShapes[i].begin(); it != subtractedShapes[i].end(); it++) {
                 std::vector<Coordinate> intersections;
                 if ((*it)->intersectsLine(screenLine, &intersections)) {
                     Shape::IntersectionLine line;
@@ -111,7 +108,7 @@ void DarknessOverlay::draw() { //TODO optimize (only needs to check between yLow
                         linesToDraw.push_back(prevLineToDraw);
                     }
                 } else {
-                    Logger::writeLog(ERROR_MESSAGE, "DarknessOverlay::draw(): linesToDraw is empty");
+                    Logger::writeLog(ERROR, "DarknessOverlay::draw(): linesToDraw is empty");
                 }
             }
             

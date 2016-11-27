@@ -26,7 +26,7 @@ namespace nautical {
         static float getPercentage();
         static void setPercentage(float percentage);
         
-        static void addShape(Shape * p_shape, int layer);
+        static void addShape(std::shared_ptr<Shape> p_shape, int layer);
         static void clearShapes();
         
         static void draw();
@@ -35,7 +35,7 @@ namespace nautical {
         static bool inEffect;
         
         static float percentage;
-        static std::vector<Shape*> subtractedShapes[DARKNESS_LAYERS];
+        static std::vector<std::shared_ptr<Shape>> subtractedShapes[DARKNESS_LAYERS];
         static MinValue lowerBoundX;
         static MinValue lowerBoundY;
         static MaxValue upperBoundX;

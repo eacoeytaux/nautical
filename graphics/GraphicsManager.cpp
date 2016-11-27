@@ -21,8 +21,8 @@ using namespace nautical;
 
 bool GraphicsManager::init = false;
 
-SDL_Renderer * p_renderer = nullptr;
-SDL_Texture * p_texture = nullptr;
+SDL_Renderer * p_renderer = nullptr; //rendered connected to game window
+SDL_Texture * p_texture = nullptr; //texture images are drawn unto before being drawn to renderer
 
 int GraphicsManager::screenWidth = 960;
 int GraphicsManager::screenHeight = 640;
@@ -34,13 +34,14 @@ bool GraphicsManager::mouseTrapped = false;
 double GraphicsManager::xOffset = 0;
 double GraphicsManager::yOffset = 0;
 Coordinate GraphicsManager::center = Coordinate(0, 0);
-Coordinate GraphicsManager::centerSet = Coordinate(0, 0);
+Coordinate GraphicsManager::centerTarget = Coordinate(0, 0);
 float GraphicsManager::centerSpeedRatio = 0.125;
 
 float GraphicsManager::zoom = 1;
-float GraphicsManager::zoomSet = 1;
+float GraphicsManager::zoomTarget = 1;
 float GraphicsManager::zoomSpeedRatio = 0.125;
 
+//helper function for switching colors when drawing
 void setRenderColor(SDL_Renderer * p_renderer, Color color) {
     SDL_SetRenderDrawColor(p_renderer, color.getR(), color.getG(), color.getB(), color.getA());
 }
@@ -52,12 +53,12 @@ bool GraphicsManager::startup(SDL_Window * p_window) {
     if (AUTO_LOCK_CURSOR)
         GraphicsManager::setMouseTrapped(SDL_SetRelativeMouseMode(SDL_TRUE) == 0);
     
-    if (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0") == SDL_FALSE)
-        Logger::writeLog(ERROR_MESSAGE, "GraphicsManager::startup(): could not set hint SDL_HINT_RENDER_SCALE_QUALITY to \"0\"");
+    if (SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0") == SDL_FALSE) //used for pixel resolution
+        Logger::writeLog(ERROR, "GraphicsManager::startup(): could not set hint SDL_HINT_RENDER_SCALE_QUALITY to \"0\"");
     
     p_renderer = SDL_CreateRenderer(p_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); //init renderer
     if (!p_renderer) {
-        Logger::writeLog(ERROR_MESSAGE, "GraphicsManager::startup(): %s", SDL_GetError());
+        Logger::writeLog(ERROR, "GraphicsManager::startup(): %s", SDL_GetError());
         return false;
     } else {
         SDL_SetRenderDrawBlendMode(p_renderer, SDL_BLENDMODE_BLEND);
@@ -66,7 +67,7 @@ bool GraphicsManager::startup(SDL_Window * p_window) {
         
         p_texture = SDL_CreateTexture(p_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, screenWidth, screenHeight);
         if (!p_texture) {
-            Logger::writeLog(ERROR_MESSAGE, "GraphicsManager::startup(): %s", SDL_GetError());
+            Logger::writeLog(ERROR, "GraphicsManager::startup(): %s", SDL_GetError());
             return false;
         } else {
             SDL_SetRenderTarget(p_renderer, p_texture);
@@ -91,10 +92,11 @@ bool GraphicsManager::shutdown() {
 
 bool GraphicsManager::draw() {
     if (!init) {
-        Logger::writeLog(ERROR_MESSAGE, "GraphicsManager::draw(): GraphicsManager not init");
+        Logger::writeLog(ERROR, "GraphicsManager::draw(): GraphicsManager not init");
         return false;
     }
     
+    //sets render target to p_renderer and draws p_texture on renderer with resolution of pixelScale
     SDL_SetRenderTarget(p_renderer, nullptr);
     SDL_Rect srcRect = {0, 0, GraphicsManager::screenWidth, GraphicsManager::screenHeight};
     SDL_Rect dstRect = {0, 0, GraphicsManager::screenWidth * pixelScale, GraphicsManager::screenHeight * pixelScale};
@@ -119,11 +121,13 @@ int GraphicsManager::getPixelScale() {
 }
 
 void GraphicsManager::setPixelScale(int scale) {
+    //adjust values affected by pixelScale
     float ratio = pixelScale / (float)scale;
     mouseCoor.setX(mouseCoor.getX() * ratio);
     mouseCoor.setY(mouseCoor.getY() * ratio);
-    zoomSet *= ratio;
+    zoomTarget *= ratio;
     zoom *= ratio;
+    
     pixelScale = scale;
 }
 
@@ -173,10 +177,10 @@ void GraphicsManager::setMouseTrapped(bool mouseTrapped) {
 }
 
 void GraphicsManager::updateCenter() {
-    if (!DEBUG_MODE && (findDistance(center, centerSet) > CENTER_OFFSET_MINIMUM)) {
-        center += physics::Vector(center, centerSet) * fmin(centerSpeedRatio, 1);
+    if (!DEBUG_MODE && (findDistance(center, centerTarget) > CENTER_OFFSET_MINIMUM)) {
+        center += Vector(center, centerTarget) * fmin(centerSpeedRatio, 1);
     } else {
-        center = centerSet;
+        center = centerTarget;
     }
     setOffsets();
 }
@@ -185,8 +189,8 @@ Coordinate GraphicsManager::getCenter() {
     return GraphicsManager::center;
 }
 
-Coordinate GraphicsManager::getCenterSet() {
-    return GraphicsManager::centerSet;
+Coordinate GraphicsManager::getCenterTarget() {
+    return GraphicsManager::centerTarget;
 }
 
 void GraphicsManager::setCenter(const Coordinate & center, bool hardSet) {
@@ -194,21 +198,22 @@ void GraphicsManager::setCenter(const Coordinate & center, bool hardSet) {
         GraphicsManager::center = center;
         setOffsets();
     }
-    centerSet = center;
+    centerTarget = center;
 }
 
 void GraphicsManager::setCenterSpeedRatio(float centerSpeedRatio) {
-    if ((centerSpeedRatio > 1) || (centerSpeedRatio <= 0))
-        Logger::writeLog(WARNING_MESSAGE, "GraphicsManager::setCenterSpeedRatio(): centerSpeedRatio must be between [1, 0)");
-    else
+    if ((centerSpeedRatio > 1) || (centerSpeedRatio <= 0)) {
+        Logger::writeLog(MESSAGE, "GraphicsManager::setCenterSpeedRatio(): centerSpeedRatio must be between [1, 0)");
+    } else {
         GraphicsManager::centerSpeedRatio = centerSpeedRatio;
+    }
 }
 
 void GraphicsManager::updateZoom() {
-    if (!DEBUG_MODE && (fabs(zoom - zoomSet) > ZOOM_OFFSET_MINIMUM)) {
-        zoom += (zoomSet - zoom) * zoomSpeedRatio;
+    if (!DEBUG_MODE && (fabs(zoom - zoomTarget) > ZOOM_OFFSET_MINIMUM)) {
+        zoom += (zoomTarget - zoom) * zoomSpeedRatio;
     } else {
-        zoom = zoomSet;
+        zoom = zoomTarget;
     }
     setOffsets();
 }
@@ -217,24 +222,30 @@ float GraphicsManager::getZoom() {
     return zoom * pixelScale;
 }
 
-float GraphicsManager::getZoomSet() {
-    return zoomSet * pixelScale;
+float GraphicsManager::getZoomTarget() {
+    return zoomTarget * pixelScale;
 }
 
 void GraphicsManager::setZoom(float zoom, bool hardSet) {
+    if (zoom <= 0) {
+        Logger::writeLog(MESSAGE, "GraphicsManager::setZoom(): zoom must be > 0");
+        return;
+    }
+    
     zoom /= pixelScale;
     if (hardSet) {
         GraphicsManager::zoom = zoom;
         setOffsets();
     }
-    zoomSet = zoom;
+    zoomTarget = zoom;
 }
 
 void GraphicsManager::setZoomSpeedRatio(float zoomSpeedRatio) {
-    if ((zoomSpeedRatio > 1) || (zoomSpeedRatio <= 0))
-        Logger::writeLog(WARNING_MESSAGE, "GraphicsManager::setZoomSpeedRatio(): zoomSpeedRatio must be between [1, 0)");
-    else
+    if ((zoomSpeedRatio > 1) || (zoomSpeedRatio <= 0)) {
+        Logger::writeLog(MESSAGE, "GraphicsManager::setZoomSpeedRatio(): zoomSpeedRatio must be between [1, 0)");
+    } else {
         GraphicsManager::zoomSpeedRatio = zoomSpeedRatio;
+    }
 }
 
 void GraphicsManager::drawCoordinate(const Coordinate & coor, Color color, bool adjust) {
@@ -296,7 +307,7 @@ SpriteSheet * GraphicsManager::loadSpriteSheet(std::string filePath, int widthCo
     bool failureFlag = false;
     SpriteSheet * p_sheet = new SpriteSheet(&failureFlag, p_renderer, filePath, widthCount, heightCount, scale);
     if (failureFlag) {
-        Logger::writeLog(ERROR_MESSAGE, "GraphicsManager::createSpriteSheet(): could not load spritesheet from filepath %s", filePath.c_str());
+        Logger::writeLog(ERROR, "GraphicsManager::createSpriteSheet(): could not load spritesheet from filepath %s", filePath.c_str());
         return nullptr;
     } else {
         return p_sheet;

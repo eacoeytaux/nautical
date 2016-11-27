@@ -23,14 +23,14 @@ SpriteSheet::SpriteSheet(bool * failureFlag, SDL_Renderer * p_renderer, std::str
 	SDL_Surface * p_loadedSurface = IMG_Load(filePath.c_str());
     
     if (!p_loadedSurface) {
-        Logger::writeLog(ERROR_MESSAGE, "SpriteSheet::SpriteSheet(): Unable to load image %s: SDL_image Error: %s", filePath.c_str(), IMG_GetError());
+        Logger::writeLog(ERROR, "SpriteSheet::SpriteSheet(): Unable to load image %s: SDL_image Error: %s", filePath.c_str(), IMG_GetError());
         
         if (failureFlag != nullptr)
             *failureFlag = true;
     } else {
         p_texture = SDL_CreateTextureFromSurface(p_renderer, p_loadedSurface);
         if (!p_texture) {
-            Logger::writeLog(ERROR_MESSAGE, "SpriteSheet::SpriteSheet(): Unable to create texture from %s: SDL Error: %s", filePath.c_str(), SDL_GetError());
+            Logger::writeLog(ERROR, "SpriteSheet::SpriteSheet(): Unable to create texture from %s: SDL Error: %s", filePath.c_str(), SDL_GetError());
             
             if (failureFlag != nullptr)
                 *failureFlag = true;
@@ -38,7 +38,7 @@ SpriteSheet::SpriteSheet(bool * failureFlag, SDL_Renderer * p_renderer, std::str
         SDL_FreeSurface(p_loadedSurface);
         
         if (SDL_QueryTexture(p_texture, nullptr, nullptr, &imageWidth, &imageHeight) < 0) {
-            Logger::writeLog(ERROR_MESSAGE, "SpriteSheet::SpriteSheet(): %s", SDL_GetError());
+            Logger::writeLog(ERROR, "SpriteSheet::SpriteSheet(): %s", SDL_GetError());
         }
     }
 }
